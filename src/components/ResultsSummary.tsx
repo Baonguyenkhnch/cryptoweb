@@ -337,7 +337,7 @@ export function ResultsSummary({ data, onLoginClick }: ResultsSummaryProps) {
                 >
                   <span className="flex items-center gap-3">
                     <Mail className="w-5 h-5" />
-                    <span className="text-base">{language === 'vi' ? 'Đăng Nh��p Ngay' : 'Login Now'}</span>
+                    <span className="text-base">{language === 'vi' ? 'Đăng Nhập Ngay' : 'Login Now'}</span>
                     <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
                   </span>
                 </button>
