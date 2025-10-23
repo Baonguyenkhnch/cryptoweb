@@ -59,26 +59,28 @@ const MOCK_STATS = {
 
 const MOCK_WALLET_DATA = {
   tokenBalances: [
-    { token: "ETH", balance: 2.5, value: 4500, percentage: 45 },
-    { token: "USDT", balance: 5000, value: 5000, percentage: 50 },
-    { token: "LINK", balance: 200, value: 500, percentage: 5 },
+    { symbol: "ETH", balance: 2.5, value: 4500, percentage: 45 },
+    { symbol: "USDT", balance: 5000, value: 5000, percentage: 50 },
+    { symbol: "LINK", balance: 200, value: 500, percentage: 5 },
   ],
   recentTransactions: [
     {
+      id: "tx-1",
       hash: "0x123...abc",
       type: "send" as const,
       amount: 0.5,
       token: "ETH",
-      timestamp: "2024-01-15",
-      status: "success" as const,
+      value: 900,
+      date: "2024-01-15",
     },
     {
+      id: "tx-2",
       hash: "0x456...def",
       type: "receive" as const,
       amount: 1000,
       token: "USDT",
-      timestamp: "2024-01-14",
-      status: "success" as const,
+      value: 1000,
+      date: "2024-01-14",
     },
   ],
 };

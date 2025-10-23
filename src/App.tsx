@@ -150,7 +150,7 @@ export default function App() {
 
   const handleSubscribeClick = () => {
     if (subscriptionStatus?.verified) {
-      // Nếu đã subscribe, hiển th��� option để unsubscribe
+      // Nếu đã subscribe, hiển th option để unsubscribe
       handleUnsubscribe();
     } else {
       // M dialog OTP verification
@@ -258,10 +258,10 @@ export default function App() {
         </div>
       )}
       
-      <div className="relative z-10 container mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-16 animate-in fade-in-0 duration-1000">
-          <div className="flex items-center justify-center mb-8">
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Header - Simplified */}
+        <div className="text-center mb-8 animate-in fade-in-0 duration-1000">
+          <div className="flex items-center justify-center mb-6">
             <div className="relative">
               <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl opacity-60 animate-pulse" />
               <div className="relative p-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20">
@@ -270,50 +270,23 @@ export default function App() {
             </div>
           </div>
           
-          <div className="relative mb-6 px-4">
-            <h1 className="text-5xl md:text-7xl mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-[1.15] pb-2">
+          <div className="relative mb-4 px-4">
+            <h1 className="text-4xl md:text-5xl mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-[1.15] pb-2">
               {t.calculator.title}
             </h1>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Shield className="w-6 h-6 text-cyan-400" />
-              <span className="text-2xl md:text-3xl bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                {t.calculator.subtitle}
-              </span>
-              <Wallet className="w-6 h-6 text-blue-400" />
-            </div>
           </div>
           
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed mb-3">
             {t.calculator.description}
           </p>
-          <p className="text-sm text-gray-400 max-w-2xl mx-auto mt-4 flex items-center justify-center gap-2">
-            <Shield className="w-4 h-4 text-purple-400" />
-            <span className="text-purple-400">{t.calculator.privacy.decentralized}</span> • 
-            <Lock className="w-4 h-4 text-cyan-400 ml-2" />
-            <span className="text-cyan-400">{t.calculator.privacy.noIdentity}</span> • 
-            <Info className="w-4 h-4 text-blue-400 ml-2" />
-            <span className="text-blue-400">{t.calculator.privacy.transparent}</span>
+          <p className="text-sm text-cyan-400 max-w-2xl mx-auto flex items-center justify-center gap-2">
+            <Shield className="w-4 h-4" />
+            <span>{t.calculator.privacy.decentralized}</span> • 
+            <Lock className="w-4 h-4 ml-2" />
+            <span>{t.calculator.privacy.noIdentity}</span> • 
+            <Info className="w-4 h-4 ml-2" />
+            <span>{t.calculator.privacy.transparent}</span>
           </p>
-          
-          {/* Floating stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-8">
-            <div className="text-center p-4 bg-cyan-500/10 rounded-xl border border-cyan-500/20 backdrop-blur-sm">
-              <div className="text-2xl text-cyan-300">850</div>
-              <div className="text-xs text-gray-400">{t.calculator.stats.maxScore}</div>
-            </div>
-            <div className="text-center p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 backdrop-blur-sm">
-              <div className="text-2xl text-blue-300">AAA</div>
-              <div className="text-xs text-gray-400">{t.calculator.stats.topRating}</div>
-            </div>
-            <div className="text-center p-4 bg-purple-500/10 rounded-xl border border-purple-500/20 backdrop-blur-sm">
-              <div className="text-2xl text-purple-300">100%</div>
-              <div className="text-xs text-gray-400">{t.calculator.stats.decentralized}</div>
-            </div>
-            <div className="text-center p-4 bg-teal-500/10 rounded-xl border border-teal-500/20 backdrop-blur-sm">
-              <div className="text-2xl text-teal-300">24/7</div>
-              <div className="text-xs text-gray-400">{t.calculator.stats.analysis}</div>
-            </div>
-          </div>
         </div>
 
         {!showResults ? (
@@ -323,8 +296,8 @@ export default function App() {
               <div className="absolute -inset-1 bg-gradient-to-r from-slate-600/20 to-slate-500/15 rounded-3xl blur-xl opacity-50" />
               
               <div className="relative">
-                <CardHeader className="text-center pb-8 pt-12">
-                  <CardTitle className="text-3xl text-white flex items-center justify-center gap-3 mb-2">
+                <CardHeader className="text-center pb-6 pt-8">
+                  <CardTitle className="text-2xl text-white flex items-center justify-center gap-3 mb-2">
                     <div className="relative">
                       <Wallet className="w-8 h-8 text-cyan-400" />
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
@@ -334,7 +307,7 @@ export default function App() {
                   <p className="text-gray-400 mt-2">{t.calculator.input.subtitle}</p>
                 </CardHeader>
                 
-                <CardContent className="space-y-8 p-8 pb-12">
+                <CardContent className="space-y-6 p-8 pb-10">
                   <div className="space-y-4">
                     <Label htmlFor="wallet" className="text-gray-300 text-lg">
                       {t.calculator.input.label}
@@ -345,7 +318,7 @@ export default function App() {
                         placeholder={t.calculator.input.placeholder}
                         value={walletAddress}
                         onChange={(e) => setWalletAddress(e.target.value)}
-                        className="h-16 bg-slate-900/50 border border-cyan-500/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 text-lg rounded-xl transition-all duration-300"
+                        className="h-14 bg-slate-900/50 border border-cyan-500/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 text-base rounded-xl transition-all duration-300"
                       />
                     </div>
                   </div>
@@ -354,7 +327,7 @@ export default function App() {
                     <Button
                       onClick={handleCalculateScore}
                       disabled={!walletAddress.trim() || isLoading}
-                      className="relative flex-1 h-16 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-lg shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 disabled:opacity-50 rounded-xl group overflow-hidden"
+                      className="relative flex-1 h-14 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-base shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 disabled:opacity-50 rounded-xl group overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                       
@@ -377,7 +350,7 @@ export default function App() {
                     <Button
                       onClick={() => setShowFeedbackDialog(true)}
                       variant="outline"
-                      className="h-16 px-6 bg-purple-600/20 border-purple-500/40 text-purple-300 hover:bg-purple-600/30 hover:border-purple-400/50 hover:text-white transition-all duration-300 rounded-xl group"
+                      className="h-14 px-6 bg-purple-600/20 border-purple-500/40 text-purple-300 hover:bg-purple-600/30 hover:border-purple-400/50 hover:text-white transition-all duration-300 rounded-xl group"
                     >
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-5 h-5 transition-transform duration-300" />
@@ -387,28 +360,28 @@ export default function App() {
                   </div>
 
                   {/* Feature highlights */}
-                  <div className="grid grid-cols-3 gap-6 pt-6 border-t border-cyan-500/20">
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-cyan-500/20">
                     <div className="text-center group">
-                      <div className="w-12 h-12 mx-auto mb-3 bg-purple-500/20 rounded-xl flex items-center justify-center border border-purple-400/30 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-12 h-12 mx-auto mb-2 bg-purple-500/20 rounded-xl flex items-center justify-center border border-purple-400/30 group-hover:scale-110 transition-transform duration-300">
                         <Lock className="w-6 h-6 text-purple-400" />
                       </div>
-                      <div className="text-purple-400 text-sm">{t.calculator.features.noStore}</div>
+                      <div className="text-purple-400 text-xs">{t.calculator.features.noStore}</div>
                       <div className="text-gray-500 text-xs">{t.calculator.features.identity}</div>
                     </div>
                     
                     <div className="text-center group">
-                      <div className="w-12 h-12 mx-auto mb-3 bg-cyan-500/20 rounded-xl flex items-center justify-center border border-cyan-400/30 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-12 h-12 mx-auto mb-2 bg-cyan-500/20 rounded-xl flex items-center justify-center border border-cyan-400/30 group-hover:scale-110 transition-transform duration-300">
                         <Shield className="w-6 h-6 text-cyan-400" />
                       </div>
-                      <div className="text-cyan-400 text-sm">{t.calculator.features.decentralized}</div>
+                      <div className="text-cyan-400 text-xs">{t.calculator.features.decentralized}</div>
                       <div className="text-gray-500 text-xs">{t.calculator.features.security}</div>
                     </div>
                     
                     <div className="text-center group">
-                      <div className="w-12 h-12 mx-auto mb-3 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-400/30 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-12 h-12 mx-auto mb-2 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-400/30 group-hover:scale-110 transition-transform duration-300">
                         <Info className="w-6 h-6 text-blue-400" />
                       </div>
-                      <div className="text-blue-400 text-sm">{t.calculator.features.transparent}</div>
+                      <div className="text-blue-400 text-xs">{t.calculator.features.transparent}</div>
                       <div className="text-gray-500 text-xs">{t.calculator.features.algorithm}</div>
                     </div>
                   </div>

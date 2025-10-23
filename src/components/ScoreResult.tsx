@@ -80,6 +80,7 @@ export function ScoreResult({
   isSubscribed = false,
   isRecalculating = false,
 }: ScoreResultProps) {
+  const { t } = useLanguage();
   const rating = getRating(score);
   const percentage = Math.min((score / 850) * 100, 100);
   
@@ -137,8 +138,6 @@ export function ScoreResult({
     });
   };
 
-  const language = useLanguage();
-
   return (
     <div className="w-full max-w-7xl mx-auto space-y-12 animate-in fade-in-50 duration-700">
       {/* Main Score Card */}
@@ -152,10 +151,10 @@ export function ScoreResult({
             <div className="flex items-center justify-center gap-3 mb-4">
               {getRatingIcon(rating)}
               <CardTitle className="text-4xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                Điểm Tín Dụng Của Bạn
+                {t.scoreResult.title}
               </CardTitle>
             </div>
-            <p className="text-gray-400 text-lg">Phân tích độ tin cậy ví blockchain</p>
+            <p className="text-gray-400 text-lg">{t.scoreResult.subtitle}</p>
           </CardHeader>
           
           <CardContent className="pb-12">
@@ -207,7 +206,7 @@ export function ScoreResult({
                       <div className="text-6xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
                         {score}
                       </div>
-                      <div className="text-gray-400 text-lg">Điểm</div>
+                      <div className="text-gray-400 text-lg">{t.scoreResult.score}</div>
                     </div>
                   </div>
                 </div>
@@ -219,7 +218,7 @@ export function ScoreResult({
                   <div className="text-8xl mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
                     {score}
                   </div>
-                  <div className="text-3xl text-gray-300">Điểm Tín Dụng</div>
+                  <div className="text-3xl text-gray-300">{t.scoreResult.creditScore}</div>
                 </div>
                 
                 {/* Rating badge */}
@@ -241,8 +240,8 @@ export function ScoreResult({
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 rounded-full pointer-events-none" />
                   </div>
                   <div className="flex justify-between text-sm text-gray-400">
-                    <span>{percentage.toFixed(1)}% tối đa</span>
-                    <span>Tối đa 850</span>
+                    <span>{percentage.toFixed(1)}% {t.scoreResult.maxProgress}</span>
+                    <span>{t.scoreResult.maxScore}</span>
                   </div>
                 </div>
                 
@@ -250,11 +249,11 @@ export function ScoreResult({
                 <div className="grid grid-cols-2 gap-4 pt-4">
                   <div className="text-center p-3 bg-green-500/20 rounded-xl border border-green-400/30">
                     <TrendingUp className="w-5 h-5 text-green-400 mx-auto mb-1" />
-                    <div className="text-green-400 text-sm">Xuất Sắc</div>
+                    <div className="text-green-400 text-sm">{t.scoreResult.excellent}</div>
                   </div>
                   <div className="text-center p-3 bg-blue-500/20 rounded-xl border border-blue-400/30">
                     <Wallet className="w-5 h-5 text-blue-400 mx-auto mb-1" />
-                    <div className="text-blue-400 text-sm">Đã Xác Minh</div>
+                    <div className="text-blue-400 text-sm">{t.scoreResult.verified}</div>
                   </div>
                 </div>
               </div>
@@ -271,7 +270,7 @@ export function ScoreResult({
           <div className="relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-cyan-400 text-sm tracking-wide uppercase">Tuổi Ví</CardTitle>
+                <CardTitle className="text-cyan-400 text-sm tracking-wide uppercase">{t.scoreResult.walletAge}</CardTitle>
                 <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
               </div>
             </CardHeader>
@@ -280,7 +279,7 @@ export function ScoreResult({
                 <div className="text-4xl bg-gradient-to-r from-cyan-400 to-cyan-300 bg-clip-text text-transparent tracking-tight">
                   {walletAge}
                 </div>
-                <div className="text-gray-400 text-sm">Ngày Hoạt Động</div>
+                <div className="text-gray-400 text-sm">{t.scoreResult.daysActive}</div>
                 <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full w-3/4" />
                 </div>
@@ -295,7 +294,7 @@ export function ScoreResult({
           <div className="relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-blue-400 text-sm tracking-wide uppercase">Giao Dịch</CardTitle>
+                <CardTitle className="text-blue-400 text-sm tracking-wide uppercase">{t.scoreResult.transactions}</CardTitle>
                 <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
               </div>
             </CardHeader>
@@ -304,7 +303,7 @@ export function ScoreResult({
                 <div className="text-4xl bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent tracking-tight">
                   {totalTransactions.toLocaleString()}
                 </div>
-                <div className="text-gray-400 text-sm">Tổng Số</div>
+                <div className="text-gray-400 text-sm">{t.scoreResult.totalTransactions}</div>
                 <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full w-4/5" />
                 </div>
@@ -319,7 +318,7 @@ export function ScoreResult({
           <div className="relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-teal-400 text-sm tracking-wide uppercase">Đa Dạng</CardTitle>
+                <CardTitle className="text-teal-400 text-sm tracking-wide uppercase">{t.scoreResult.tokenDiversity}</CardTitle>
                 <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
               </div>
             </CardHeader>
@@ -328,7 +327,7 @@ export function ScoreResult({
                 <div className="text-4xl bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent tracking-tight">
                   {tokenDiversity}
                 </div>
-                <div className="text-gray-400 text-sm">Token Độc Nhất</div>
+                <div className="text-gray-400 text-sm">{t.scoreResult.typesOfTokens}</div>
                 <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-teal-500 to-teal-400 rounded-full w-3/5" />
                 </div>
@@ -343,7 +342,7 @@ export function ScoreResult({
           <div className="relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-emerald-400 text-sm tracking-wide uppercase">Danh Mục</CardTitle>
+                <CardTitle className="text-emerald-400 text-sm tracking-wide uppercase">{t.scoreResult.totalAssets}</CardTitle>
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
               </div>
             </CardHeader>
@@ -352,7 +351,7 @@ export function ScoreResult({
                 <div className="text-4xl bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent tracking-tight">
                   {formatCurrency(totalAssets)}
                 </div>
-                <div className="text-gray-400 text-sm">Giá Trị USD</div>
+                <div className="text-gray-400 text-sm">{t.scoreResult.portfolioValue}</div>
                 <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full w-5/6" />
                 </div>
@@ -372,7 +371,7 @@ export function ScoreResult({
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-xl bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center justify-center gap-2">
                 <TrendingUp className="w-5 h-5 text-blue-400" />
-                Xu Hướng Điểm
+                {t.scoreResult.scoreTrend}
               </CardTitle>
             </CardHeader>
             
@@ -406,7 +405,7 @@ export function ScoreResult({
                       stroke="#3b82f6" 
                       strokeWidth={2}
                       dot={{ fill: '#06b6d4', r: 3 }}
-                      name="Điểm số"
+                      name={t.scoreResult.score}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -424,7 +423,7 @@ export function ScoreResult({
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center justify-center gap-2">
                   <Activity className="w-5 h-5 text-purple-400" />
-                  Hoạt Động
+                  {t.scoreResult.activityTimeline}
                 </CardTitle>
               </CardHeader>
               
@@ -458,7 +457,7 @@ export function ScoreResult({
                         strokeWidth={2}
                         fillOpacity={1} 
                         fill="url(#colorVolume)" 
-                        name="Khối lượng"
+                        name={t.scoreResult.value}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -477,7 +476,7 @@ export function ScoreResult({
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-xl bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent flex items-center justify-center gap-2">
                   <Wallet className="w-5 h-5 text-cyan-400" />
-                  Phân Bổ Token
+                  {t.scoreResult.tokenDistribution}
                 </CardTitle>
               </CardHeader>
               
