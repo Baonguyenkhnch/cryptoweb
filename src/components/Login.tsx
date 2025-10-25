@@ -9,6 +9,8 @@ import { Shield, Mail, Lock, Wallet, ArrowRight, Sparkles, Eye, EyeOff } from "l
 import { login, register, type AuthResponse, type UserProfile } from "../services/api";
 import { useLanguage } from "../services/LanguageContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import logoIcon from "../components/images/logonhap.jpg";
+import logoFull from "../components/images/logodash.jpg";
 
 interface LoginProps {
   onLoginSuccess?: (user: UserProfile) => void;
@@ -149,9 +151,14 @@ export function Login({ onLoginSuccess, onRegisterSuccess }: LoginProps) {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-6">
             <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-white/30 to-white/20 rounded-full blur-xl opacity-60 animate-pulse" />
-              <div className="relative p-4 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20">
-                <Shield className="w-8 h-8 text-white" />
+              <div className="absolute -inset-4 bg-gradient-to-r from-orange-500/30 to-red-500/30 rounded-3xl blur-2xl opacity-70 animate-pulse" />
+              <div className="relative">
+                <img 
+                  src={logoIcon} 
+                  alt="MigoFin" 
+                  className="w-16 h-16 object-contain relative z-10"
+                  style={{ filter: 'drop-shadow(0 4px 16px rgba(249, 115, 22, 0.5)) drop-shadow(0 0 24px rgba(249, 115, 22, 0.3)) drop-shadow(0 0 40px rgba(239, 68, 68, 0.2))' }}
+                />
               </div>
             </div>
           </div>

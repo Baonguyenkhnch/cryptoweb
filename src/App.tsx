@@ -25,6 +25,8 @@ import {
   unsubscribe,
   sendWeeklyReport 
 } from "./services/api";
+import logoIcon from "../src/components/images/logonhap.jpg";
+import logoFull from "../src/components/images/logodash.jpg";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -262,10 +264,17 @@ export default function App() {
         {/* Header - Simplified & Compact */}
         <div className="text-center mb-6 animate-in fade-in-0 duration-1000">
           <div className="flex items-center justify-center mb-4">
-            <div className="relative">
-              <div className="absolute -inset-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl opacity-60 animate-pulse" />
-              <div className="relative p-4 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20">
-                <Shield className="w-8 h-8 text-white" />
+            <div className="relative group">
+              <div className="absolute -inset-3 bg-gradient-to-r from-orange-500/25 to-red-500/25 rounded-2xl blur-2xl opacity-70 group-hover:opacity-100 animate-pulse transition-opacity duration-500" />
+              <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden">
+                <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-all duration-300" />
+                <div className="relative w-full h-full bg-white rounded-lg overflow-hidden flex items-center justify-center p-2">
+                  <img 
+                    src={logoIcon} 
+                    alt="MigoFin" 
+                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                  />
+                </div>
               </div>
             </div>
           </div>

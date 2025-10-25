@@ -24,6 +24,8 @@ import type { UserProfile } from "../services/api";
 import { formatWalletAddress } from "../services/api";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
+import logoIcon from "../components/images/logonhap.jpg";
+import logoFull from "../components/images/logodash.jpg";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -81,19 +83,35 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
         <div className="flex items-center justify-between h-20">
           {/* Logo Section */}
           <div className="flex items-center gap-4">
-            {/* Logo */}
+            {/* MigoFin Logo */}
             <div className="relative group cursor-pointer" onClick={() => handleNavigate("dashboard")}>
-              <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative flex items-center gap-3 p-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/30 group-hover:border-cyan-400/50 transition-all duration-300">
-                <div className="relative">
-                  <Shield className="w-7 h-7 text-cyan-400 group-hover:scale-110 transition-transform duration-300" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />
-                </div>
-                <div className="hidden sm:block">
-                  <div className="text-sm leading-none bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                    Crypto Credit
+              <div className="absolute -inset-1.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden hover:bg-gradient-to-r hover:from-orange-500/5 hover:to-red-500/5 transition-all duration-300">
+                {/* Gradient border effect */}
+                <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md group-hover:blur-lg opacity-50 group-hover:opacity-100 transition-all duration-300" />
+                
+                {/* White background container for both logos */}
+                <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-2 px-2 py-1.5">
+                  {/* Logo Icon - Always visible */}
+                  <div className="relative w-9 h-9 flex items-center justify-center">
+                    <img 
+                      src={logoIcon} 
+                      alt="MigoFin" 
+                      className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                    />
                   </div>
-                  <div className="text-xs text-gray-500 leading-none mt-0.5">Score Calculator</div>
+                  
+                  {/* Logo Text - Hidden on mobile, visible on sm+ */}
+                  {/* Only show text logo in authenticated pages (dashboard/profile) */}
+                  {(currentPage === 'dashboard' || currentPage === 'profile') && (
+                    <div className="hidden sm:flex items-center">
+                      <img 
+                        src={logoFull} 
+                        alt="MigoFin" 
+                        className="h-5 object-contain group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
