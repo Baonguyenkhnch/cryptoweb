@@ -9,8 +9,8 @@ import { Shield, Mail, Lock, Wallet, ArrowRight, Sparkles, Eye, EyeOff } from "l
 import { login, register, type AuthResponse, type UserProfile } from "../services/api";
 import { useLanguage } from "../services/LanguageContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import logoIcon from "../components/images/logonhap.jpg";
-import logoFull from "../components/images/logodash.jpg";
+import logoIcon from "figma:asset/3edd16680b1f12e3cb16c9546e958783a164d4ca.png";
+import logoFull from "figma:asset/6463e93220ceb0756841dd7cee9a27d7182c6e90.png";
 
 interface LoginProps {
   onLoginSuccess?: (user: UserProfile) => void;

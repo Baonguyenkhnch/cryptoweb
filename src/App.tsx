@@ -25,8 +25,8 @@ import {
   unsubscribe,
   sendWeeklyReport 
 } from "./services/api";
-import logoIcon from "../src/components/images/logonhap.jpg";
-import logoFull from "../src/components/images/logodash.jpg";
+import logoIcon from "figma:asset/3edd16680b1f12e3cb16c9546e958783a164d4ca.png";
+import logoFull from "figma:asset/6463e93220ceb0756841dd7cee9a27d7182c6e90.png";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -167,7 +167,7 @@ export default function App() {
   };
 
   const handleUnsubscribe = async () => {
-    if (confirm("Bạn có chắc chắn muốn hủy nhận cập nhật cho ví này?")) {
+    if (confirm("Bạn có chắc muốn hủy nhận cập nhật cho ví này?")) {
       await unsubscribe(walletAddress);
       setSubscriptionStatus(null);
     }
@@ -247,23 +247,23 @@ export default function App() {
 
       {/* Top Right - Login Button & Language Switcher (if not logged in) */}
       {!currentUser && (
-        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+        <div className="absolute top-3 md:top-4 right-3 md:right-4 z-20 flex items-center gap-1.5 md:gap-2">
           <LanguageSwitcher size="sm" />
           <Button
             onClick={() => setShowEmailLoginDialog(true)}
             variant="outline"
-            className="bg-slate-800/80 backdrop-blur-sm border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400/50 rounded-xl"
+            className="bg-slate-800/80 backdrop-blur-sm border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400/50 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 text-xs md:text-sm"
           >
-            <Mail className="w-4 h-4 mr-2" />
-            {t.nav.login}
+            <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" />
+            <span className="hidden sm:inline">{t.nav.login}</span>
           </Button>
         </div>
       )}
       
-      <div className={`relative z-10 container mx-auto px-4 ${!showResults ? 'h-full flex flex-col justify-center py-6' : 'py-8'}`}>
+      <div className={`relative z-10 container mx-auto px-4 ${!showResults ? 'h-full flex flex-col justify-center py-4 md:py-6' : 'py-6 md:py-8'}`}>
         {/* Header - Simplified & Compact */}
-        <div className="text-center mb-6 animate-in fade-in-0 duration-1000">
-          <div className="flex items-center justify-center mb-4">
+        <div className="text-center mb-4 md:mb-6 animate-in fade-in-0 duration-1000">
+          <div className="flex items-center justify-center mb-3 md:mb-4">
             {currentUser ? (
               // Logo khi đã login - giống Navigation (icon + text)
               <div className="relative group cursor-pointer">
@@ -273,9 +273,9 @@ export default function App() {
                   <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md group-hover:blur-lg opacity-50 group-hover:opacity-100 transition-all duration-300" />
                   
                   {/* White background container for both logos */}
-                  <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-2 px-2 py-1.5">
+                  <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 py-1 md:py-1.5">
                     {/* Logo Icon */}
-                    <div className="relative w-9 h-9 flex items-center justify-center">
+                    <div className="relative w-7 h-7 md:w-9 md:h-9 flex items-center justify-center">
                       <img 
                         src={logoIcon} 
                         alt="MigoFin" 
@@ -288,7 +288,7 @@ export default function App() {
                       <img 
                         src={logoFull} 
                         alt="MigoFin" 
-                        className="h-5 object-contain group-hover:scale-105 transition-transform duration-300"
+                        className="h-4 md:h-5 object-contain group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                   </div>
@@ -297,10 +297,10 @@ export default function App() {
             ) : (
               // Logo khi chưa login - chỉ có icon
               <div className="relative group">
-                <div className="absolute -inset-3 bg-gradient-to-r from-orange-500/25 to-red-500/25 rounded-2xl blur-2xl opacity-70 group-hover:opacity-100 animate-pulse transition-opacity duration-500" />
-                <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden">
-                  <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-all duration-300" />
-                  <div className="relative w-full h-full bg-white rounded-lg overflow-hidden flex items-center justify-center p-2">
+                <div className="absolute -inset-2 md:-inset-3 bg-gradient-to-r from-orange-500/25 to-red-500/25 rounded-xl md:rounded-2xl blur-xl md:blur-2xl opacity-70 group-hover:opacity-100 animate-pulse transition-opacity duration-500" />
+                <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden">
+                  <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-lg md:rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-all duration-300" />
+                  <div className="relative w-full h-full bg-white rounded-md md:rounded-lg overflow-hidden flex items-center justify-center p-1.5 md:p-2">
                     <img 
                       src={logoIcon} 
                       alt="MigoFin" 
@@ -312,23 +312,31 @@ export default function App() {
             )}
           </div>
           
-          <div className="relative mb-3 px-4">
-            <h1 className="text-3xl md:text-4xl mb-3 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-tight pb-1">
+          <div className="relative mb-2 md:mb-3 px-3 md:px-4">
+            <h1 className="text-2xl md:text-4xl mb-2 md:mb-3 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-tight pb-1">
               {t.calculator.title}
             </h1>
           </div>
           
-          <p className="text-base text-gray-300 max-w-2xl mx-auto leading-relaxed mb-2">
+          <p className="text-sm md:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed mb-2 px-2 md:px-0">
             {t.calculator.description}
           </p>
-          <p className="text-xs text-cyan-400 max-w-2xl mx-auto flex items-center justify-center gap-2">
-            <Shield className="w-3 h-3" />
-            <span>{t.calculator.privacy.decentralized}</span> • 
-            <Lock className="w-3 h-3 ml-1" />
-            <span>{t.calculator.privacy.noIdentity}</span> • 
-            <Info className="w-3 h-3 ml-1" />
-            <span>{t.calculator.privacy.transparent}</span>
-          </p>
+          <div className="text-xs md:text-sm text-cyan-400 max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2">
+            <div className="flex items-center gap-1.5">
+              <Shield className="w-3 h-3" />
+              <span>{t.calculator.privacy.decentralized}</span>
+            </div>
+            <span className="hidden sm:inline">•</span>
+            <div className="flex items-center gap-1.5">
+              <Lock className="w-3 h-3" />
+              <span>{t.calculator.privacy.noIdentity}</span>
+            </div>
+            <span className="hidden sm:inline">•</span>
+            <div className="flex items-center gap-1.5">
+              <Info className="w-3 h-3" />
+              <span>{t.calculator.privacy.transparent}</span>
+            </div>
+          </div>
         </div>
 
         {!showResults ? (
@@ -338,20 +346,20 @@ export default function App() {
               <div className="absolute -inset-1 bg-gradient-to-r from-slate-600/20 to-slate-500/15 rounded-3xl blur-xl opacity-50" />
               
               <div className="relative">
-                <CardHeader className="text-center pb-4 pt-6">
-                  <CardTitle className="text-xl text-white flex items-center justify-center gap-3 mb-2">
+                <CardHeader className="text-center pb-3 md:pb-4 pt-4 md:pt-6 px-4 md:px-6">
+                  <CardTitle className="text-lg md:text-xl text-white flex items-center justify-center gap-2 md:gap-3 mb-1 md:mb-2">
                     <div className="relative">
-                      <Wallet className="w-6 h-6 text-cyan-400" />
-                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                      <Wallet className="w-5 h-5 md:w-6 md:h-6 text-cyan-400" />
+                      <div className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-pulse" />
                     </div>
                     {t.calculator.input.title}
                   </CardTitle>
-                  <p className="text-gray-400 text-sm mt-1">{t.calculator.input.subtitle}</p>
+                  <p className="text-gray-400 text-xs md:text-sm mt-1">{t.calculator.input.subtitle}</p>
                 </CardHeader>
                 
-                <CardContent className="space-y-5 p-6 pb-8">
-                  <div className="space-y-3">
-                    <Label htmlFor="wallet" className="text-gray-300 text-base">
+                <CardContent className="space-y-4 md:space-y-5 p-4 md:p-6 pb-6 md:pb-8">
+                  <div className="space-y-2 md:space-y-3">
+                    <Label htmlFor="wallet" className="text-gray-300 text-sm md:text-base">
                       {t.calculator.input.label}
                     </Label>
                     <div className="relative">
@@ -360,29 +368,29 @@ export default function App() {
                         placeholder={t.calculator.input.placeholder}
                         value={walletAddress}
                         onChange={(e) => setWalletAddress(e.target.value)}
-                        className="h-12 bg-slate-900/50 border border-cyan-500/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 text-sm rounded-xl transition-all duration-300"
+                        className="h-11 md:h-12 bg-slate-900/50 border border-cyan-500/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 text-sm rounded-xl transition-all duration-300"
                       />
                     </div>
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                     <Button
                       onClick={handleCalculateScore}
                       disabled={!walletAddress.trim() || isLoading}
-                      className="relative flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-sm shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 disabled:opacity-50 rounded-xl group overflow-hidden"
+                      className="relative flex-1 h-11 md:h-12 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-sm shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 disabled:opacity-50 rounded-xl group overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                       
                       {isLoading ? (
                         <div className="flex items-center gap-2">
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span>{t.calculator.buttons.analyzing}</span>
+                          <span className="text-xs md:text-sm">{t.calculator.buttons.analyzing}</span>
                           <Sparkles className="w-4 h-4 animate-pulse" />
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
                           <TrendingUp className="w-4 h-4" />
-                          <span>{t.calculator.buttons.calculate}</span>
+                          <span className="text-xs md:text-sm">{t.calculator.buttons.calculate}</span>
                           <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                         </div>
                       )}
@@ -392,39 +400,39 @@ export default function App() {
                     <Button
                       onClick={() => setShowFeedbackDialog(true)}
                       variant="outline"
-                      className="h-12 px-5 bg-purple-600/20 border-purple-500/40 text-purple-300 hover:bg-purple-600/30 hover:border-purple-400/50 hover:text-white transition-all duration-300 rounded-xl group"
+                      className="h-11 md:h-12 px-4 md:px-5 bg-purple-600/20 border-purple-500/40 text-purple-300 hover:bg-purple-600/30 hover:border-purple-400/50 hover:text-white transition-all duration-300 rounded-xl group"
                     >
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 transition-transform duration-300" />
-                        <span className="hidden sm:inline text-sm">{t.calculator.buttons.feedback}</span>
+                        <span className="hidden sm:inline text-xs md:text-sm">{t.calculator.buttons.feedback}</span>
                       </div>
                     </Button>
                   </div>
 
                   {/* Feature highlights - Compact */}
-                  <div className="grid grid-cols-3 gap-3 pt-3 border-t border-cyan-500/20">
+                  <div className="grid grid-cols-3 gap-2 md:gap-3 pt-3 border-t border-cyan-500/20">
                     <div className="text-center group">
-                      <div className="w-10 h-10 mx-auto mb-1.5 bg-purple-500/20 rounded-xl flex items-center justify-center border border-purple-400/30 group-hover:scale-110 transition-transform duration-300">
-                        <Lock className="w-5 h-5 text-purple-400" />
+                      <div className="w-9 h-9 md:w-10 md:h-10 mx-auto mb-1 md:mb-1.5 bg-purple-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-purple-400/30 group-hover:scale-110 transition-transform duration-300">
+                        <Lock className="w-4 h-4 md:w-5 md:h-5 text-purple-400" />
                       </div>
-                      <div className="text-purple-400 text-[10px]">{t.calculator.features.noStore}</div>
-                      <div className="text-gray-500 text-[10px]">{t.calculator.features.identity}</div>
+                      <div className="text-purple-400 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.noStore}</div>
+                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.identity}</div>
                     </div>
                     
                     <div className="text-center group">
-                      <div className="w-10 h-10 mx-auto mb-1.5 bg-cyan-500/20 rounded-xl flex items-center justify-center border border-cyan-400/30 group-hover:scale-110 transition-transform duration-300">
-                        <Shield className="w-5 h-5 text-cyan-400" />
+                      <div className="w-9 h-9 md:w-10 md:h-10 mx-auto mb-1 md:mb-1.5 bg-cyan-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-cyan-400/30 group-hover:scale-110 transition-transform duration-300">
+                        <Shield className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
                       </div>
-                      <div className="text-cyan-400 text-[10px]">{t.calculator.features.decentralized}</div>
-                      <div className="text-gray-500 text-[10px]">{t.calculator.features.security}</div>
+                      <div className="text-cyan-400 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.decentralized}</div>
+                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.security}</div>
                     </div>
                     
                     <div className="text-center group">
-                      <div className="w-10 h-10 mx-auto mb-1.5 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-400/30 group-hover:scale-110 transition-transform duration-300">
-                        <Info className="w-5 h-5 text-blue-400" />
+                      <div className="w-9 h-9 md:w-10 md:h-10 mx-auto mb-1 md:mb-1.5 bg-blue-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-blue-400/30 group-hover:scale-110 transition-transform duration-300">
+                        <Info className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
                       </div>
-                      <div className="text-blue-400 text-[10px]">{t.calculator.features.transparent}</div>
-                      <div className="text-gray-500 text-[10px]">{t.calculator.features.algorithm}</div>
+                      <div className="text-blue-400 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.transparent}</div>
+                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.algorithm}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -433,12 +441,12 @@ export default function App() {
           </div>
         ) : (
           /* Results Section - Can scroll */
-          <div className="space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
+          <div className="space-y-6 md:space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
             <div className="text-center">
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="mb-4 bg-cyan-500/20 backdrop-blur-sm border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200 hover:border-cyan-400/50 transition-all duration-300 rounded-xl px-6 py-3"
+                className="mb-3 md:mb-4 bg-cyan-500/20 backdrop-blur-sm border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200 hover:border-cyan-400/50 transition-all duration-300 rounded-xl px-4 md:px-6 py-2 md:py-3 text-sm md:text-base"
               >
                 ← {t.calculator.buttons.tryAnother}
               </Button>
