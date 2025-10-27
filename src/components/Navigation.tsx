@@ -24,8 +24,8 @@ import type { UserProfile } from "../services/api";
 import { formatWalletAddress } from "../services/api";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
-import logoIcon from "figma:asset/3edd16680b1f12e3cb16c9546e958783a164d4ca.png";
-import logoFull from "figma:asset/6463e93220ceb0756841dd7cee9a27d7182c6e90.png";
+import logoIcon from "./images/logonhap.jpg";
+import logoFull from "./images/logodash.jpg";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
