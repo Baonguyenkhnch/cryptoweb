@@ -167,7 +167,7 @@ export default function App() {
   };
 
   const handleUnsubscribe = async () => {
-    if (confirm("Bạn có chắc muốn hủy nhận cập nhật cho ví này?")) {
+    if (confirm("Bạn có chắc chắn muốn hủy nhận cập nhật cho ví này?")) {
       await unsubscribe(walletAddress);
       setSubscriptionStatus(null);
     }
@@ -264,19 +264,52 @@ export default function App() {
         {/* Header - Simplified & Compact */}
         <div className="text-center mb-6 animate-in fade-in-0 duration-1000">
           <div className="flex items-center justify-center mb-4">
-            <div className="relative group">
-              <div className="absolute -inset-3 bg-gradient-to-r from-orange-500/25 to-red-500/25 rounded-2xl blur-2xl opacity-70 group-hover:opacity-100 animate-pulse transition-opacity duration-500" />
-              <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden">
-                <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-all duration-300" />
-                <div className="relative w-full h-full bg-white rounded-lg overflow-hidden flex items-center justify-center p-2">
-                  <img 
-                    src={logoIcon} 
-                    alt="MigoFin" 
-                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                  />
+            {currentUser ? (
+              // Logo khi đã login - giống Navigation (icon + text)
+              <div className="relative group cursor-pointer">
+                <div className="absolute -inset-1.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl blur-lg opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden hover:bg-gradient-to-r hover:from-orange-500/5 hover:to-red-500/5 transition-all duration-300">
+                  {/* Gradient border effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md group-hover:blur-lg opacity-50 group-hover:opacity-100 transition-all duration-300" />
+                  
+                  {/* White background container for both logos */}
+                  <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-2 px-2 py-1.5">
+                    {/* Logo Icon */}
+                    <div className="relative w-9 h-9 flex items-center justify-center">
+                      <img 
+                        src={logoIcon} 
+                        alt="MigoFin" 
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                      />
+                    </div>
+                    
+                    {/* Logo Text */}
+                    <div className="flex items-center">
+                      <img 
+                        src={logoFull} 
+                        alt="MigoFin" 
+                        className="h-5 object-contain group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              // Logo khi chưa login - chỉ có icon
+              <div className="relative group">
+                <div className="absolute -inset-3 bg-gradient-to-r from-orange-500/25 to-red-500/25 rounded-2xl blur-2xl opacity-70 group-hover:opacity-100 animate-pulse transition-opacity duration-500" />
+                <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden">
+                  <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-all duration-300" />
+                  <div className="relative w-full h-full bg-white rounded-lg overflow-hidden flex items-center justify-center p-2">
+                    <img 
+                      src={logoIcon} 
+                      alt="MigoFin" 
+                      className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="relative mb-3 px-4">
