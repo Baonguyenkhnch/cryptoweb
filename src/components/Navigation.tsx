@@ -58,7 +58,8 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
     },
     {
       id: "profile" as Page,
-      label: t("nav.logout"),
+      label: t("nav.profile_settings"),
+
       icon: UserIcon,
       color: "teal",
     },
