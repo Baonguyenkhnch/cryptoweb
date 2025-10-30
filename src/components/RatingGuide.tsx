@@ -4,7 +4,7 @@ import { useLanguage } from "../services/LanguageContext";
 
 export function RatingGuide() {
   const { t } = useLanguage();
-  
+
   const ratings = [
     { rating: "AAA", range: "750-850", desc: t.ratingGuide.ratings.aaa, color: "from-green-400 to-emerald-400" },
     { rating: "AA", range: "700-749", desc: t.ratingGuide.ratings.aa, color: "from-blue-400 to-cyan-400" },
@@ -34,8 +34,8 @@ export function RatingGuide() {
         <CardContent>
           <div className="space-y-2">
             {ratings.map((item, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg border border-slate-600/30 hover:bg-slate-700/50 hover:border-cyan-500/30 transition-all duration-300"
               >
                 <div className="flex items-center gap-3">
@@ -62,8 +62,8 @@ export function RatingGuide() {
         <CardContent>
           <div className="space-y-3">
             {factors.map((item, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg border border-slate-600/30 hover:bg-slate-700/50 hover:border-cyan-500/30 transition-all duration-300"
               >
                 <div className="flex items-center gap-3">

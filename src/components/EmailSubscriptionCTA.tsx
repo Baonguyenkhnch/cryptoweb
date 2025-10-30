@@ -12,7 +12,7 @@ export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscri
     return (
       <Card className="relative overflow-hidden bg-gradient-to-br from-green-900/40 to-emerald-900/40 backdrop-blur-xl border border-green-500/30 shadow-2xl rounded-2xl">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full blur-3xl" />
-        
+
         <CardContent className="relative p-8">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="flex-shrink-0">
@@ -20,7 +20,7 @@ export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscri
                 <CheckCircle2 className="w-8 h-8 text-green-400" />
               </div>
             </div>
-            
+
             <div className="flex-1 text-center md:text-left">
               <h3 className="text-2xl text-white mb-2">Bạn Đã Đăng Ký!</h3>
               <p className="text-gray-300">
@@ -37,7 +37,7 @@ export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscri
     <Card className="relative overflow-hidden bg-gradient-to-br from-blue-900/40 to-cyan-900/40 backdrop-blur-xl border border-cyan-500/30 shadow-2xl rounded-2xl">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-full blur-3xl" />
-      
+
       <CardContent className="relative p-8">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           {/* Left side - CTA */}
@@ -48,12 +48,12 @@ export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscri
               </div>
               <h3 className="text-2xl text-white">Nhận Cập Nhật Định Kỳ</h3>
             </div>
-            
+
             <p className="text-gray-300 text-lg leading-relaxed">
               Để lại email để nhận thông báo khi điểm tín dụng của bạn thay đổi và các phân tích chi tiết về ví.
             </p>
-            
-            <Button 
+
+            <Button
               onClick={onSubscribe}
               size="lg"
               className="w-full md:w-auto bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/60 transition-all duration-300 rounded-xl group"
@@ -71,11 +71,11 @@ export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscri
               <span>• Email chỉ dùng để gửi cập nhật</span>
             </div>
           </div>
-          
+
           {/* Right side - Benefits */}
           <div className="space-y-4">
             <div className="text-cyan-300 mb-4">Lợi ích khi đăng ký:</div>
-            
+
             {[
               {
                 icon: Bell,
@@ -95,7 +95,7 @@ export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscri
             ].map((benefit, index) => {
               const Icon = benefit.icon;
               return (
-                <div 
+                <div
                   key={index}
                   className="flex items-start gap-3 p-3 bg-slate-800/40 backdrop-blur-sm rounded-lg border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300"
                 >

@@ -135,7 +135,7 @@ export const logout = async (): Promise<{ success: boolean }> => {
 export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalysis> => {
   const hash = walletAddress.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const score = 550 + (hash % 300); // Score từ 550-850
-  
+
   // Tạo dữ liệu token balance
   const tokens = ["ETH", "USDT", "USDC", "DAI", "WBTC", "LINK", "UNI", "AAVE"];
   const tokenBalances: TokenBalance[] = tokens.slice(0, 5 + (hash % 4)).map((token, idx) => {
@@ -148,13 +148,13 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
       percentage: 0, // sẽ tính sau
     };
   });
-  
+
   // Tính phần trăm cho mỗi token
   const totalValue = tokenBalances.reduce((sum, t) => sum + t.value, 0);
   tokenBalances.forEach(token => {
     token.percentage = (token.value / totalValue) * 100;
   });
-  
+
   // Tạo dữ liệu transaction history (10 giao dịch gần nhất)
   const recentTransactions: Transaction[] = [];
   for (let i = 0; i < 10; i++) {
@@ -164,7 +164,7 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
     const type = Math.random() > 0.5 ? "receive" : "send";
     const amount = Math.random() * 10 + 0.1;
     const value = amount * (1000 + Math.random() * 1000);
-    
+
     recentTransactions.push({
       id: `tx_${i}_${hash}`,
       date: date.toISOString(),
@@ -175,7 +175,7 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
       hash: `0x${Math.random().toString(16).substring(2, 15)}...${Math.random().toString(16).substring(2, 7)}`,
     });
   }
-  
+
   const mockData: WalletAnalysis = {
     score: Math.min(score, 850),
     walletAge: 200 + (hash % 400), // 200-600 ngày
@@ -206,12 +206,12 @@ export const calculateCreditScore = async (walletAddress: string): Promise<Credi
 export const getScoreHistory = async (walletAddress: string): Promise<Array<{ date: string; score: number }>> => {
   const history = [];
   const baseScore = 700;
-  
+
   for (let i = 29; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     const variation = Math.random() * 50 - 25; // +/- 25 điểm
-    
+
     history.push({
       date: date.toISOString().split("T")[0],
       score: Math.round(baseScore + variation),
@@ -272,7 +272,7 @@ export const subscribeToUpdates = async (
 // Gửi OTP đến email
 export const requestOTP = async (email: string, walletAddress: string): Promise<{ success: boolean; message: string }> => {
   console.log("Gửi OTP đến:", email, "cho ví:", walletAddress);
-  
+
   return simulateApiCall(
     {
       success: true,
@@ -289,7 +289,7 @@ export const verifyOTP = async (
   otp: string
 ): Promise<{ success: boolean; message: string; subscription?: EmailSubscription }> => {
   console.log("Xác thực OTP:", otp, "cho email:", email);
-  
+
   // Mock verification - trong thực tế sẽ kiểm tra OTP từ backend
   const subscription: EmailSubscription = {
     email,

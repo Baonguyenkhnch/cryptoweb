@@ -44,7 +44,7 @@ export function FeatureFeedbackDialog({
     try {
       // TODO: Gọi API POST /feedback/submit
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       const feedback = {
         featureName,
         description,
@@ -52,7 +52,7 @@ export function FeatureFeedbackDialog({
         timestamp: new Date().toISOString(),
       };
       console.log("Gửi feedback:", feedback);
-      
+
       setShowSuccess(true);
       setTimeout(() => {
         handleClose();
@@ -87,11 +87,11 @@ export function FeatureFeedbackDialog({
                   </div>
                 </div>
               </div>
-              
+
               <DialogTitle className="text-center text-xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Đề Xuất Tính Năng Mới
               </DialogTitle>
-              
+
               <DialogDescription className="text-center text-gray-300 text-sm mt-1">
                 Ý tưởng của bạn giúp chúng tôi phát triển tốt hơn
               </DialogDescription>
@@ -183,7 +183,7 @@ export function FeatureFeedbackDialog({
               >
                 Hủy
               </Button>
-              
+
               <Button
                 onClick={handleSubmit}
                 disabled={!featureName.trim() || !description.trim() || isLoading}
@@ -212,7 +212,7 @@ export function FeatureFeedbackDialog({
                 <CheckCircle2 className="relative w-12 h-12 text-purple-400" />
               </div>
             </div>
-            
+
             <div>
               <h3 className="text-xl text-white mb-1.5">Cảm Ơn Bạn!</h3>
               <p className="text-gray-300 text-sm">
@@ -222,7 +222,7 @@ export function FeatureFeedbackDialog({
                 Chúng tôi sẽ xem xét và phản hồi sớm nhất
               </p>
             </div>
-            
+
             <div className="text-xs text-gray-400 pt-2">
               Đóng tự động sau giây lát...
             </div>

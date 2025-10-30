@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "./components/ui/card";
 import { Input } from "./components/ui/input";
 import { Button } from "./components/ui/button";
 import { Label } from "./components/ui/label";
@@ -16,14 +21,27 @@ import { FeatureFeedbackDialog } from "./components/FeatureFeedbackDialog";
 import { FloatingFeedbackButton } from "./components/FloatingFeedbackButton";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { useLanguage } from "./services/LanguageContext";
-import { Wallet, TrendingUp, Shield, Sparkles, Star, Mail, Lock, Info } from "lucide-react";
-import type { UserProfile, WalletAnalysis, EmailSubscription } from "./services/api";
-import { 
-  analyzeWallet, 
-  subscribeToUpdates, 
+import {
+  Wallet,
+  TrendingUp,
+  Shield,
+  Sparkles,
+  Star,
+  Mail,
+  Lock,
+  Info,
+} from "lucide-react";
+import type {
+  UserProfile,
+  WalletAnalysis,
+  EmailSubscription,
+} from "./services/api";
+import {
+  analyzeWallet,
+  subscribeToUpdates,
   checkSubscriptionStatus,
   unsubscribe,
-  sendWeeklyReport 
+  sendWeeklyReport,
 } from "./services/api";
 import logoIcon from "./components/images/logonhap.jpg";
 import logoFull from "./components/images/logodash.jpg";
@@ -32,23 +50,29 @@ type Page = "login" | "calculator" | "dashboard" | "profile";
 
 export default function App() {
   const { t } = useLanguage();
-  const [currentPage, setCurrentPage] = useState<Page>("calculator");
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [currentPage, setCurrentPage] =
+    useState<Page>("calculator");
+  const [currentUser, setCurrentUser] =
+    useState<UserProfile | null>(null);
   const [walletAddress, setWalletAddress] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [walletData, setWalletData] = useState<WalletAnalysis | null>(null);
+  const [walletData, setWalletData] =
+    useState<WalletAnalysis | null>(null);
   const [showOTPDialog, setShowOTPDialog] = useState(false);
-  const [showEmailLoginDialog, setShowEmailLoginDialog] = useState(false);
-  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<EmailSubscription | null>(null);
+  const [showEmailLoginDialog, setShowEmailLoginDialog] =
+    useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] =
+    useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] =
+    useState<EmailSubscription | null>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
 
   // check xem có login chưa khi vào trang
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     const savedUser = localStorage.getItem("currentUser");
-    
+
     if (token && savedUser) {
       try {
         const user = JSON.parse(savedUser);
@@ -66,10 +90,13 @@ export default function App() {
     // Tự động lưu wallet address hiện tại vào user profile
     const updatedUser = {
       ...user,
-      walletAddress: walletAddress || user.walletAddress || ""
+      walletAddress: walletAddress || user.walletAddress || "",
     };
     setCurrentUser(updatedUser);
-    localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+    localStorage.setItem(
+      "currentUser",
+      JSON.stringify(updatedUser),
+    );
     setCurrentPage("dashboard");
   };
 
@@ -77,10 +104,13 @@ export default function App() {
     // Tự động lưu wallet address hiện tại vào user profile
     const updatedUser = {
       ...user,
-      walletAddress: walletAddress || user.walletAddress || ""
+      walletAddress: walletAddress || user.walletAddress || "",
     };
     setCurrentUser(updatedUser);
-    localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+    localStorage.setItem(
+      "currentUser",
+      JSON.stringify(updatedUser),
+    );
     setCurrentPage("dashboard");
   };
 
@@ -115,7 +145,10 @@ export default function App() {
 
   const handleUpdateProfile = (updatedUser: UserProfile) => {
     setCurrentUser(updatedUser);
-    localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+    localStorage.setItem(
+      "currentUser",
+      JSON.stringify(updatedUser),
+    );
   };
 
   const handleCalculateScore = async () => {
@@ -128,13 +161,17 @@ export default function App() {
       const data = await analyzeWallet(walletAddress);
       setWalletData(data);
       setShowResults(true);
-      
+
       // Kiểm tra subscription status
-      const status = await checkSubscriptionStatus(walletAddress);
+      const status =
+        await checkSubscriptionStatus(walletAddress);
       setSubscriptionStatus(status);
     } catch (error) {
       console.error("Lỗi khi phân tích ví:", error);
-      alert(t.calculator.buttons.analyzing + " - Có lỗi xảy ra. Vui lòng thử lại.");
+      alert(
+        t.calculator.buttons.analyzing +
+        " - Có lỗi xảy ra. Vui lòng thử lại.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -167,7 +204,9 @@ export default function App() {
   };
 
   const handleUnsubscribe = async () => {
-    if (confirm("Bạn có chắc muốn hủy nhận cập nhật cho ví này?")) {
+    if (
+      confirm("Bạn có chắc muốn hủy nhận cập nhật cho ví này?")
+    ) {
       await unsubscribe(walletAddress);
       setSubscriptionStatus(null);
     }
@@ -175,7 +214,7 @@ export default function App() {
 
   const handleRecalculate = async () => {
     if (!walletAddress.trim()) return;
-    
+
     setIsRecalculating(true);
     try {
       const data = await analyzeWallet(walletAddress);
@@ -190,7 +229,10 @@ export default function App() {
   const handleSendReport = async () => {
     if (subscriptionStatus?.email) {
       try {
-        await sendWeeklyReport(subscriptionStatus.email, walletAddress);
+        await sendWeeklyReport(
+          subscriptionStatus.email,
+          walletAddress,
+        );
         alert("Báo cáo đã được gửi đến email của bạn!");
       } catch (error) {
         console.error("Lỗi khi gửi báo cáo:", error);
@@ -207,12 +249,12 @@ export default function App() {
   const handleMagicLinkLogin = (email: string) => {
     // DEMO: Giả lập đăng nhập qua magic link
     // Trong thực tế, backend s verify JWT token từ link
-    
+
     // Tạo mock user từ email và tự động lưu wallet address hiện tại
     const mockUser: UserProfile = {
       id: Math.random().toString(36).substring(7),
       email: email,
-      name: email.split('@')[0], // Lấy phần trước @ làm tên
+      name: email.split("@")[0], // Lấy phần trước @ làm tên
       walletAddress: walletAddress || "", // Tự động lưu wallet đã nhập
       createdAt: new Date().toISOString(), // Ngày tạo tài khoản
       lastLogin: new Date().toISOString(), // Đăng nhập lần cuối
@@ -220,22 +262,30 @@ export default function App() {
 
     // Tạo mock auth token
     const mockToken = `mock_jwt_${Date.now()}_${Math.random().toString(36)}`;
-    
+
     // Lưu vào localStorage
     localStorage.setItem("authToken", mockToken);
-    localStorage.setItem("currentUser", JSON.stringify(mockUser));
-    
+    localStorage.setItem(
+      "currentUser",
+      JSON.stringify(mockUser),
+    );
+
     // Set state và chuyển đến dashboard
     setCurrentUser(mockUser);
     setCurrentPage("dashboard");
-    
-    console.log("✅ Đăng nhập thành công qua Magic Link:", email);
+
+    console.log(
+      "✅ Đăng nhập thành công qua Magic Link:",
+      email,
+    );
     console.log("📍 Wallet Address:", walletAddress);
   };
 
   // trang calculator chính
   const renderCalculatorPage = () => (
-    <div className={`relative overflow-hidden bg-[#0f1419] ${!showResults ? 'h-screen' : 'min-h-screen'}`}>
+    <div
+      className={`relative overflow-hidden bg-[#0f1419] ${!showResults ? "h-screen" : "min-h-screen"}`}
+    >
       {/* Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0f1419] via-[#1a2332] to-[#0f1419]" />
@@ -255,12 +305,16 @@ export default function App() {
             className="bg-slate-800/80 backdrop-blur-sm border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400/50 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 text-xs md:text-sm"
           >
             <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" />
-            <span className="hidden sm:inline">{t.nav.login}</span>
+            <span className="hidden sm:inline">
+              {t.nav.login}
+            </span>
           </Button>
         </div>
       )}
-      
-      <div className={`relative z-10 container mx-auto px-4 ${!showResults ? 'h-full flex flex-col justify-center py-4 md:py-6' : 'py-6 md:py-8'}`}>
+
+      <div
+        className={`relative z-10 container mx-auto px-4 ${!showResults ? "h-full flex flex-col justify-center py-4 md:py-6" : "py-6 md:py-8"}`}
+      >
         {/* Header - Simplified & Compact */}
         <div className="text-center mb-4 md:mb-6 animate-in fade-in-0 duration-1000">
           <div className="flex items-center justify-center mb-3 md:mb-4">
@@ -271,23 +325,23 @@ export default function App() {
                 <div className="relative rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden hover:bg-gradient-to-r hover:from-orange-500/5 hover:to-red-500/5 transition-all duration-300">
                   {/* Gradient border effect */}
                   <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md group-hover:blur-lg opacity-50 group-hover:opacity-100 transition-all duration-300" />
-                  
+
                   {/* White background container for both logos */}
                   <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 py-1 md:py-1.5">
                     {/* Logo Icon */}
                     <div className="relative w-7 h-7 md:w-9 md:h-9 flex items-center justify-center">
-                      <img 
-                        src={logoIcon} 
-                        alt="MigoFin" 
+                      <img
+                        src={logoIcon}
+                        alt="MigoFin"
                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                       />
                     </div>
-                    
+
                     {/* Logo Text */}
                     <div className="flex items-center">
-                      <img 
-                        src={logoFull} 
-                        alt="MigoFin" 
+                      <img
+                        src={logoFull}
+                        alt="MigoFin"
                         className="h-4 md:h-5 object-contain group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -301,9 +355,9 @@ export default function App() {
                 <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden">
                   <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-lg md:rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-all duration-300" />
                   <div className="relative w-full h-full bg-white rounded-md md:rounded-lg overflow-hidden flex items-center justify-center p-1.5 md:p-2">
-                    <img 
-                      src={logoIcon} 
-                      alt="MigoFin" 
+                    <img
+                      src={logoIcon}
+                      alt="MigoFin"
                       className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                     />
                   </div>
@@ -311,13 +365,13 @@ export default function App() {
               </div>
             )}
           </div>
-          
+
           <div className="relative mb-2 md:mb-3 px-3 md:px-4">
             <h1 className="text-2xl md:text-4xl mb-2 md:mb-3 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-tight pb-1">
               {t.calculator.title}
             </h1>
           </div>
-          
+
           <p className="text-sm md:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed mb-2 px-2 md:px-0">
             {t.calculator.description}
           </p>
@@ -344,7 +398,7 @@ export default function App() {
           <div className="max-w-2xl mx-auto w-full">
             <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl animate-in fade-in-50 slide-in-from-bottom-10 duration-1000 rounded-3xl">
               <div className="absolute -inset-1 bg-gradient-to-r from-slate-600/20 to-slate-500/15 rounded-3xl blur-xl opacity-50" />
-              
+
               <div className="relative">
                 <CardHeader className="text-center pb-3 md:pb-4 pt-4 md:pt-6 px-4 md:px-6">
                   <CardTitle className="text-lg md:text-xl text-white flex items-center justify-center gap-2 md:gap-3 mb-1 md:mb-2">
@@ -354,43 +408,58 @@ export default function App() {
                     </div>
                     {t.calculator.input.title}
                   </CardTitle>
-                  <p className="text-gray-400 text-xs md:text-sm mt-1">{t.calculator.input.subtitle}</p>
+                  <p className="text-gray-400 text-xs md:text-sm mt-1">
+                    {t.calculator.input.subtitle}
+                  </p>
                 </CardHeader>
-                
+
                 <CardContent className="space-y-4 md:space-y-5 p-4 md:p-6 pb-6 md:pb-8">
                   <div className="space-y-2 md:space-y-3">
-                    <Label htmlFor="wallet" className="text-gray-300 text-sm md:text-base">
+                    <Label
+                      htmlFor="wallet"
+                      className="text-gray-300 text-sm md:text-base"
+                    >
                       {t.calculator.input.label}
                     </Label>
                     <div className="relative">
                       <Input
                         id="wallet"
-                        placeholder={t.calculator.input.placeholder}
+                        placeholder={
+                          t.calculator.input.placeholder
+                        }
                         value={walletAddress}
-                        onChange={(e) => setWalletAddress(e.target.value)}
+                        onChange={(e) =>
+                          setWalletAddress(e.target.value)
+                        }
                         className="h-11 md:h-12 bg-slate-900/50 border border-cyan-500/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 text-sm rounded-xl transition-all duration-300"
                       />
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                     <Button
                       onClick={handleCalculateScore}
-                      disabled={!walletAddress.trim() || isLoading}
+                      disabled={
+                        !walletAddress.trim() || isLoading
+                      }
                       className="relative flex-1 h-11 md:h-12 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-sm shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 disabled:opacity-50 rounded-xl group overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                      
+
                       {isLoading ? (
                         <div className="flex items-center gap-2">
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span className="text-xs md:text-sm">{t.calculator.buttons.analyzing}</span>
+                          <span className="text-xs md:text-sm">
+                            {t.calculator.buttons.analyzing}
+                          </span>
                           <Sparkles className="w-4 h-4 animate-pulse" />
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
                           <TrendingUp className="w-4 h-4" />
-                          <span className="text-xs md:text-sm">{t.calculator.buttons.calculate}</span>
+                          <span className="text-xs md:text-sm">
+                            {t.calculator.buttons.calculate}
+                          </span>
                           <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                         </div>
                       )}
@@ -398,13 +467,17 @@ export default function App() {
 
                     {/* Quick Feedback Button */}
                     <Button
-                      onClick={() => setShowFeedbackDialog(true)}
+                      onClick={() =>
+                        setShowFeedbackDialog(true)
+                      }
                       variant="outline"
                       className="h-11 md:h-12 px-4 md:px-5 bg-purple-600/20 border-purple-500/40 text-purple-300 hover:bg-purple-600/30 hover:border-purple-400/50 hover:text-white transition-all duration-300 rounded-xl group"
                     >
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 transition-transform duration-300" />
-                        <span className="hidden sm:inline text-xs md:text-sm">{t.calculator.buttons.feedback}</span>
+                        <span className="hidden sm:inline text-xs md:text-sm">
+                          {t.calculator.buttons.feedback}
+                        </span>
                       </div>
                     </Button>
                   </div>
@@ -415,24 +488,36 @@ export default function App() {
                       <div className="w-9 h-9 md:w-10 md:h-10 mx-auto mb-1 md:mb-1.5 bg-purple-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-purple-400/30 group-hover:scale-110 transition-transform duration-300">
                         <Lock className="w-4 h-4 md:w-5 md:h-5 text-purple-400" />
                       </div>
-                      <div className="text-purple-400 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.noStore}</div>
-                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.identity}</div>
+                      <div className="text-purple-400 text-[9px] md:text-[10px] leading-tight">
+                        {t.calculator.features.noStore}
+                      </div>
+                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">
+                        {t.calculator.features.identity}
+                      </div>
                     </div>
-                    
+
                     <div className="text-center group">
                       <div className="w-9 h-9 md:w-10 md:h-10 mx-auto mb-1 md:mb-1.5 bg-cyan-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-cyan-400/30 group-hover:scale-110 transition-transform duration-300">
                         <Shield className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
                       </div>
-                      <div className="text-cyan-400 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.decentralized}</div>
-                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.security}</div>
+                      <div className="text-cyan-400 text-[9px] md:text-[10px] leading-tight">
+                        {t.calculator.features.decentralized}
+                      </div>
+                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">
+                        {t.calculator.features.security}
+                      </div>
                     </div>
-                    
+
                     <div className="text-center group">
                       <div className="w-9 h-9 md:w-10 md:h-10 mx-auto mb-1 md:mb-1.5 bg-blue-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-blue-400/30 group-hover:scale-110 transition-transform duration-300">
                         <Info className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
                       </div>
-                      <div className="text-blue-400 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.transparent}</div>
-                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">{t.calculator.features.algorithm}</div>
+                      <div className="text-blue-400 text-[9px] md:text-[10px] leading-tight">
+                        {t.calculator.features.transparent}
+                      </div>
+                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">
+                        {t.calculator.features.algorithm}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -451,13 +536,17 @@ export default function App() {
                 ← {t.calculator.buttons.tryAnother}
               </Button>
             </div>
-            
+
             {walletData ? (
               <>
                 {/* Section 1: Results Summary - Thông tin tóm tắt dạng bảng/số với CTA đăng nhập */}
-                <ResultsSummary 
-                  data={walletData} 
-                  onLoginClick={!currentUser ? () => setShowEmailLoginDialog(true) : undefined}
+                <ResultsSummary
+                  data={walletData}
+                  onLoginClick={
+                    !currentUser
+                      ? () => setShowEmailLoginDialog(true)
+                      : undefined
+                  }
                 />
 
                 {/* Section 2: Rating Guide */}
@@ -468,10 +557,11 @@ export default function App() {
             ) : (
               <div className="text-center py-12">
                 <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-gray-400">{t.common.loading}</p>
+                <p className="text-gray-400">
+                  {t.common.loading}
+                </p>
               </div>
             )}
-
           </div>
         )}
       </div>
@@ -481,7 +571,7 @@ export default function App() {
   // xử lý render theo page
   if (currentPage === "login") {
     return (
-      <Login 
+      <Login
         onLoginSuccess={handleLoginSuccess}
         onRegisterSuccess={handleRegisterSuccess}
       />
@@ -495,13 +585,13 @@ export default function App() {
     }
     return (
       <>
-        <Navigation 
+        <Navigation
           currentPage={currentPage}
           user={currentUser}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
         />
-        <Dashboard 
+        <Dashboard
           user={currentUser}
           onCalculateScore={handleGoToCalculator}
           onViewProfile={handleGoToProfile}
@@ -510,7 +600,9 @@ export default function App() {
             if (currentUser?.walletAddress) {
               setIsRecalculating(true);
               try {
-                const data = await analyzeWallet(currentUser.walletAddress);
+                const data = await analyzeWallet(
+                  currentUser.walletAddress,
+                );
                 setWalletData(data);
                 setWalletAddress(currentUser.walletAddress);
               } catch (error) {
@@ -532,13 +624,13 @@ export default function App() {
     }
     return (
       <>
-        <Navigation 
+        <Navigation
           currentPage={currentPage}
           user={currentUser}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
         />
-        <ProfilePage 
+        <ProfilePage
           user={currentUser}
           onUpdateProfile={handleUpdateProfile}
           onBack={handleGoToDashboard}
@@ -551,7 +643,7 @@ export default function App() {
   return (
     <>
       {currentUser && (
-        <Navigation 
+        <Navigation
           currentPage={currentPage}
           user={currentUser}
           onNavigate={handleNavigate}
@@ -559,7 +651,7 @@ export default function App() {
         />
       )}
       {renderCalculatorPage()}
-      
+
       {/* Email Login Dialog (Passwordless) */}
       <EmailLoginDialog
         open={showEmailLoginDialog}
@@ -589,7 +681,9 @@ export default function App() {
 
       {/* Floating Feedback Button */}
       {currentPage === "calculator" && (
-        <FloatingFeedbackButton onClick={() => setShowFeedbackDialog(true)} />
+        <FloatingFeedbackButton
+          onClick={() => setShowFeedbackDialog(true)}
+        />
       )}
     </>
   );

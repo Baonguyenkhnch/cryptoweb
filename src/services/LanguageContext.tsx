@@ -17,7 +17,7 @@ interface LanguageContextType {
 // Khởi tạo với giá trị mặc định để tránh undefined
 const defaultContext: LanguageContextType = {
   language: "vi",
-  setLanguage: () => {},
+  setLanguage: () => { },
   t: translations.vi,
 };
 
@@ -39,10 +39,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   // Lưu ngôn ngữ vào localStorage khi thay đổi
   const setLanguage = (lang: Language) => {
+    console.log('🌐 Language changing from', language, 'to', lang);
     setLanguageState(lang);
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem("language", lang);
+        console.log('✅ Language saved to localStorage:', lang);
       } catch (error) {
         console.error("Failed to save language to localStorage:", error);
       }

@@ -24,10 +24,10 @@ import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Alert, AlertDescription } from "./ui/alert";
-import { 
-  User, 
-  Mail, 
-  Wallet, 
+import {
+  User,
+  Mail,
+  Wallet,
   Calendar,
   Shield,
   Edit,
@@ -239,7 +239,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
           <div className="lg:col-span-1 space-y-6">
             <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-2xl overflow-hidden">
               <div className="h-24 bg-gradient-to-r from-cyan-600 to-blue-600" />
-              
+
               <CardContent className="relative pt-0 pb-6">
                 {/* Avatar */}
                 <div className="flex justify-center -mt-12 mb-4">
@@ -349,13 +349,13 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
               <CardContent>
                 <Tabs defaultValue="personal" className="w-full">
                   <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 p-1">
-                    <TabsTrigger 
+                    <TabsTrigger
                       value="personal"
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
                       Cá Nhân
                     </TabsTrigger>
-                    <TabsTrigger 
+                    <TabsTrigger
                       value="wallet"
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
@@ -377,9 +377,8 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           value={formData.name}
                           onChange={(e) => handleInputChange("name", e.target.value)}
                           disabled={!isEditing}
-                          className={`bg-slate-900/50 border-cyan-500/30 text-white ${
-                            isEditing ? "focus:border-cyan-400" : "opacity-70"
-                          }`}
+                          className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
+                            }`}
                         />
                       </div>
 
@@ -395,9 +394,8 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           value={formData.email}
                           onChange={(e) => handleInputChange("email", e.target.value)}
                           disabled={!isEditing}
-                          className={`bg-slate-900/50 border-cyan-500/30 text-white ${
-                            isEditing ? "focus:border-cyan-400" : "opacity-70"
-                          }`}
+                          className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
+                            }`}
                         />
                       </div>
 

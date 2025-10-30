@@ -19,7 +19,7 @@ interface LoginProps {
 
 export function Login({ onLoginSuccess, onRegisterSuccess }: LoginProps) {
   const { t } = useLanguage();
-  
+
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -54,11 +54,11 @@ export function Login({ onLoginSuccess, onRegisterSuccess }: LoginProps) {
 
       if (response.success && response.user) {
         setSuccess(t.auth.success.loginSuccess);
-        
+
         if (response.token) {
           localStorage.setItem("authToken", response.token);
         }
-        
+
         onLoginSuccess?.(response.user);
       } else {
         setError(response.message || t.auth.errors.loginFailed);
@@ -108,12 +108,12 @@ export function Login({ onLoginSuccess, onRegisterSuccess }: LoginProps) {
 
       if (response.success && response.user) {
         setSuccess(t.auth.success.registerSuccess);
-        
+
         // Lưu token
         if (response.token) {
           localStorage.setItem("authToken", response.token);
         }
-        
+
         // Callback khi đăng ký thành công
         onRegisterSuccess?.(response.user);
       } else {
@@ -153,9 +153,9 @@ export function Login({ onLoginSuccess, onRegisterSuccess }: LoginProps) {
             <div className="relative">
               <div className="absolute -inset-4 bg-gradient-to-r from-orange-500/30 to-red-500/30 rounded-3xl blur-2xl opacity-70 animate-pulse" />
               <div className="relative">
-                <img 
-                  src={logoIcon} 
-                  alt="MigoFin" 
+                <img
+                  src={logoIcon}
+                  alt="MigoFin"
                   className="w-16 h-16 object-contain relative z-10"
                   style={{ filter: 'drop-shadow(0 4px 16px rgba(249, 115, 22, 0.5)) drop-shadow(0 0 24px rgba(249, 115, 22, 0.3)) drop-shadow(0 0 40px rgba(239, 68, 68, 0.2))' }}
                 />
@@ -171,7 +171,7 @@ export function Login({ onLoginSuccess, onRegisterSuccess }: LoginProps) {
         {/* Login/Register Card */}
         <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-3xl">
           <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-3xl blur-xl opacity-50" />
-          
+
           <div className="relative">
             <Tabs defaultValue="login" className="w-full">
               {/* Tabs Header */}

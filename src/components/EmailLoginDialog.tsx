@@ -54,11 +54,11 @@ export function EmailLoginDialog({
       // TODO: Gọi API POST /auth/send-magic-link
       // Backend sẽ gửi email chứa link xác thực
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      
+
       console.log("Gửi magic link đến:", email);
-      
+
       setShowSuccess(true);
-      
+
       // Tự động đóng sau 5s
       setTimeout(() => {
         handleClose();
@@ -102,11 +102,11 @@ export function EmailLoginDialog({
                   </div>
                 </div>
               </div>
-              
+
               <DialogTitle className="text-center text-2xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                 {t.emailLogin.title}
               </DialogTitle>
-              
+
               <DialogDescription className="text-center text-gray-300 mt-2">
                 {t.emailLogin.description}
               </DialogDescription>
@@ -191,7 +191,7 @@ export function EmailLoginDialog({
               >
                 {t.emailLogin.cancel}
               </Button>
-              
+
               <Button
                 onClick={handleSubmit}
                 disabled={!email.trim() || !validateEmail(email) || isLoading}
@@ -220,14 +220,14 @@ export function EmailLoginDialog({
                 <CheckCircle2 className="relative w-16 h-16 text-cyan-400" />
               </div>
             </div>
-            
+
             <div>
               <h3 className="text-2xl text-white mb-3">{t.emailLogin.success.title}</h3>
               <p className="text-gray-300 mb-2">
                 {t.emailLogin.success.sentTo}
               </p>
               <p className="text-cyan-400 mb-4">{email}</p>
-              
+
               <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg inline-block">
                 <div className="flex items-center gap-2 text-sm text-gray-300">
                   <Mail className="w-5 h-5 text-cyan-400" />
@@ -238,7 +238,7 @@ export function EmailLoginDialog({
                 </p>
               </div>
             </div>
-            
+
             <div className="space-y-2 pt-4">
               <div className="text-sm text-gray-400">
                 {t.emailLogin.success.validFor} <span className="text-cyan-400">{t.emailLogin.success.minutes}</span>
@@ -259,7 +259,7 @@ export function EmailLoginDialog({
                   {t.emailLogin.success.demoDescription}
                 </p>
               </div>
-              
+
               <Button
                 onClick={handleMagicLinkClick}
                 className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-500/30"
@@ -269,7 +269,7 @@ export function EmailLoginDialog({
                   <span>{t.emailLogin.success.simulateClick}</span>
                 </div>
               </Button>
-              
+
               <Button
                 onClick={handleClose}
                 variant="outline"

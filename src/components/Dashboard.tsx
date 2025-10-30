@@ -5,22 +5,22 @@ import { Badge } from "./ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { ScoreResult } from "./ScoreResult";
 import { useLanguage } from "../services/LanguageContext";
-import { 
-  Wallet, 
-  TrendingUp, 
-  Calendar, 
-  Activity, 
-  User, 
-  Sparkles 
+import {
+  Wallet,
+  TrendingUp,
+  Calendar,
+  Activity,
+  User,
+  Sparkles
 } from "lucide-react";
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
 } from "recharts";
 import type { UserProfile } from "../services/api";
 import { getScoreHistory } from "../services/api";
@@ -89,12 +89,12 @@ const MOCK_WALLET_DATA = {
 // DASHBOARD COMPONENT
 // ============================================
 
-export function Dashboard({ 
-  user, 
-  onLogout, 
-  onViewProfile, 
+export function Dashboard({
+  user,
+  onLogout,
+  onViewProfile,
   onCalculateScore,
-  onRecalculate 
+  onRecalculate
 }: DashboardProps) {
   const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d">("30d");
@@ -176,7 +176,7 @@ export function Dashboard({
                 {t.statsLabels.wallet} <span className="text-cyan-400 font-mono">{formatWalletAddress(user.walletAddress)}</span>
               </p>
             </div>
-            
+
             <div className="flex items-center gap-3 flex-wrap">
               <Button
                 onClick={onViewProfile}
@@ -186,7 +186,7 @@ export function Dashboard({
                 <User className="w-4 h-4 mr-2" />
                 {t.nav.profile}
               </Button>
-              
+
               {/* Button Tính Điểm Mới - Design đẹp với stats */}
               <Button
                 onClick={onCalculateScore}
@@ -215,7 +215,7 @@ export function Dashboard({
               </Badge>
             </CardContent>
           </Card>
-          
+
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-4 text-center">
               <Calendar className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
@@ -223,7 +223,7 @@ export function Dashboard({
               <div className="text-gray-400 text-xs">{t.statsLabels.walletAgeDays}</div>
             </CardContent>
           </Card>
-          
+
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-4 text-center">
               <Activity className="w-5 h-5 text-blue-400 mx-auto mb-1" />
@@ -231,7 +231,7 @@ export function Dashboard({
               <div className="text-gray-400 text-xs">{t.statsLabels.transactions}</div>
             </CardContent>
           </Card>
-          
+
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-4 text-center">
               <Wallet className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
@@ -249,7 +249,7 @@ export function Dashboard({
                 <TrendingUp className="w-6 h-6 text-cyan-400" />
                 {t.statsLabels.scoreHistory}
               </CardTitle>
-              
+
               <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as any)}>
                 <TabsList className="bg-slate-900/50">
                   <TabsTrigger value="7d">{t.statsLabels.period7d}</TabsTrigger>
@@ -273,35 +273,35 @@ export function Dashboard({
                 <AreaChart data={scoreHistory}>
                   <defs>
                     <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis 
-                    dataKey="date" 
+                  <XAxis
+                    dataKey="date"
                     stroke="#64748b"
                     tick={{ fill: '#94a3b8' }}
                   />
-                  <YAxis 
+                  <YAxis
                     stroke="#64748b"
                     tick={{ fill: '#94a3b8' }}
                     domain={[500, 850]}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1e293b', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1e293b',
                       border: '1px solid #334155',
                       borderRadius: '8px',
                       color: '#e2e8f0'
                     }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="score" 
-                    stroke="#06b6d4" 
+                  <Area
+                    type="monotone"
+                    dataKey="score"
+                    stroke="#06b6d4"
                     strokeWidth={2}
-                    fill="url(#scoreGradient)" 
+                    fill="url(#scoreGradient)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -322,8 +322,8 @@ export function Dashboard({
               </p>
             </div>
           </div>
-          
-          <ScoreResult 
+
+          <ScoreResult
             score={MOCK_STATS.currentScore}
             walletAge={MOCK_STATS.walletAge}
             totalTransactions={MOCK_STATS.totalTransactions}

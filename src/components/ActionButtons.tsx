@@ -23,11 +23,10 @@ export function ActionButtons({
       {/* Subscribe / Subscribed Button */}
       <Button
         onClick={onSubscribe}
-        className={`${
-          isSubscribed
+        className={`${isSubscribed
             ? "bg-green-600/20 border-green-500/40 text-green-400 hover:bg-green-600/30"
             : "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30"
-        } border transition-all duration-300 px-6 py-6 rounded-xl group`}
+          } border transition-all duration-300 px-6 py-6 rounded-xl group`}
       >
         {isSubscribed ? (
           <div className="flex items-center gap-2">

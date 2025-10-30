@@ -89,25 +89,25 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
               <div className="relative rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden hover:bg-gradient-to-r hover:from-orange-500/5 hover:to-red-500/5 transition-all duration-300">
                 {/* Gradient border effect */}
                 <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md group-hover:blur-lg opacity-50 group-hover:opacity-100 transition-all duration-300" />
-                
+
                 {/* White background container for both logos */}
                 <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-2 px-2 py-1.5">
                   {/* Logo Icon - Always visible */}
                   <div className="relative w-9 h-9 flex items-center justify-center">
-                    <img 
-                      src={logoIcon} 
-                      alt="MigoFin" 
+                    <img
+                      src={logoIcon}
+                      alt="MigoFin"
                       className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                     />
                   </div>
-                  
+
                   {/* Logo Text - Hidden on mobile, visible on sm+ */}
                   {/* Only show text logo in authenticated pages (dashboard/profile) */}
                   {(currentPage === 'dashboard' || currentPage === 'profile') && (
                     <div className="hidden sm:flex items-center">
-                      <img 
-                        src={logoFull} 
-                        alt="MigoFin" 
+                      <img
+                        src={logoFull}
+                        alt="MigoFin"
                         className="h-5 object-contain group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -121,7 +121,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;
-                
+
                 return (
                   <button
                     key={item.id}
@@ -132,26 +132,24 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                     {isActive && (
                       <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl border border-cyan-400/30 animate-in fade-in-0 duration-300" />
                     )}
-                    
+
                     {/* Hover background */}
                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 to-blue-500/0 group-hover:from-cyan-500/10 group-hover:to-blue-500/10 rounded-xl transition-all duration-300" />
-                    
+
                     {/* Content */}
                     <div className="relative flex items-center gap-2">
-                      <Icon className={`w-4 h-4 transition-all duration-300 ${
-                        isActive 
-                          ? "text-cyan-400 scale-110" 
-                          : "text-gray-400 group-hover:text-cyan-400 group-hover:scale-110"
-                      }`} />
-                      <span className={`transition-all duration-300 ${
-                        isActive 
-                          ? "text-cyan-300" 
-                          : "text-gray-400 group-hover:text-cyan-300"
-                      }`}>
+                      <Icon className={`w-4 h-4 transition-all duration-300 ${isActive
+                        ? "text-cyan-400 scale-110"
+                        : "text-gray-400 group-hover:text-cyan-400 group-hover:scale-110"
+                        }`} />
+                      <span className={`transition-all duration-300 ${isActive
+                        ? "text-cyan-300"
+                        : "text-gray-400 group-hover:text-cyan-300"
+                        }`}>
                         {item.label}
                       </span>
                     </div>
-                    
+
                     {/* Active indicator line */}
                     {isActive && (
                       <div className="absolute -bottom-5 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-in fade-in-0 slide-in-from-top-2 duration-300" />
@@ -174,7 +172,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                   <button className="relative group flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-800/50 border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300">
                     {/* Hover glow */}
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
+
                     <div className="relative flex items-center gap-3">
                       <Avatar className="w-8 h-8 ring-2 ring-cyan-500/30 group-hover:ring-cyan-400/50 transition-all duration-300">
                         <AvatarImage src={user.avatar} alt={user.walletAddress} />
@@ -182,21 +180,21 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                           {getUserInitials()}
                         </AvatarFallback>
                       </Avatar>
-                      
+
                       <div className="hidden lg:block text-left">
                         <div className="text-sm text-cyan-400 leading-none font-mono">
                           {user.walletAddress ? formatWalletAddress(user.walletAddress) : "No Wallet"}
                         </div>
                         <div className="text-xs text-gray-500 leading-none mt-1">AAA Member</div>
                       </div>
-                      
+
                       <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-cyan-400 transition-colors duration-300" />
                     </div>
                   </button>
                 </DropdownMenuTrigger>
-                
-                <DropdownMenuContent 
-                  align="end" 
+
+                <DropdownMenuContent
+                  align="end"
                   className="w-56 bg-slate-900/95 backdrop-blur-xl border-cyan-500/20 rounded-xl shadow-2xl shadow-cyan-500/10"
                 >
                   <DropdownMenuLabel className="text-gray-400">
@@ -206,35 +204,35 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                     </div>
                     <div className="text-xs text-gray-500 font-normal">{user.email}</div>
                   </DropdownMenuLabel>
-                  
+
                   <DropdownMenuSeparator className="bg-slate-700/50" />
-                  
-                  <DropdownMenuItem 
+
+                  <DropdownMenuItem
                     onClick={() => handleNavigate("profile")}
                     className="cursor-pointer text-gray-300 hover:text-cyan-400 hover:bg-cyan-500/10 focus:bg-cyan-500/10 focus:text-cyan-400"
                   >
                     <UserIcon className="w-4 h-4 mr-2" />
                     Profile Settings
                   </DropdownMenuItem>
-                  
-                  <DropdownMenuItem 
+
+                  <DropdownMenuItem
                     onClick={() => handleNavigate("dashboard")}
                     className="cursor-pointer text-gray-300 hover:text-blue-400 hover:bg-blue-500/10 focus:bg-blue-500/10 focus:text-blue-400"
                   >
                     <TrendingUp className="w-4 h-4 mr-2" />
                     My Dashboard
                   </DropdownMenuItem>
-                  
-                  <DropdownMenuItem 
+
+                  <DropdownMenuItem
                     className="cursor-pointer text-gray-300 hover:text-teal-400 hover:bg-teal-500/10 focus:bg-teal-500/10 focus:text-teal-400"
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Account Settings
                   </DropdownMenuItem>
-                  
+
                   <DropdownMenuSeparator className="bg-slate-700/50" />
-                  
-                  <DropdownMenuItem 
+
+                  <DropdownMenuItem
                     onClick={onLogout}
                     className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-300"
                   >
@@ -284,16 +282,15 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;
-                
+
                 return (
                   <button
                     key={item.id}
                     onClick={() => handleNavigate(item.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${
-                      isActive
-                        ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300"
-                        : "bg-slate-800/30 border border-slate-700/30 text-gray-400 hover:bg-slate-800/50 hover:text-cyan-400 hover:border-cyan-500/30"
-                    }`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${isActive
+                      ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300"
+                      : "bg-slate-800/30 border border-slate-700/30 text-gray-400 hover:bg-slate-800/50 hover:text-cyan-400 hover:border-cyan-500/30"
+                      }`}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? "text-cyan-400" : ""}`} />
                     <span>{item.label}</span>

@@ -1,0 +1,260 @@
+{
+    "hello": "Hello",
+    "welcome": "Welcome to the site",
+    "nav": {
+        "login": "Login",
+        "dashboard": "Dashboard",
+        "profile": "Profile",
+        "logout": "Logout"
+    },
+    "common": {
+        "loading": "Loading..."
+    },
+    "emailLogin": {
+        "title": "Login via Email",
+        "description": "We'll send you a magic link to sign in.",
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "Enter your email",
+        "sending": "Sending...",
+        "sendButton": "Send Magic Link",
+        "cancel": "Cancel",
+        "encryptedProtected": "Your data is encrypted and protected.",
+        "errors": {
+            "enterEmail": "Please enter your email.",
+            "invalidEmail": "Invalid email format.",
+            "generalError": "Something went wrong. Please try again."
+        },
+        "security": {
+            "title": "Your Security",
+            "noPassword": "No passwords needed",
+            "oneTime": "One-time link only",
+            "noStorage": "No data stored"
+        },
+        "howItWorks": {
+            "title": "How it works",
+            "step1": "Enter your email",
+            "step2": "Receive a magic link",
+            "step3": "Click the link to sign in"
+        },
+        "success": {
+            "title": "Magic link sent!",
+            "sentTo": "We've sent a link to:",
+            "checkEmail": "Please check your inbox",
+            "checkSpam": "Check your spam folder if you don't see it",
+            "validFor": "The link is valid for",
+            "minutes": "5 minutes",
+            "autoClose": "This window will close automatically",
+            "demoMode": "Demo mode active",
+            "demoDescription": "You can simulate clicking the magic link below.",
+            "simulateClick": "Simulate Magic Link Click",
+            "close": "Close"
+        }
+    },
+    "otpVerification": {
+        "title": "Email Verification",
+        "description": "Enter your email to receive a verification code",
+        "emailLabel": "Email Address",
+        "walletAddress": "Wallet address associated:",
+        "agreement": {
+            "text": "I agree that score change information will be visible:",
+            "scoreChanges": "Score and ranking changes",
+            "tokenChanges": "Token earnings and rewards",
+            "dashboardLink": "Dashboard and reports access"
+        },
+        "cancel": "Cancel",
+        "sendCode": "Send Code",
+        "sending": "Sending...",
+        "otpTitle": "Enter Verification Code",
+        "otpDescription": "A 6-digit code has been sent to:",
+        "otpLabel": "OTP Code",
+        "otpPlaceholder": "Enter your 6-digit code",
+        "otpHint": "Code is valid for 5 minutes",
+        "resendOTP": "Resend Code",
+        "back": "Back",
+        "verify": "Verify",
+        "verifying": "Verifying...",
+        "success": {
+            "title": "Success!",
+            "description": "Your email has been verified",
+            "walletSaved": "Your wallet and email have been linked successfully"
+        },
+        "errors": {
+            "enterEmail": "Please enter a valid email",
+            "agreeTerms": "You must accept the terms",
+            "invalidOTP": "Invalid OTP format",
+            "wrongOTP": "Incorrect OTP, please try again",
+            "generalError": "Something went wrong, please try again",
+            "resent": "Verification code resent!"
+        }
+    },
+    "calculator": {
+        "title": "Wallet Score Calculator",
+        "description": "Analyze your wallet and get your score instantly.",
+        "input": {
+            "title": "Enter your wallet address",
+            "subtitle": "Supports Ethereum-compatible addresses",
+            "label": "Wallet Address",
+            "placeholder": "Paste your wallet address here"
+        },
+        "buttons": {
+            "calculate": "Calculate",
+            "analyzing": "Analyzing...",
+            "tryAnother": "Try another wallet",
+            "feedback": "Feedback"
+        },
+        "privacy": {
+            "decentralized": "Decentralized",
+            "noIdentity": "No Identity Required",
+            "transparent": "Transparent"
+        },
+        "features": {
+            "noStore": "No Data Stored",
+            "identity": "Anonymous",
+            "decentralized": "Decentralized",
+            "security": "Secure",
+            "transparent": "Transparent",
+            "algorithm": "Open Algorithm"
+        }
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "View your statistics and recent activity",
+        "stats": {
+            "currentScore": "Current Score",
+            "totalChecks": "Total Checks",
+            "averageScore": "Average Score",
+            "memberSince": "Member Since",
+            "activeWallets": "Active Wallets"
+        },
+        "activity": {
+            "title": "Recent Activity",
+            "noData": "No activity data yet."
+        },
+        "calculateNew": "Calculate New"
+    },
+    "ratingGuide": {
+        "title": "Rating Guide",
+        "description": "Higher scores represent greater reliability."
+    },
+    "resultsSummary": {
+        "title": "Wallet Summary",
+        "walletAge": "Wallet Age",
+        "days": "days",
+        "years": "years",
+        "totalTransactions": "Total Transactions",
+        "transactions": "transactions",
+        "tokenDiversity": "Token Diversity",
+        "tokens": "tokens",
+        "totalAssets": "Total Assets",
+        "usd": "USD",
+        "assessment": {
+            "a": "Excellent – very established wallet",
+            "b": "Good – consistent activity over time",
+            "c": "Moderate – relatively new but active wallet",
+            "d": "New wallet – limited activity so far"
+        }
+    },
+    "results": {
+        "walletAgeAssessment": {
+            "a": "Very young wallet — recently created.",
+            "b": "Moderate age wallet — some transaction history.",
+            "c": "Well-established wallet — active for a long time."
+        },
+        "transactionAssessment": {
+            "a": "Few transactions — limited activity.",
+            "b": "Moderate transaction volume — regular use.",
+            "c": "High transaction volume — very active wallet."
+        },
+        "tokenDiversityAssessment": {
+            "a": "Low diversity — mostly single token usage.",
+            "b": "Medium diversity — some token variety.",
+            "c": "High diversity — wide range of token holdings."
+        },
+        "assetAssessment": {
+            "a": "Small asset base — entry-level user.",
+            "b": "Moderate assets — growing portfolio.",
+            "c": "Large asset base — experienced investor."
+        }
+    },
+    "rating": {
+        "aaa": "Excellent — top-tier wallet with strong history and high performance.",
+        "aa": "Very good — well-performing wallet with consistent activity.",
+        "a": "Good — stable wallet with moderate metrics.",
+        "bbb": "Average — fair performance, room for improvement.",
+        "bb": "Below average — limited activity or assets.",
+        "b": "Weak — inactive or new wallet.",
+        "ccc": "High risk — low activity and low value."
+    },
+    "ratingGuide": {
+        "ratings": {
+            "aaa": "Excellent — top-tier wallet with strong history and high performance.",
+            "aa": "Very good — well-performing wallet with consistent activity.",
+            "a": "Good — stable wallet with moderate metrics.",
+            "bbb": "Average — fair performance, room for improvement.",
+            "bb": "Below average — limited activity or assets.",
+            "bc": "Weak — inactive or new wallet."
+        },
+        "factors": {
+            "walletHistory": "Wallet age and longevity",
+            "transactionFreq": "Transaction frequency and consistency",
+            "assetDiversity": "Diversity of token holdings",
+            "portfolioValue": "Total asset value"
+        },
+        "weights": {
+            "walletHistory": "25%",
+            "transactionFreq": "25%",
+            "assetDiversity": "25%",
+            "portfolioValue": "25%"
+        }
+    },
+    "profile": {
+        "title": "Profile Information",
+        "subtitle": "Manage your personal information",
+        "back": "← Back",
+        "success": "Profile updated successfully!",
+        "error": "An error occurred while updating your profile.",
+        "edit": "Edit",
+        "saving": "Saving...",
+        "save": "Save Changes",
+        "cancel": "Cancel",
+        "tabs": {
+            "personal": "Personal",
+            "wallet": "Wallet & Security"
+        },
+        "fields": {
+            "name": "Display Name",
+            "email": "Email",
+            "createdAt": "Account Created",
+            "lastLogin": "Last Login",
+            "wallet": "Main Wallet Address",
+            "noEmail": "No email available"
+        },
+        "stats": {
+            "title": "Statistics",
+            "joined": "Joined",
+            "activeDays": "Active",
+            "checks": "Score Checks",
+            "average": "Average Score",
+            "highest": "Highest Score",
+            "lastCheck": "Last Check"
+        },
+        "security": {
+            "title": "Account Secured",
+            "description": "Your wallet has been verified and protected."
+        },
+        "copied": "✓ Copied!",
+        "copyWallet": "Copy Address",
+        "copiedHint": "Wallet address is saved automatically when you log in.",
+        "details": {
+            "title": "Personal Details",
+            "editing": "Editing your information",
+            "viewing": "Viewing your profile"
+        },
+        "badge": {
+            "aaaMember": "AAA Member"
+        },
+        "wallet": {
+            "noAddress": "No wallet connected"
+        }
+    }
+}

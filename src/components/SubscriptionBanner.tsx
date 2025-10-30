@@ -29,14 +29,13 @@ export function SubscriptionBanner({ onSubscribeClick, show = true }: Subscripti
 
   return (
     <div
-      className={`transition-all duration-500 ease-out ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
-      }`}
+      className={`transition-all duration-500 ease-out ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+        }`}
     >
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-600/20 via-blue-600/20 to-purple-600/20 border border-cyan-500/30 backdrop-blur-sm p-5">
         {/* Animated gradient background */}
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 animate-pulse" />
-        
+
         {/* Close button */}
         <button
           onClick={handleDismiss}

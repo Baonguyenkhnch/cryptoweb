@@ -65,11 +65,11 @@ const getRatingIcon = (rating: string) => {
   }
 };
 
-export function ScoreResult({ 
-  score, 
-  walletAge, 
-  totalTransactions, 
-  tokenDiversity, 
+export function ScoreResult({
+  score,
+  walletAge,
+  totalTransactions,
+  tokenDiversity,
   totalAssets,
   tokenBalances = [],
   recentTransactions = [],
@@ -80,16 +80,17 @@ export function ScoreResult({
   isSubscribed = false,
   isRecalculating = false,
 }: ScoreResultProps) {
+  const { t } = useLanguage();
   const rating = getRating(score);
   const percentage = Math.min((score / 850) * 100, 100);
-  
+
   const chartData = [
     { name: 'Score', value: percentage },
     { name: 'Remaining', value: 100 - percentage }
   ];
 
   const COLORS = ['url(#gradient)', '#e5e7eb'];
-  
+
   // Colors cho token pie chart
   const TOKEN_COLORS = ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#6366f1'];
 
@@ -125,19 +126,17 @@ export function ScoreResult({
       maximumFractionDigits: 0,
     }).format(value);
   };
-  
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', { 
-      year: 'numeric', 
-      month: '2-digit', 
+    return date.toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit'
     });
   };
-
-  const language = useLanguage();
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-12 animate-in fade-in-50 duration-700">
@@ -146,18 +145,18 @@ export function ScoreResult({
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-cyan-900/20 to-slate-900/40" />
         <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-3xl blur-xl opacity-50" />
-        
+
         <div className="relative">
           <CardHeader className="text-center pb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
               {getRatingIcon(rating)}
               <CardTitle className="text-4xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                Điểm Tín Dụng Của Bạn
+                {t.scoreResult.title}
               </CardTitle>
             </div>
-            <p className="text-gray-400 text-lg">Phân tích độ tin cậy ví blockchain</p>
+            <p className="text-gray-400 text-lg">{t.scoreResult.subtitle}</p>
           </CardHeader>
-          
+
           <CardContent className="pb-12">
             <div className="flex flex-col lg:flex-row items-center justify-center gap-16">
               {/* Enhanced Circular Chart */}
@@ -165,7 +164,7 @@ export function ScoreResult({
                 <div className="w-72 h-72 relative">
                   {/* Outer glow ring */}
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-600/40 to-blue-600/40 blur-2xl animate-pulse" />
-                  
+
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <defs>
@@ -175,10 +174,10 @@ export function ScoreResult({
                           <stop offset="100%" stopColor="#2563eb" />
                         </linearGradient>
                         <filter id="glow">
-                          <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                          <feGaussianBlur stdDeviation="4" result="coloredBlur" />
                           <feMerge>
-                            <feMergeNode in="coloredBlur"/>
-                            <feMergeNode in="SourceGraphic"/>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
                           </feMerge>
                         </filter>
                       </defs>
@@ -200,28 +199,28 @@ export function ScoreResult({
                       </Pie>
                     </PieChart>
                   </ResponsiveContainer>
-                  
+
                   {/* Center score display */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-6xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
                         {score}
                       </div>
-                      <div className="text-gray-400 text-lg">Điểm</div>
+                      <div className="text-gray-400 text-lg">{t.scoreResult.score}</div>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               {/* Enhanced Score Details */}
               <div className="text-center space-y-8">
                 <div className="space-y-4">
                   <div className="text-8xl mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
                     {score}
                   </div>
-                  <div className="text-3xl text-gray-300">Điểm Tín Dụng</div>
+                  <div className="text-3xl text-gray-300">{t.scoreResult.creditScore}</div>
                 </div>
-                
+
                 {/* Rating badge */}
                 <div className="relative inline-block">
                   <div className={`absolute -inset-2 bg-gradient-to-r ${getRatingGradient(rating)} rounded-2xl blur-lg opacity-60 animate-pulse`} />
@@ -230,31 +229,31 @@ export function ScoreResult({
                     <span className="text-white text-4xl tracking-wider">{rating}</span>
                   </div>
                 </div>
-                
+
                 {/* Progress section */}
                 <div className="w-80 space-y-4">
                   <div className="relative">
-                    <Progress 
-                      value={percentage} 
+                    <Progress
+                      value={percentage}
                       className="h-4 bg-slate-700/50 rounded-full overflow-hidden"
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 rounded-full pointer-events-none" />
                   </div>
                   <div className="flex justify-between text-sm text-gray-400">
-                    <span>{percentage.toFixed(1)}% tối đa</span>
-                    <span>Tối đa 850</span>
+                    <span>{percentage.toFixed(1)}% {t.scoreResult.maxProgress}</span>
+                    <span>{t.scoreResult.maxScore}</span>
                   </div>
                 </div>
-                
+
                 {/* Score breakdown indicators */}
                 <div className="grid grid-cols-2 gap-4 pt-4">
                   <div className="text-center p-3 bg-green-500/20 rounded-xl border border-green-400/30">
                     <TrendingUp className="w-5 h-5 text-green-400 mx-auto mb-1" />
-                    <div className="text-green-400 text-sm">Xuất Sắc</div>
+                    <div className="text-green-400 text-sm">{t.scoreResult.excellent}</div>
                   </div>
                   <div className="text-center p-3 bg-blue-500/20 rounded-xl border border-blue-400/30">
                     <Wallet className="w-5 h-5 text-blue-400 mx-auto mb-1" />
-                    <div className="text-blue-400 text-sm">Đã Xác Minh</div>
+                    <div className="text-blue-400 text-sm">{t.scoreResult.verified}</div>
                   </div>
                 </div>
               </div>
@@ -271,7 +270,7 @@ export function ScoreResult({
           <div className="relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-cyan-400 text-sm tracking-wide uppercase">Tuổi Ví</CardTitle>
+                <CardTitle className="text-cyan-400 text-sm tracking-wide uppercase">{t.scoreResult.walletAge}</CardTitle>
                 <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
               </div>
             </CardHeader>
@@ -280,7 +279,7 @@ export function ScoreResult({
                 <div className="text-4xl bg-gradient-to-r from-cyan-400 to-cyan-300 bg-clip-text text-transparent tracking-tight">
                   {walletAge}
                 </div>
-                <div className="text-gray-400 text-sm">Ngày Hoạt Động</div>
+                <div className="text-gray-400 text-sm">{t.scoreResult.daysActive}</div>
                 <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full w-3/4" />
                 </div>
@@ -295,7 +294,7 @@ export function ScoreResult({
           <div className="relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-blue-400 text-sm tracking-wide uppercase">Giao Dịch</CardTitle>
+                <CardTitle className="text-blue-400 text-sm tracking-wide uppercase">{t.scoreResult.transactions}</CardTitle>
                 <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
               </div>
             </CardHeader>
@@ -304,7 +303,7 @@ export function ScoreResult({
                 <div className="text-4xl bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent tracking-tight">
                   {totalTransactions.toLocaleString()}
                 </div>
-                <div className="text-gray-400 text-sm">Tổng Số</div>
+                <div className="text-gray-400 text-sm">{t.scoreResult.totalTransactions}</div>
                 <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full w-4/5" />
                 </div>
@@ -319,7 +318,7 @@ export function ScoreResult({
           <div className="relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-teal-400 text-sm tracking-wide uppercase">Đa Dạng</CardTitle>
+                <CardTitle className="text-teal-400 text-sm tracking-wide uppercase">{t.scoreResult.tokenDiversity}</CardTitle>
                 <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
               </div>
             </CardHeader>
@@ -328,7 +327,7 @@ export function ScoreResult({
                 <div className="text-4xl bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent tracking-tight">
                   {tokenDiversity}
                 </div>
-                <div className="text-gray-400 text-sm">Token Độc Nhất</div>
+                <div className="text-gray-400 text-sm">{t.scoreResult.typesOfTokens}</div>
                 <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-teal-500 to-teal-400 rounded-full w-3/5" />
                 </div>
@@ -343,7 +342,7 @@ export function ScoreResult({
           <div className="relative">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-emerald-400 text-sm tracking-wide uppercase">Danh Mục</CardTitle>
+                <CardTitle className="text-emerald-400 text-sm tracking-wide uppercase">{t.scoreResult.totalAssets}</CardTitle>
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
               </div>
             </CardHeader>
@@ -352,7 +351,7 @@ export function ScoreResult({
                 <div className="text-4xl bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent tracking-tight">
                   {formatCurrency(totalAssets)}
                 </div>
-                <div className="text-gray-400 text-sm">Giá Trị USD</div>
+                <div className="text-gray-400 text-sm">{t.scoreResult.portfolioValue}</div>
                 <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full w-5/6" />
                 </div>
@@ -367,46 +366,46 @@ export function ScoreResult({
         {/* Score Trend */}
         <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-blue-500/20 shadow-2xl rounded-3xl">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-3xl blur-xl opacity-50" />
-          
+
           <div className="relative">
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-xl bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center justify-center gap-2">
                 <TrendingUp className="w-5 h-5 text-blue-400" />
-                Xu Hướng Điểm
+                {t.scoreResult.scoreTrend}
               </CardTitle>
             </CardHeader>
-            
+
             <CardContent className="p-4">
               <div className="w-full h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={scoreTrendData.slice(-10)}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                    <XAxis 
-                      dataKey="date" 
+                    <XAxis
+                      dataKey="date"
                       stroke="#9ca3af"
                       style={{ fontSize: '10px' }}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="#9ca3af"
                       style={{ fontSize: '10px' }}
                       domain={[500, 850]}
                     />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#1e293b', 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1e293b',
                         border: '1px solid #3b82f6',
                         borderRadius: '8px',
                         color: '#fff',
                         fontSize: '12px'
                       }}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="score" 
-                      stroke="#3b82f6" 
+                    <Line
+                      type="monotone"
+                      dataKey="score"
+                      stroke="#3b82f6"
                       strokeWidth={2}
                       dot={{ fill: '#06b6d4', r: 3 }}
-                      name="Điểm số"
+                      name={t.scoreResult.score}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -419,31 +418,31 @@ export function ScoreResult({
         {activityData.length > 0 && (
           <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-purple-500/20 shadow-2xl rounded-3xl">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-3xl blur-xl opacity-50" />
-            
+
             <div className="relative">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center justify-center gap-2">
                   <Activity className="w-5 h-5 text-purple-400" />
-                  Hoạt Động
+                  {t.scoreResult.activityTimeline}
                 </CardTitle>
               </CardHeader>
-              
+
               <CardContent className="p-4">
                 <div className="w-full h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={activityData}>
                       <defs>
                         <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#a855f7" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#a855f7" stopOpacity={0.1}/>
+                          <stop offset="5%" stopColor="#a855f7" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#a855f7" stopOpacity={0.1} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                       <XAxis dataKey="date" stroke="#9ca3af" style={{ fontSize: '10px' }} />
                       <YAxis stroke="#9ca3af" style={{ fontSize: '10px' }} />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#1e293b', 
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#1e293b',
                           border: '1px solid #a855f7',
                           borderRadius: '8px',
                           color: '#fff',
@@ -451,14 +450,14 @@ export function ScoreResult({
                         }}
                         formatter={(value: number) => formatCurrency(value)}
                       />
-                      <Area 
-                        type="monotone" 
-                        dataKey="volume" 
-                        stroke="#a855f7" 
+                      <Area
+                        type="monotone"
+                        dataKey="volume"
+                        stroke="#a855f7"
                         strokeWidth={2}
-                        fillOpacity={1} 
-                        fill="url(#colorVolume)" 
-                        name="Khối lượng"
+                        fillOpacity={1}
+                        fill="url(#colorVolume)"
+                        name={t.scoreResult.value}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -472,15 +471,15 @@ export function ScoreResult({
         {tokenBalances.length > 0 && (
           <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-3xl">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 to-teal-500/30 rounded-3xl blur-xl opacity-50" />
-            
+
             <div className="relative">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-xl bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent flex items-center justify-center gap-2">
                   <Wallet className="w-5 h-5 text-cyan-400" />
-                  Phân Bổ Token
+                  {t.scoreResult.tokenDistribution}
                 </CardTitle>
               </CardHeader>
-              
+
               <CardContent className="p-4">
                 <div className="w-full h-48">
                   <ResponsiveContainer width="100%" height="100%">
@@ -498,9 +497,9 @@ export function ScoreResult({
                           <Cell key={`cell-${index}`} fill={TOKEN_COLORS[index % TOKEN_COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#1e293b', 
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#1e293b',
                           border: '1px solid #06b6d4',
                           borderRadius: '8px',
                           color: '#fff',
@@ -515,8 +514,8 @@ export function ScoreResult({
                   {tokenBalances.slice(0, 3).map((token, idx) => (
                     <div key={token.symbol} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-2 h-2 rounded-full" 
+                        <div
+                          className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: TOKEN_COLORS[idx % TOKEN_COLORS.length] }}
                         />
                         <span className="text-gray-300">{token.symbol}</span>

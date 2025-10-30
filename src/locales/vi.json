@@ -1,0 +1,238 @@
+{
+    "hello": "Xin chào",
+    "welcome": "Chào mừng bạn đến với trang web",
+    "nav": {
+        "login": "Đăng nhập",
+        "dashboard": "Bảng điều khiển",
+        "profile": "Hồ sơ",
+        "logout": "Đăng xuất"
+    },
+    "common": {
+        "loading": "Đang tải..."
+    },
+    "emailLogin": {
+        "title": "Đăng nhập qua Email",
+        "description": "Chúng tôi sẽ gửi cho bạn một liên kết ma thuật để đăng nhập.",
+        "emailLabel": "Địa chỉ Email",
+        "emailPlaceholder": "Nhập email của bạn",
+        "sending": "Đang gửi...",
+        "sendButton": "Gửi Liên Kết Ma Thuật",
+        "cancel": "Hủy",
+        "encryptedProtected": "Dữ liệu của bạn được mã hóa và bảo vệ.",
+        "errors": {
+            "enterEmail": "Vui lòng nhập email của bạn.",
+            "invalidEmail": "Định dạng email không hợp lệ.",
+            "generalError": "Đã xảy ra lỗi. Vui lòng thử lại."
+        },
+        "security": {
+            "title": "Bảo mật của bạn",
+            "noPassword": "Không cần mật khẩu",
+            "oneTime": "Liên kết chỉ dùng một lần",
+            "noStorage": "Không lưu trữ dữ liệu"
+        },
+        "howItWorks": {
+            "title": "Cách hoạt động",
+            "step1": "Nhập email của bạn",
+            "step2": "Nhận liên kết ma thuật",
+            "step3": "Nhấp vào liên kết để đăng nhập"
+        },
+        "success": {
+            "title": "Liên kết ma thuật đã được gửi!",
+            "sentTo": "Chúng tôi đã gửi liên kết đến:",
+            "checkEmail": "Vui lòng kiểm tra hộp thư đến của bạn",
+            "checkSpam": "Kiểm tra thư rác nếu bạn không thấy email",
+            "validFor": "Liên kết có hiệu lực trong",
+            "minutes": "5 phút",
+            "autoClose": "Cửa sổ này sẽ tự động đóng",
+            "demoMode": "Chế độ demo đang hoạt động",
+            "demoDescription": "Bạn có thể mô phỏng việc nhấp vào liên kết ma thuật bên dưới.",
+            "simulateClick": "Mô phỏng Nhấp Liên Kết Ma Thuật",
+            "close": "Đóng"
+        }
+    },
+    "otpVerification": {
+        "title": "Xác minh Email",
+        "description": "Nhập email của bạn để nhận mã xác minh",
+        "emailLabel": "Địa chỉ Email",
+        "walletAddress": "Địa chỉ ví được liên kết:",
+        "agreement": {
+            "text": "Tôi đồng ý rằng thông tin thay đổi điểm sẽ được hiển thị:",
+            "scoreChanges": "Điểm số và thay đổi xếp hạng",
+            "tokenChanges": "Phần thưởng và token nhận được",
+            "dashboardLink": "Truy cập bảng điều khiển và báo cáo"
+        },
+        "cancel": "Hủy",
+        "sendCode": "Gửi Mã",
+        "sending": "Đang gửi...",
+        "otpTitle": "Nhập Mã Xác Minh",
+        "otpDescription": "Mã gồm 6 chữ số đã được gửi đến:",
+        "otpLabel": "Mã OTP",
+        "otpPlaceholder": "Nhập mã 6 chữ số của bạn",
+        "otpHint": "Mã có hiệu lực trong 5 phút",
+        "resendOTP": "Gửi lại mã",
+        "back": "Quay lại",
+        "verify": "Xác minh",
+        "verifying": "Đang xác minh...",
+        "success": {
+            "title": "Thành công!",
+            "description": "Email của bạn đã được xác minh",
+            "walletSaved": "Ví và email của bạn đã được liên kết thành công"
+        },
+        "errors": {
+            "enterEmail": "Vui lòng nhập email hợp lệ",
+            "agreeTerms": "Bạn cần chấp nhận các điều khoản",
+            "invalidOTP": "Định dạng mã OTP không hợp lệ",
+            "wrongOTP": "Mã OTP không đúng, vui lòng thử lại",
+            "generalError": "Đã xảy ra lỗi, vui lòng thử lại",
+            "resent": "Mã xác minh đã được gửi lại!"
+        }
+    },
+    "calculator": {
+        "title": "Trình Tính Điểm Ví",
+        "description": "Phân tích ví của bạn và nhận điểm số ngay lập tức.",
+        "input": {
+            "title": "Nhập địa chỉ ví của bạn",
+            "subtitle": "Hỗ trợ địa chỉ tương thích với Ethereum",
+            "label": "Địa chỉ Ví",
+            "placeholder": "Dán địa chỉ ví của bạn vào đây"
+        },
+        "buttons": {
+            "calculate": "Tính Toán",
+            "analyzing": "Đang phân tích...",
+            "tryAnother": "Thử ví khác",
+            "feedback": "Góp ý"
+        },
+        "privacy": {
+            "decentralized": "Phi tập trung",
+            "noIdentity": "Không cần danh tính",
+            "transparent": "Minh bạch"
+        },
+        "features": {
+            "noStore": "Không lưu dữ liệu",
+            "identity": "Ẩn danh",
+            "decentralized": "Phi tập trung",
+            "security": "Bảo mật",
+            "transparent": "Minh bạch",
+            "algorithm": "Thuật toán mở"
+        }
+    },
+    "dashboard": {
+        "title": "Bảng Điều Khiển",
+        "subtitle": "Xem thống kê và hoạt động gần đây của bạn",
+        "stats": {
+            "currentScore": "Điểm Hiện Tại",
+            "totalChecks": "Tổng Số Kiểm Tra",
+            "averageScore": "Điểm Trung Bình",
+            "memberSince": "Thành viên từ",
+            "activeWallets": "Ví đang hoạt động"
+        },
+        "activity": {
+            "title": "Hoạt Động Gần Đây",
+            "noData": "Chưa có dữ liệu hoạt động."
+        },
+        "calculateNew": "Tính Toán Mới"
+    },
+    "results": {
+        "walletAgeAssessment": {
+            "a": "Ví rất mới — vừa được tạo gần đây.",
+            "b": "Ví có tuổi trung bình — đã có một số lịch sử giao dịch.",
+            "c": "Ví lâu năm — hoạt động ổn định trong thời gian dài."
+        },
+        "transactionAssessment": {
+            "a": "Ít giao dịch — hoạt động hạn chế.",
+            "b": "Khối lượng giao dịch trung bình — sử dụng thường xuyên.",
+            "c": "Nhiều giao dịch — ví hoạt động rất tích cực."
+        },
+        "tokenDiversityAssessment": {
+            "a": "Đa dạng thấp — chủ yếu sử dụng một loại token.",
+            "b": "Đa dạng trung bình — có một số loại token khác nhau.",
+            "c": "Đa dạng cao — sở hữu nhiều loại token khác nhau."
+        },
+        "assetAssessment": {
+            "a": "Tài sản nhỏ — người dùng mới hoặc thử nghiệm.",
+            "b": "Tài sản trung bình — danh mục đang phát triển.",
+            "c": "Tài sản lớn — nhà đầu tư dày dạn kinh nghiệm."
+        }
+    },
+    "rating": {
+        "aaa": "Xuất sắc — ví hàng đầu với lịch sử mạnh và hiệu suất cao.",
+        "aa": "Rất tốt — ví hoạt động ổn định và đều đặn.",
+        "a": "Tốt — ví ổn định với các chỉ số trung bình khá.",
+        "bbb": "Trung bình — hiệu suất ổn, cần cải thiện thêm.",
+        "bb": "Dưới trung bình — hoạt động hoặc tài sản còn hạn chế.",
+        "b": "Yếu — ví mới hoặc ít hoạt động.",
+        "ccc": "Rủi ro cao — hoạt động thấp và giá trị nhỏ."
+    },
+    "ratingGuide": {
+        "ratings": {
+            "aaa": "Xuất sắc — ví hàng đầu với lịch sử mạnh và hiệu suất cao.",
+            "aa": "Rất tốt — ví hoạt động ổn định và thường xuyên.",
+            "a": "Tốt — ví ổn định với các chỉ số trung bình khá.",
+            "bbb": "Trung bình — hiệu suất vừa phải, cần cải thiện thêm.",
+            "bb": "Dưới trung bình — hoạt động hoặc tài sản hạn chế.",
+            "bc": "Yếu — ví mới hoặc ít hoạt động."
+        },
+        "factors": {
+            "walletHistory": "Tuổi đời và độ bền của ví",
+            "transactionFreq": "Tần suất và tính đều đặn giao dịch",
+            "assetDiversity": "Đa dạng hóa tài sản (token)",
+            "portfolioValue": "Giá trị tổng tài sản"
+        },
+        "weights": {
+            "walletHistory": "25%",
+            "transactionFreq": "25%",
+            "assetDiversity": "25%",
+            "portfolioValue": "25%"
+        }
+    },
+    "profile": {
+        "title": "Thông tin hồ sơ",
+        "subtitle": "Quản lý thông tin cá nhân của bạn",
+        "back": "← Quay lại",
+        "success": "Cập nhật hồ sơ thành công!",
+        "error": "Đã xảy ra lỗi khi cập nhật hồ sơ.",
+        "edit": "Chỉnh sửa",
+        "saving": "Đang lưu...",
+        "save": "Lưu thay đổi",
+        "cancel": "Hủy",
+        "tabs": {
+            "personal": "Cá nhân",
+            "wallet": "Ví & Bảo mật"
+        },
+        "fields": {
+            "name": "Tên hiển thị",
+            "email": "Email",
+            "createdAt": "Ngày tạo tài khoản",
+            "lastLogin": "Lần đăng nhập cuối",
+            "wallet": "Địa chỉ ví chính",
+            "noEmail": "Chưa có email"
+        },
+        "stats": {
+            "title": "Thống kê",
+            "joined": "Ngày tham gia",
+            "activeDays": "Số ngày hoạt động",
+            "checks": "Lần kiểm tra điểm",
+            "average": "Điểm trung bình",
+            "highest": "Điểm cao nhất",
+            "lastCheck": "Lần kiểm tra gần nhất"
+        },
+        "security": {
+            "title": "Tài khoản an toàn",
+            "description": "Ví của bạn đã được xác minh và bảo vệ."
+        },
+        "copied": "✓ Đã sao chép!",
+        "copyWallet": "Sao chép địa chỉ",
+        "copiedHint": "Địa chỉ ví được lưu tự động khi bạn đăng nhập.",
+        "details": {
+            "title": "Chi tiết hồ sơ",
+            "editing": "Đang chỉnh sửa thông tin của bạn",
+            "viewing": "Đang xem hồ sơ"
+        },
+        "badge": {
+            "aaaMember": "Thành viên AAA"
+        },
+        "wallet": {
+            "noAddress": "Chưa có ví nào được liên kết"
+        }
+    }
+}

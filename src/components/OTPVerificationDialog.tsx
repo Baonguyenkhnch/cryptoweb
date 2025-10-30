@@ -70,7 +70,7 @@ export function OTPVerificationDialog({
       // TODO: Gọi API /auth/verify-otp
       await new Promise((resolve) => setTimeout(resolve, 1500));
       console.log("Xác thực OTP:", otp);
-      
+
       // Success - backend lưu { wallet, email, verified: true }
       setStep("success");
       setTimeout(() => {
@@ -119,11 +119,11 @@ export function OTPVerificationDialog({
                   </div>
                 </div>
               </div>
-              
+
               <DialogTitle className="text-center text-2xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                 {t.otpVerification.title}
               </DialogTitle>
-              
+
               <DialogDescription className="text-center text-gray-300 mt-2">
                 {t.otpVerification.description}
               </DialogDescription>
@@ -197,7 +197,7 @@ export function OTPVerificationDialog({
               >
                 {t.otpVerification.cancel}
               </Button>
-              
+
               <Button
                 onClick={handleRequestOTP}
                 disabled={!email.trim() || !agreed || isLoading}
@@ -227,11 +227,11 @@ export function OTPVerificationDialog({
                   </div>
                 </div>
               </div>
-              
+
               <DialogTitle className="text-center text-2xl bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                 {t.otpVerification.otpTitle}
               </DialogTitle>
-              
+
               <DialogDescription className="text-center text-gray-300 mt-2">
                 {t.otpVerification.otpDescription}<br />
                 <span className="text-cyan-400">{email}</span>
@@ -293,7 +293,7 @@ export function OTPVerificationDialog({
               >
                 {t.otpVerification.back}
               </Button>
-              
+
               <Button
                 onClick={handleVerifyOTP}
                 disabled={otp.length !== 6 || isLoading}
@@ -320,7 +320,7 @@ export function OTPVerificationDialog({
                 <CheckCircle2 className="relative w-16 h-16 text-green-400" />
               </div>
             </div>
-            
+
             <div>
               <h3 className="text-2xl text-white mb-2">{t.otpVerification.success.title}</h3>
               <p className="text-gray-300">
@@ -328,7 +328,7 @@ export function OTPVerificationDialog({
               </p>
               <p className="text-cyan-400 mt-1">{email}</p>
             </div>
-            
+
             <div className="text-sm text-gray-400 pt-4">
               {t.otpVerification.success.walletSaved}
             </div>

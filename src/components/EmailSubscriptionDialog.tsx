@@ -70,11 +70,11 @@ export function EmailSubscriptionDialog({
                   </div>
                 </div>
               </div>
-              
+
               <DialogTitle className="text-center text-2xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                 Nhận Cập Nhật Định Kỳ?
               </DialogTitle>
-              
+
               <DialogDescription className="text-center text-gray-300 mt-2">
                 Bạn có muốn nhận thông tin cập nhật định kỳ cho ví này không?
               </DialogDescription>
@@ -163,7 +163,7 @@ export function EmailSubscriptionDialog({
               >
                 Không, Cảm Ơn
               </Button>
-              
+
               <Button
                 onClick={handleSubscribe}
                 disabled={!email.trim() || !email.includes("@") || isLoading}
@@ -192,7 +192,7 @@ export function EmailSubscriptionDialog({
                 <CheckCircle2 className="relative w-16 h-16 text-green-400" />
               </div>
             </div>
-            
+
             <div>
               <h3 className="text-2xl text-white mb-2">Đăng Ký Thành Công!</h3>
               <p className="text-gray-300">
@@ -200,7 +200,7 @@ export function EmailSubscriptionDialog({
               </p>
               <p className="text-cyan-400 mt-1">{email}</p>
             </div>
-            
+
             <div className="text-sm text-gray-400 pt-4">
               Đóng tự động sau giây lát...
             </div>
