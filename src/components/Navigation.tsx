@@ -26,6 +26,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
 import logoIcon from "./images/logonhap.jpg";
 import logoFull from "./images/logodash.jpg";
+import { useTranslation } from "react-i18next";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -37,25 +38,27 @@ interface NavigationProps {
 }
 
 export function Navigation({ currentPage, user, onNavigate, onLogout }: NavigationProps) {
-  const { t } = useLanguage();
+  const { t, i18n } = useTranslation();
+
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const NAV_ITEMS = [
     {
       id: "dashboard" as Page,
-      label: t.nav.dashboard,
+      label: t("nav.dashboard"),
       icon: TrendingUp,
       color: "cyan",
     },
     {
       id: "calculator" as Page,
-      label: t.nav.calculator,
+      label: t("nav.calculator"),
       icon: Wallet,
       color: "blue",
     },
     {
       id: "profile" as Page,
-      label: t.nav.profile,
+      label: t("nav.logout"),
       icon: UserIcon,
       color: "teal",
     },
@@ -185,7 +188,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                         <div className="text-sm text-cyan-400 leading-none font-mono">
                           {user.walletAddress ? formatWalletAddress(user.walletAddress) : "No Wallet"}
                         </div>
-                        <div className="text-xs text-gray-500 leading-none mt-1">AAA Member</div>
+                        <div className="text-xs text-gray-500 leading-none mt-1">{t("nav.member")}</div>
                       </div>
 
                       <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-cyan-400 transition-colors duration-300" />
@@ -200,7 +203,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                   <DropdownMenuLabel className="text-gray-400">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                      Online
+                      {t("nav.online")}
                     </div>
                     <div className="text-xs text-gray-500 font-normal">{user.email}</div>
                   </DropdownMenuLabel>
@@ -212,7 +215,8 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                     className="cursor-pointer text-gray-300 hover:text-cyan-400 hover:bg-cyan-500/10 focus:bg-cyan-500/10 focus:text-cyan-400"
                   >
                     <UserIcon className="w-4 h-4 mr-2" />
-                    Profile Settings
+                    {t("nav.profile_settings")}
+
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
@@ -220,14 +224,15 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                     className="cursor-pointer text-gray-300 hover:text-blue-400 hover:bg-blue-500/10 focus:bg-blue-500/10 focus:text-blue-400"
                   >
                     <TrendingUp className="w-4 h-4 mr-2" />
-                    My Dashboard
+                    {t("nav.my_dashboard")}
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
                     className="cursor-pointer text-gray-300 hover:text-teal-400 hover:bg-teal-500/10 focus:bg-teal-500/10 focus:text-teal-400"
                   >
                     <Settings className="w-4 h-4 mr-2" />
-                    Account Settings
+                    {t("nav.calculator")}
+
                   </DropdownMenuItem>
 
                   <DropdownMenuSeparator className="bg-slate-700/50" />
@@ -237,7 +242,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                     className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-300"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    {t.nav.logout}
+                    {t("nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -307,7 +312,8 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/40 transition-all duration-300 mt-2"
               >
                 <LogOut className="w-5 h-5" />
-                <span>{t.nav.logout}</span>
+                <span>{t("nav.logout")}
+                </span>
               </button>
             </div>
           </div>

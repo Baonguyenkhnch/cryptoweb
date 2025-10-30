@@ -1,12 +1,6 @@
-/**
- * ============================================
- * LANGUAGE SWITCHER COMPONENT
- * ============================================
- * Nút chuyển đổi ngôn ngữ Việt/Anh
- */
-
 import { Languages } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
+import { useTranslation } from "react-i18next"; // ⚠️ thêm dòng này
 
 interface LanguageSwitcherProps {
   variant?: "default" | "outline" | "ghost";
@@ -20,6 +14,13 @@ export function LanguageSwitcher({
   className = ""
 }: LanguageSwitcherProps) {
   const { language, setLanguage } = useLanguage();
+  const { i18n } = useTranslation(); // ⚠️ thêm dòng này
+
+  const handleLanguageChange = (lang: "en" | "vi") => {
+    setLanguage(lang);
+    i18n.changeLanguage(lang); // ⚠️ Dòng quan trọng nhất
+    console.log("🌐 Ngôn ngữ hiện tại:", i18n.language);
+  };
 
   return (
     <div
@@ -29,7 +30,7 @@ export function LanguageSwitcher({
       <Languages className="w-3.5 h-3.5 md:w-4 md:h-4 text-cyan-400" />
       <div className="font-mono flex items-center gap-1 md:gap-1.5 text-xs md:text-sm">
         <button
-          onClick={() => setLanguage("vi")}
+          onClick={() => handleLanguageChange("vi")}
           className={`px-1.5 md:px-2 py-0.5 rounded transition-all duration-300 hover:bg-cyan-500/20 ${language === "vi"
               ? "text-cyan-300 bg-cyan-500/10 scale-110 font-bold"
               : "text-gray-500 hover:text-gray-400"
@@ -39,7 +40,7 @@ export function LanguageSwitcher({
         </button>
         <span className="text-gray-600 text-xs">|</span>
         <button
-          onClick={() => setLanguage("en")}
+          onClick={() => handleLanguageChange("en")}
           className={`px-1.5 md:px-2 py-0.5 rounded transition-all duration-300 hover:bg-cyan-500/20 ${language === "en"
               ? "text-cyan-300 bg-cyan-500/10 scale-110 font-bold"
               : "text-gray-500 hover:text-gray-400"

@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import type { UserProfile } from "../services/api";
 import { updateUserProfile, formatWalletAddress } from "../services/api";
+import { useTranslation } from "react-i18next";
 
 // ============================================
 // TYPES
@@ -70,6 +71,7 @@ const MOCK_PROFILE_STATS = {
 // ============================================
 
 export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps) {
+  const { t } = useTranslation();
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -203,9 +205,9 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-4xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
-              Thông Tin Profile
+              {t("profile.title")}
             </h1>
-            <p className="text-gray-400">Quản lý thông tin cá nhân của bạn</p>
+            <p className="text-gray-400">{t("profile.subtitle")}</p>
           </div>
 
           {onBack && (
@@ -214,7 +216,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
               variant="outline"
               className="bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
             >
-              ← Quay Lại
+              {t("profile.back")}
             </Button>
           )}
         </div>
@@ -223,7 +225,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
         {showSuccess && (
           <Alert className="mb-6 bg-green-500/10 border-green-500/30 text-green-400">
             <Check className="w-4 h-4" />
-            <AlertDescription>Cập nhật profile thành công!</AlertDescription>
+            <AlertDescription>{t("profile.success")}</AlertDescription>
           </Alert>
         )}
 
@@ -263,7 +265,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
 
                   <Badge className="bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-400 border-emerald-500/30">
                     <Award className="w-3 h-3 mr-1" />
-                    AAA Member
+                    {t("profile.badge.aaaMember")}
                   </Badge>
                 </div>
 
@@ -274,7 +276,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-400 flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      Tham gia
+                      {t("profile.stats.joined")}
                     </span>
                     <span className="text-gray-300">{formatDate(user.createdAt)}</span>
                   </div>
@@ -282,17 +284,17 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-400 flex items-center gap-2">
                       <Clock className="w-4 h-4" />
-                      Hoạt động
+                      {t("profile.stats.activeDays")}
                     </span>
-                    <span className="text-gray-300">{MOCK_PROFILE_STATS.daysActive} ngày</span>
+                    <span className="text-gray-300">{MOCK_PROFILE_STATS.daysActive} {t("profile.stats.activeDays")}</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-400 flex items-center gap-2">
                       <Activity className="w-4 h-4" />
-                      Lần kiểm tra
+                      {t("profile.stats.checks")}
                     </span>
-                    <span className="text-gray-300">{MOCK_PROFILE_STATS.totalScoreChecks} lần</span>
+                    <span className="text-gray-300">{MOCK_PROFILE_STATS.totalScoreChecks} {t("profile.stats.checks")}</span>
                   </div>
                 </div>
               </CardContent>
@@ -303,16 +305,16 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
               <CardHeader>
                 <CardTitle className="text-lg text-cyan-400 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
-                  Thống Kê
+                  {t("profile.stats.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="p-3 bg-slate-900/50 rounded-lg">
-                  <div className="text-gray-400 text-xs mb-1">Điểm TB</div>
+                  <div className="text-gray-400 text-xs mb-1">{t("profile.stats.average")}</div>
                   <div className="text-2xl text-cyan-400">{MOCK_PROFILE_STATS.averageScore}</div>
                 </div>
                 <div className="p-3 bg-slate-900/50 rounded-lg">
-                  <div className="text-gray-400 text-xs mb-1">Cao Nhất</div>
+                  <div className="text-gray-400 text-xs mb-1">{t("profile.stats.highest")}</div>
                   <div className="text-2xl text-emerald-400">{MOCK_PROFILE_STATS.highestScore}</div>
                 </div>
               </CardContent>
@@ -327,11 +329,12 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                   <div>
                     <CardTitle className="text-2xl text-white flex items-center gap-2">
                       <User className="w-6 h-6 text-cyan-400" />
-                      Thông Tin Chi Tiết
+                      {t("profile.details.title")}
                     </CardTitle>
                     <CardDescription className="text-gray-400 mt-1">
-                      {isEditing ? "Đang chỉnh sửa thông tin" : "Xem và chỉnh sửa thông tin của bạn"}
+                      {isEditing ? t("profile.details.editing") : t("profile.details.viewing")}
                     </CardDescription>
+
                   </div>
 
                   {!isEditing && (
@@ -340,7 +343,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
                     >
                       <Edit className="w-4 h-4 mr-2" />
-                      Chỉnh Sửa
+                      {t("profile.edit")}
                     </Button>
                   )}
                 </div>
@@ -353,13 +356,13 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       value="personal"
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
-                      Cá Nhân
+                      {t("profile.tabs.personal")}
                     </TabsTrigger>
                     <TabsTrigger
                       value="wallet"
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
-                      Ví & Bảo Mật
+                      {t("profile.tabs.wallet")}
                     </TabsTrigger>
                   </TabsList>
 
@@ -370,7 +373,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       <div className="space-y-2">
                         <Label htmlFor="name" className="text-gray-300 flex items-center gap-2">
                           <User className="w-4 h-4 text-cyan-400" />
-                          Tên Hiển Thị
+                          {t("profile.fields.name")}
                         </Label>
                         <Input
                           id="name"
@@ -386,7 +389,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
                           <Mail className="w-4 h-4 text-blue-400" />
-                          Email
+                          {t("profile.fields.email")}
                         </Label>
                         <Input
                           id="email"
@@ -403,7 +406,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       <div className="space-y-2">
                         <Label className="text-gray-300 flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-teal-400" />
-                          Ngày Tạo Tài Khoản
+                          {t("profile.fields.createdAt")}
                         </Label>
                         <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 text-gray-300">
                           {formatDate(user.createdAt)}
@@ -414,7 +417,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       <div className="space-y-2">
                         <Label className="text-gray-300 flex items-center gap-2">
                           <Clock className="w-4 h-4 text-purple-400" />
-                          Đăng Nhập Lần Cuối
+                          {t("profile.fields.lastLogin")}
                         </Label>
                         <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 text-gray-300">
                           {formatDate(user.lastLogin)}
@@ -433,12 +436,12 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           {isSaving ? (
                             <>
                               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                              Đang Lưu...
+                              {t("profile.saving")}
                             </>
                           ) : (
                             <>
                               <Save className="w-4 h-4 mr-2" />
-                              Lưu Thay Đổi
+                              {t("profile.save")}
                             </>
                           )}
                         </Button>
@@ -449,7 +452,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           className="flex-1 bg-slate-900/50 border-red-500/30 text-red-400 hover:bg-red-500/20"
                         >
                           <X className="w-4 h-4 mr-2" />
-                          Hủy
+                          {t("profile.cancel")}
                         </Button>
                       </div>
                     )}
@@ -461,7 +464,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                     <div className="space-y-2">
                       <Label className="text-gray-300 flex items-center gap-2">
                         <Wallet className="w-4 h-4 text-cyan-400" />
-                        Địa Chỉ Ví Chính
+                        {t("profile.fields.wallet")}
                       </Label>
                       <div className="flex gap-2">
                         <div className="flex-1 p-3 bg-slate-900/50 rounded-lg border border-cyan-500/30 text-cyan-400 font-mono break-all">
@@ -481,8 +484,9 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                         </Button>
                       </div>
                       <p className="text-gray-500 text-xs">
-                        {copiedWallet ? "✓ Đã sao chép!" : "Địa chỉ ví được lưu tự động khi bạn đăng nhập"}
+                        {copiedWallet ? t("profile.copied") : t("profile.copiedHint")}
                       </p>
+
                     </div>
 
                     {/* Security Badge */}
@@ -492,9 +496,9 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           <Shield className="w-6 h-6 text-green-400" />
                         </div>
                         <div className="flex-1">
-                          <div className="text-green-400 mb-1">Tài khoản đã được bảo mật</div>
+                          <div className="text-green-400 mb-1">{t("profile.security.title")}</div>
                           <div className="text-gray-400 text-sm">
-                            Wallet của bạn đã được xác minh và bảo vệ
+                            {t("profile.security.description")}
                           </div>
                         </div>
                       </div>
@@ -503,11 +507,11 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                     {/* Wallet Stats */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                        <div className="text-gray-400 text-sm mb-2">Số lần kiểm tra</div>
+                        <div className="text-gray-400 text-sm mb-2">{t("profile.stats.check")}</div>
                         <div className="text-3xl text-cyan-400">{MOCK_PROFILE_STATS.totalScoreChecks}</div>
                       </div>
                       <div className="p-4 bg-slate-900/50 rounded-xl border border-blue-500/20">
-                        <div className="text-gray-400 text-sm mb-2">Lần kiểm tra cuối</div>
+                        <div className="text-gray-400 text-sm mb-2">{t("profile.stats.lastCheck")}</div>
                         <div className="text-lg text-blue-400">{MOCK_PROFILE_STATS.lastScoreCheck}</div>
                       </div>
                     </div>

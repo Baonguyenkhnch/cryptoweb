@@ -234,5 +234,17 @@
         "wallet": {
             "noAddress": "Chưa có ví nào được liên kết"
         }
+    },
+    "nav": {
+        "dashboard": "Bảng điều khiển",
+        "calculator": "Máy tính",
+        "profile": "Hồ sơ",
+        "logout": "Đăng xuất",
+        "profile_settings": "Cài đặt hồ sơ",
+        "my_dashboard": "Bảng điều khiển của tôi",
+        "account_settings": "Cài đặt tài khoản",
+        "online": "Trực tuyến",
+        "member": "Thành viên AAA",
+        "nowallet": "Chưa có ví"
     }
 }

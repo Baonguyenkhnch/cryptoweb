@@ -224,31 +224,31 @@
         "fields": {
             "name": "Display Name",
             "email": "Email",
-            "createdAt": "Account Created",
+            "createdAt": "Account Created On",
             "lastLogin": "Last Login",
             "wallet": "Main Wallet Address",
-            "noEmail": "No email available"
+            "noEmail": "No email provided"
         },
         "stats": {
             "title": "Statistics",
-            "joined": "Joined",
-            "activeDays": "Active",
+            "joined": "Joined Date",
+            "activeDays": "Active Days",
             "checks": "Score Checks",
             "average": "Average Score",
             "highest": "Highest Score",
-            "lastCheck": "Last Check"
+            "lastCheck": "Last Score Check"
         },
         "security": {
-            "title": "Account Secured",
-            "description": "Your wallet has been verified and protected."
+            "title": "Account Security",
+            "description": "Your wallet is verified and protected."
         },
         "copied": "✓ Copied!",
         "copyWallet": "Copy Address",
-        "copiedHint": "Wallet address is saved automatically when you log in.",
+        "copiedHint": "Your wallet address is saved automatically when you log in.",
         "details": {
-            "title": "Personal Details",
-            "editing": "Editing your information",
-            "viewing": "Viewing your profile"
+            "title": "Detailed Information",
+            "editing": "Editing your profile information",
+            "viewing": "Viewing profile information"
         },
         "badge": {
             "aaaMember": "AAA Member"
@@ -256,5 +256,17 @@
         "wallet": {
             "noAddress": "No wallet connected"
         }
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "calculator": "Calculator",
+        "profile": "Profile",
+        "logout": "Logout",
+        "profile_settings": "Profile Settings",
+        "my_dashboard": "My Dashboard",
+        "account_settings": "Account Settings",
+        "online": "Online",
+        "member": "AAA Member",
+        "nowallet": "No Wallet"
     }
 }
