@@ -22,7 +22,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import type { UserProfile } from "../services/api";
+import type { UserProfile, WalletAnalysis } from "../services/api";
 import { getScoreHistory } from "../services/api";
 
 // ============================================
@@ -31,6 +31,7 @@ import { getScoreHistory } from "../services/api";
 
 interface DashboardProps {
   user: UserProfile;
+  walletData: WalletAnalysis | null;
   onLogout: () => void;
   onViewProfile: () => void;
   onCalculateScore: () => void;
@@ -91,6 +92,7 @@ const MOCK_WALLET_DATA = {
 
 export function Dashboard({
   user,
+  walletData,
   onLogout,
   onViewProfile,
   onCalculateScore,
@@ -145,6 +147,13 @@ export function Dashboard({
   };
 
   // Tính toán score change
+  const currentScore = walletData?.score || MOCK_STATS.currentScore;
+  const walletAge = walletData?.walletAge || MOCK_STATS.walletAge;
+  const totalTransactions = walletData?.totalTransactions || MOCK_STATS.totalTransactions;
+  const tokenDiversity = walletData?.tokenDiversity || MOCK_STATS.tokenDiversity;
+  const totalAssets = walletData?.totalAssets || MOCK_STATS.totalAssets;
+  const rating = walletData?.rating || MOCK_STATS.rating;
+
   const scoreChange = MOCK_STATS.currentScore - MOCK_STATS.previousScore;
   const scoreChangePercent = ((scoreChange / MOCK_STATS.previousScore) * 100).toFixed(1);
   const isPositiveChange = scoreChange >= 0;
@@ -189,14 +198,27 @@ export function Dashboard({
 
               {/* Button Tính Điểm Mới - Design đẹp với stats */}
               <Button
-                onClick={onCalculateScore}
-                className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-lg shadow-cyan-500/30 text-white px-6"
+                onClick={handleRecalculate}
+                disabled={isRecalculating}
+                className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-lg shadow-cyan-500/30 text-white px-6 disabled:opacity-50"
               >
-                <Sparkles className="w-5 h-5 mr-2" />
-                <div className="flex flex-col items-start">
-                  <span className="text-sm">{t.statsLabels.calculateNew}</span>
-                  <span className="text-[10px] opacity-80">{t.statsLabels.calculatedTimes} {MOCK_STATS.totalChecks} {t.statsLabels.times}</span>
-                </div>
+                {isRecalculating ? (
+                  <>
+                    <div className="w-5 h-5 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm">{t.dashboard.recalculating}</span>
+                      <span className="text-[10px] opacity-80">{t.statsLabels.calculatedTimes} {MOCK_STATS.totalChecks} {t.statsLabels.times}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm">{t.dashboard.recalculate}</span>
+                      <span className="text-[10px] opacity-80">{t.statsLabels.calculatedTimes} {MOCK_STATS.totalChecks} {t.statsLabels.times}</span>
+                    </div>
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -207,11 +229,11 @@ export function Dashboard({
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-4 text-center">
               <div className="text-3xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-1">
-                {MOCK_STATS.currentScore}
+                {currentScore}
               </div>
               <div className="text-gray-400 text-xs">{t.statsLabels.creditScore}</div>
               <Badge className="mt-2 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                {MOCK_STATS.rating}
+                {rating}
               </Badge>
             </CardContent>
           </Card>
@@ -219,7 +241,7 @@ export function Dashboard({
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-4 text-center">
               <Calendar className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
-              <div className="text-2xl text-cyan-400 mb-1">{MOCK_STATS.walletAge}</div>
+              <div className="text-2xl text-cyan-400 mb-1">{walletAge}</div>
               <div className="text-gray-400 text-xs">{t.statsLabels.walletAgeDays}</div>
             </CardContent>
           </Card>
@@ -227,7 +249,7 @@ export function Dashboard({
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-4 text-center">
               <Activity className="w-5 h-5 text-blue-400 mx-auto mb-1" />
-              <div className="text-2xl text-blue-400 mb-1">{MOCK_STATS.totalTransactions.toLocaleString()}</div>
+              <div className="text-2xl text-blue-400 mb-1">{totalTransactions.toLocaleString()}</div>
               <div className="text-gray-400 text-xs">{t.statsLabels.transactions}</div>
             </CardContent>
           </Card>
@@ -235,7 +257,7 @@ export function Dashboard({
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-4 text-center">
               <Wallet className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
-              <div className="text-2xl text-emerald-400 mb-1">${(MOCK_STATS.totalAssets / 1000).toFixed(0)}k</div>
+              <div className="text-2xl text-emerald-400 mb-1">${(totalAssets / 1000).toFixed(0)}k</div>
               <div className="text-gray-400 text-xs">{t.statsLabels.assets}</div>
             </CardContent>
           </Card>
@@ -324,11 +346,11 @@ export function Dashboard({
           </div>
 
           <ScoreResult
-            score={MOCK_STATS.currentScore}
-            walletAge={MOCK_STATS.walletAge}
-            totalTransactions={MOCK_STATS.totalTransactions}
-            tokenDiversity={MOCK_STATS.tokenDiversity}
-            totalAssets={MOCK_STATS.totalAssets}
+            score={currentScore}
+            walletAge={walletAge}
+            totalTransactions={totalTransactions}
+            tokenDiversity={tokenDiversity}
+            totalAssets={totalAssets}
             tokenBalances={MOCK_WALLET_DATA.tokenBalances}
             recentTransactions={MOCK_WALLET_DATA.recentTransactions}
             onSubscribe={undefined}
