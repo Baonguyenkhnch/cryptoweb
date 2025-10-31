@@ -259,14 +259,10 @@
     },
     "nav": {
         "dashboard": "Dashboard",
-        "calculator": "Calculator",
         "profile": "Profile",
-        "logout": "Logout",
         "profile_settings": "Profile Settings",
         "my_dashboard": "My Dashboard",
         "account_settings": "Account Settings",
-        "online": "Online",
-        "member": "AAA Member",
-        "nowallet": "No Wallet"
+        "logout": "Logout"
     }
 }
