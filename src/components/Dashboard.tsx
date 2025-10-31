@@ -177,8 +177,8 @@ export function Dashboard({
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-4xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
-                Dashboard
+              <h1 className="text-4xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.6)]">
+                {t.nav.dashboard}
               </h1>
               <p className="text-gray-400 flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-cyan-400" />
@@ -273,11 +273,35 @@ export function Dashboard({
               </CardTitle>
 
               <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as any)}>
-                <TabsList className="bg-slate-900/50">
-                  <TabsTrigger value="7d">{t.statsLabels.period7d}</TabsTrigger>
-                  <TabsTrigger value="30d">{t.statsLabels.period30d}</TabsTrigger>
-                  <TabsTrigger value="90d">{t.statsLabels.period90d}</TabsTrigger>
+                <TabsList className="bg-slate-900/50 p-1 rounded-lg">
+                  <TabsTrigger
+                    value="7d"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500
+               data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/40
+               transition-all duration-300 text-gray-400 rounded-md px-3 py-1"
+                  >
+                    {t.statsLabels.period7d}
+                  </TabsTrigger>
+
+                  <TabsTrigger
+                    value="30d"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500
+               data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/40
+               transition-all duration-300 text-gray-400 rounded-md px-3 py-1"
+                  >
+                    {t.statsLabels.period30d}
+                  </TabsTrigger>
+
+                  <TabsTrigger
+                    value="90d"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500
+               data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/40
+               transition-all duration-300 text-gray-400 rounded-md px-3 py-1"
+                  >
+                    {t.statsLabels.period90d}
+                  </TabsTrigger>
                 </TabsList>
+
               </Tabs>
             </div>
           </CardHeader>
