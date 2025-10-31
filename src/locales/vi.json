@@ -242,5 +242,34 @@
         "my_dashboard": "Bảng của tôi",
         "account_settings": "Cài đặt tài khoản",
         "logout": "Đăng xuất"
+    },
+    "featureDialog": {
+        "title": "Đề Xuất Tính Năng Mới",
+        "description": "Ý tưởng của bạn giúp chúng tôi phát triển tốt hơn",
+        "featureName": "Tên Tính Năng",
+        "featureNamePlaceholder": "VD: Tích hợp với MetaMask",
+        "featureDesc": "Mô Tả Chi Tiết",
+        "featureDescPlaceholder": "Mô tả chi tiết về tính năng bạn muốn đề xuất...",
+        "emailLabel": "📧 Email Nhận Phản Hồi",
+        "emailOptional": "(Không bắt buộc)",
+        "emailPlaceholder": "your.email@example.com",
+        "emailNote": "Chúng tôi sẽ liên hệ nếu cần thêm thông tin",
+        "benefitsTitle": "Đề xuất của bạn sẽ được:",
+        "benefit1": "✓ Xem xét bởi đội ngũ phát triển",
+        "benefit2": "✓ Ưu tiên phát triển nếu phù hợp",
+        "benefit3": "✓ Nhận thông báo khi tính năng ra mắt",
+        "cancel": "Hủy",
+        "submit": "Gửi Đề Xuất",
+        "sending": "Đang Gửi...",
+        "successTitle": "Cảm Ơn Bạn!",
+        "successMessage": "Đề xuất của bạn đã được ghi nhận",
+        "successFollowup": "Chúng tôi sẽ xem xét và phản hồi sớm nhất",
+        "autoClose": "Đóng tự động sau giây lát...",
+        "errorFeature": "Vui lòng nhập tên tính năng",
+        "errorDesc": "Vui lòng mô tả chi tiết tính năng",
+        "errorGeneral": "Có lỗi xảy ra. Vui lòng thử lại."
+    },
+    "idea": {
+        "buttonidea": "chia sẻ ý tưởng"
     }
 }
