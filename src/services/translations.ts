@@ -398,6 +398,10 @@ export const translations = {
       },
       autoCalculated: "Điểm được tính toán tự động từ dữ liệu blockchain",
     },
+    idwallet: {
+      place: "Nhập địa chỉ ví ( giới hạn 10 ký tự )",
+      warning: "Địa chỉ ví phải bắt đầu bằng 0x và dài đúng 10 ký tự"
+    }
   },
 
   en: {
@@ -790,6 +794,10 @@ export const translations = {
       },
       autoCalculated: "Score is automatically calculated from blockchain data",
     },
+    idwallet: {
+      place: "Enter wallet address ( 10 character limit )",
+      warning: "Wallet address must start with “0x” and be exactly 10 characters long."
+    }
   },
 };
 

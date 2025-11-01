@@ -209,11 +209,16 @@ export function Login({ onLoginSuccess, onRegisterSuccess }: LoginProps) {
                       </Label>
                       <Input
                         id="login-email"
-                        type="email"
-                        placeholder={t.auth.placeholders.email}
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        className="bg-slate-900/50 border-cyan-500/30 focus:border-cyan-400 text-white"
+                        type="text"
+                        placeholder="Nhập ví (tối đa 10 ký tự)"
+                        value={
+                          loginEmail.length > 10
+                            ? `${loginEmail.slice(0, 6)}...${loginEmail.slice(-4)}`
+                            : loginEmail
+                        }
+                        onChange={(e) => setLoginEmail(e.target.value.slice(0, 10))}
+                        className="bg-slate-900/50 border-cyan-500/30 focus:border-cyan-400 text-gray-400 placeholder:text-gray-500"
+                        maxLength={10}
                       />
                     </div>
 

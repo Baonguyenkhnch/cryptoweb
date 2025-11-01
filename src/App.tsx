@@ -45,6 +45,7 @@ import {
 } from "./services/api";
 import logoIcon from "./components/images/logonhap.jpg";
 import logoFull from "./components/images/logodash.jpg";
+import { Eye, EyeOff } from "lucide-react"; // thêm dòng này ở đầu file
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -85,6 +86,7 @@ export default function App() {
       }
     }
   }, []);
+  const [showWallet, setShowWallet] = useState(false); // thêm vào trong phần state ở đầu component App()
 
   const handleLoginSuccess = (user: UserProfile) => {
     // Tự động lưu wallet address hiện tại vào user profile
@@ -152,30 +154,38 @@ export default function App() {
   };
 
   const handleCalculateScore = async () => {
+    // Kiểm tra ví có hợp lệ không
+    const isValidWallet = /^0x[a-fA-F0-9]{8}$/.test(walletAddress);
+
+    if (!isValidWallet) {
+      return; // ❌ Dừng lại, không cho chạy tiếp
+    }
+
     if (!walletAddress.trim()) {
       return;
     }
+
     setIsLoading(true);
     try {
-      // Gọi API phân tích ví
+      // ✅ Gọi API phân tích ví
       const data = await analyzeWallet(walletAddress);
       setWalletData(data);
       setShowResults(true);
 
-      // Kiểm tra subscription status
-      const status =
-        await checkSubscriptionStatus(walletAddress);
+      // ✅ Kiểm tra subscription status
+      const status = await checkSubscriptionStatus(walletAddress);
       setSubscriptionStatus(status);
     } catch (error) {
       console.error("Lỗi khi phân tích ví:", error);
       alert(
         t.calculator.buttons.analyzing +
-        " - Có lỗi xảy ra. Vui lòng thử lại.",
+        " - Có lỗi xảy ra. Vui lòng thử lại."
       );
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleReset = () => {
     setShowResults(false);
@@ -280,6 +290,8 @@ export default function App() {
     );
     console.log("📍 Wallet Address:", walletAddress);
   };
+  const isValidWallet = /^0x[a-fA-F0-9]{40}$/.test(walletAddress);
+
 
   // trang calculator chính
   const renderCalculatorPage = () => (
@@ -421,19 +433,56 @@ export default function App() {
                     >
                       {t.calculator.input.label}
                     </Label>
-                    <div className="relative">
+                    <div className="relative w-full">
                       <Input
                         id="wallet"
-                        placeholder={
-                          t.calculator.input.placeholder
-                        }
+                        type={showWallet ? "text" : "password"}
+                        placeholder={t.idwallet?.place || "Enter wallet ID"}
+
                         value={walletAddress}
-                        onChange={(e) =>
-                          setWalletAddress(e.target.value)
-                        }
-                        className="h-11 md:h-12 bg-slate-900/50 border border-cyan-500/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 text-sm rounded-xl transition-all duration-300"
+                        maxLength={10}
+                        onChange={(e) => {
+                          let value = e.target.value.trim();
+
+                          // Nếu không bắt đầu bằng "0x" thì tự thêm
+                          if (!value.startsWith("0x")) {
+                            value = "0x" + value.replace(/[^a-fA-F0-9]/g, "");
+                          } else {
+                            // Chỉ cho phép ký tự hợp lệ sau "0x"
+                            const rest = value.slice(2).replace(/[^a-fA-F0-9]/g, "");
+                            value = "0x" + rest;
+                          }
+
+                          // Giới hạn đúng 10 ký tự
+                          if (value.length > 10) value = value.slice(0, 10);
+
+                          setWalletAddress(value);
+                        }}
+                        className="h-11 md:h-12 bg-slate-900/50 border border-cyan-500/30 
+      focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 
+      text-white placeholder:text-gray-500 text-sm rounded-xl 
+      transition-all duration-300 pr-10 w-full"
                       />
+
+                      {/* 👁 Nút hiện/ẩn nằm trong ô nhập */}
+                      <div className="absolute inset-y-0 right-3 flex items-center h-full">
+                        <button
+                          type="button"
+                          onClick={() => setShowWallet(!showWallet)}
+                          className="text-gray-400 hover:text-cyan-400 transition-colors"
+                        >
+                          {showWallet ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
+
+                    {/* ⚠️ Báo lỗi nếu chưa đủ hoặc sai */}
+                    {walletAddress &&
+                      (walletAddress.length < 10 || !walletAddress.startsWith("0x")) && (
+                        <p className="text-red-400 text-sm mt-2">
+                          ⚠️ {t.idwallet.warning}
+                        </p>
+                      )}
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-2 md:gap-3">

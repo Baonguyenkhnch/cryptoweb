@@ -10,6 +10,9 @@
     "common": {
         "loading": "Loading..."
     },
+    "idwallet": {
+        "place": "Enter wallet address (0x + 8 characters)"
+    },
     "emailLogin": {
         "title": "Login via Email",
         "description": "We'll send you a magic link to sign in.",

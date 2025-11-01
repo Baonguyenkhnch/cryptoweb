@@ -10,6 +10,9 @@
     "common": {
         "loading": "Đang tải..."
     },
+    "idwallet": {
+        "place": "Nhập địa chỉ ví (0x + 8 ký tự)"
+    },
     "emailLogin": {
         "title": "Đăng nhập qua Email",
         "description": "Chúng tôi sẽ gửi cho bạn một liên kết ma thuật để đăng nhập.",
