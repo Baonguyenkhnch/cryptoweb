@@ -86,7 +86,7 @@ export default function App() {
       }
     }
   }, []);
-  const [showWallet, setShowWallet] = useState(false); // thêm vào trong phần state ở đầu component App()
+  const [isWalletVisible, setIsWalletVisible] = useState(false); // thêm vào trong phần state ở đầu component App()
 
   const handleLoginSuccess = (user: UserProfile) => {
     // Tự động lưu wallet address hiện tại vào user profile
@@ -250,6 +250,7 @@ export default function App() {
     }
   };
 
+
   const handleNavigate = (page: Page) => {
     if (page === "dashboard") handleGoToDashboard();
     else if (page === "calculator") handleGoToCalculator();
@@ -292,7 +293,9 @@ export default function App() {
   };
   const isValidWallet = /^0x[a-fA-F0-9]{40}$/.test(walletAddress);
 
-
+  useEffect(() => {
+    console.log("isWalletVisible:", isWalletVisible);
+  }, [isWalletVisible]);
   // trang calculator chính
   const renderCalculatorPage = () => (
     <div
@@ -436,9 +439,10 @@ export default function App() {
                     <div className="relative w-full">
                       <Input
                         id="wallet"
-                        type={showWallet ? "text" : "password"}
+                        type={isWalletVisible ? "text" : "password"}
                         placeholder={t.idwallet?.place || "Enter wallet ID"}
-
+                        inputMode="none" // thêm dòng này
+                        autoComplete="new-password" // thêm dòng này
                         value={walletAddress}
                         maxLength={10}
                         onChange={(e) => {
@@ -466,24 +470,30 @@ export default function App() {
 
                       {/* 👁 Nút hiện/ẩn nằm trong ô nhập */}
                       <div className="absolute inset-y-0 right-3 flex items-center h-full">
+
                         <button
                           type="button"
-                          onClick={() => setShowWallet(!showWallet)}
+                          onClick={() => setIsWalletVisible(!isWalletVisible)}
                           className="text-gray-400 hover:text-cyan-400 transition-colors"
                         >
-                          {showWallet ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                    </div>
+                          {/* 👁 Khi đang ẩn (showWallet = false) → hiện icon “mở mắt” */}
+                          {isWalletVisible ? <Eye size={18} /> : <EyeOff size={18} />}
 
-                    {/* ⚠️ Báo lỗi nếu chưa đủ hoặc sai */}
-                    {walletAddress &&
-                      (walletAddress.length < 10 || !walletAddress.startsWith("0x")) && (
-                        <p className="text-red-400 text-sm mt-2">
-                          ⚠️ {t.idwallet.warning}
-                        </p>
-                      )}
+                        </button>
+
+                      </div>
+
+                    </div>
                   </div>
+
+                  {/* ⚠️ Báo lỗi nếu chưa đủ hoặc sai */}
+                  {walletAddress &&
+                    (walletAddress.length < 10 || !walletAddress.startsWith("0x")) && (
+                      <p className="text-red-400 text-sm mt-2">
+                        ⚠️ {t.idwallet.warning}
+                      </p>
+                    )}
+
 
                   <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                     <Button
@@ -612,9 +622,10 @@ export default function App() {
               </div>
             )}
           </div>
-        )}
-      </div>
-    </div>
+        )
+        }
+      </div >
+    </div >
   );
 
   // xử lý render theo page
