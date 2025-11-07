@@ -20,7 +20,7 @@ import { ErrorDialog } from "./components/ErrorDialog";
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
-import logoImage from "./components/images/logonhap.jpg";
+import logoImage from "../src/components/images/logonhap.jpg";
 import {
   Wallet,
   TrendingUp,
@@ -474,27 +474,27 @@ export default function App() {
           /* Input Form - Center Focus */
           <div className="max-w-[42rem] mx-auto w-full space-y-5">
             {/* Title - Center */}
-            <div className="text-center animate-in fade-in-0 duration-1000 pt-12 md:pt-0">
-              <h1 className="text-[1.75rem] md:text-[2.5rem] mb-3 md:mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-tight pb-1 px-2">
+            <div className="text-center animate-in fade-in-0 duration-1000 pt-10 md:pt-0">
+              <h1 className="text-[1.5rem] leading-tight md:text-[2.5rem] mb-2.5 md:mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight pb-1 px-2">
                 {t.calculator.title}
               </h1>
 
-              {/* 3 Privacy Icons ngay dưới title - Responsive layout */}
-              <div className="flex items-center justify-center px-2">
-                <div className="inline-flex flex-nowrap items-center gap-1.5 md:gap-3 px-3 md:px-5 py-1.5 md:py-2 bg-gradient-to-r from-cyan-500/5 via-blue-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-full backdrop-blur-sm">
-                  <div className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
-                    <Shield className="w-3 h-3 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
-                    <span className="text-[10px] md:text-xs text-cyan-300">{t.calculator.privacy.decentralized}</span>
+              {/* 3 Privacy Icons ngay dưới title - Simplified on mobile */}
+              <div className="flex items-center justify-center px-2 mb-1">
+                <div className="inline-flex flex-nowrap items-center gap-1 md:gap-3 px-2.5 md:px-5 py-1 md:py-2 bg-gradient-to-r from-cyan-500/5 via-blue-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-full backdrop-blur-sm">
+                  <div className="flex items-center gap-0.5 md:gap-1.5 whitespace-nowrap">
+                    <Shield className="w-2.5 h-2.5 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
+                    <span className="text-[9px] md:text-xs text-cyan-300">{t.calculator.privacy.decentralized}</span>
                   </div>
                   <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0"></div>
-                  <div className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
-                    <Lock className="w-3 h-3 md:w-4 md:h-4 text-purple-400 flex-shrink-0" />
-                    <span className="text-[10px] md:text-xs text-purple-300">{t.calculator.privacy.noPersonalInfo}</span>
+                  <div className="flex items-center gap-0.5 md:gap-1.5 whitespace-nowrap">
+                    <Lock className="w-2.5 h-2.5 md:w-4 md:h-4 text-purple-400 flex-shrink-0" />
+                    <span className="text-[9px] md:text-xs text-purple-300">{t.calculator.privacy.noPersonalInfo}</span>
                   </div>
                   <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0"></div>
-                  <div className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
-                    <Info className="w-3 h-3 md:w-4 md:h-4 text-blue-400 flex-shrink-0" />
-                    <span className="text-[10px] md:text-xs text-blue-300">{t.calculator.privacy.onlyPublicData}</span>
+                  <div className="flex items-center gap-0.5 md:gap-1.5 whitespace-nowrap">
+                    <Info className="w-2.5 h-2.5 md:w-4 md:h-4 text-blue-400 flex-shrink-0" />
+                    <span className="text-[9px] md:text-xs text-blue-300">{t.calculator.privacy.onlyPublicData}</span>
                   </div>
                 </div>
               </div>
@@ -505,24 +505,24 @@ export default function App() {
               <div className="absolute -inset-1 bg-gradient-to-r from-slate-600/20 to-slate-500/15 rounded-xl blur-lg opacity-50" />
 
               <div className="relative">
-                <CardHeader className="text-center pb-3 pt-5 px-5">
-                  <CardTitle className="text-lg md:text-xl text-white flex items-center justify-center gap-2.5 mb-2">
+                <CardHeader className="text-center pb-2 md:pb-3 pt-4 md:pt-5 px-4 md:px-5">
+                  <CardTitle className="text-base md:text-xl text-white flex items-center justify-center gap-2 md:gap-2.5 mb-1.5 md:mb-2">
                     <div className="relative">
-                      <Wallet className="w-5 h-5 text-cyan-400" />
+                      <Wallet className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
                       <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
                     </div>
                     {t.calculator.input.title}
                   </CardTitle>
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-gray-400 text-xs md:text-sm">
                     {t.calculator.input.subtitle}
                   </p>
                 </CardHeader>
 
-                <CardContent className="space-y-3 p-5 pb-5">
-                  <div className="space-y-2 mt-2">
+                <CardContent className="space-y-2.5 md:space-y-3 p-4 md:p-5 pb-4 md:pb-5">
+                  <div className="space-y-1.5 md:space-y-2 mt-1 md:mt-2">
                     <Label
                       htmlFor="wallet"
-                      className="text-gray-300 text-sm"
+                      className="text-gray-300 text-xs md:text-sm"
                     >
                       {t.calculator.input.label}
                     </Label>
@@ -537,20 +537,20 @@ export default function App() {
                         onChange={(e) => {
                           setWalletAddress(e.target.value);
                         }}
-                        className="h-12 md:h-13 bg-slate-900/50 border border-cyan-500/30 
+                        className="h-11 md:h-13 bg-slate-900/50 border border-cyan-500/30 
                           focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 
-                          text-white placeholder:text-gray-500 text-base rounded-lg 
-                          transition-all duration-300 pr-12 w-full"
+                          text-white placeholder:text-gray-500 text-sm md:text-base rounded-lg 
+                          transition-all duration-300 pr-11 md:pr-12 w-full"
                       />
 
                       {/* 👁 Nút hiện/ẩn */}
-                      <div className="absolute inset-y-0 right-4 flex items-center h-full">
+                      <div className="absolute inset-y-0 right-3 md:right-4 flex items-center h-full">
                         <button
                           type="button"
                           onClick={() => setShowWalletAddress(!showWalletAddress)}
                           className="text-gray-400 hover:text-cyan-400 transition-colors"
                         >
-                          {showWalletAddress ? <Eye size={20} /> : <EyeOff size={20} />}
+                          {showWalletAddress ? <Eye size={18} className="md:w-5 md:h-5" /> : <EyeOff size={18} className="md:w-5 md:h-5" />}
                         </button>
                       </div>
                     </div>
@@ -558,15 +558,15 @@ export default function App() {
 
                   {/* ℹ️ Gợi ý định dạng */}
                   {walletAddress && walletAddress.length > 0 && (
-                    <p className="text-gray-400 text-sm md:text-base flex items-center gap-2">
+                    <p className="text-gray-400 text-xs md:text-base flex items-center gap-1.5 md:gap-2">
                       {isValidEmail(walletAddress) ? (
                         <>
-                          <Mail className="w-4 h-4 text-cyan-400" />
+                          <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
                           <span className="text-cyan-400">Email phát hiện - Sẽ tìm ví</span>
                         </>
                       ) : walletAddress.startsWith("0x") ? (
                         <>
-                          <Wallet className="w-4 h-4 text-teal-400" />
+                          <Wallet className="w-3.5 h-3.5 md:w-4 md:h-4 text-teal-400 flex-shrink-0" />
                           <span className="text-teal-400">
                             {walletAddress.length === 42
                               ? "✓ Hợp lệ"
@@ -579,25 +579,25 @@ export default function App() {
                     </p>
                   )}
 
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2.5 md:gap-3">
                     <Button
                       onClick={handleCalculateScore}
                       disabled={
                         !walletAddress.trim() || isLoading
                       }
-                      className="relative flex-1 h-12 md:h-13 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-base shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 disabled:opacity-50 rounded-lg group overflow-hidden"
+                      className="relative flex-1 h-11 md:h-13 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-sm md:text-base shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 disabled:opacity-50 rounded-lg group overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
 
                       {isLoading ? (
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-4.5 h-4.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span className="text-base">
+                        <div className="flex items-center gap-2 md:gap-2.5">
+                          <div className="w-4 h-4 md:w-4.5 md:h-4.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span className="text-sm md:text-base">
                             {t.calculator.buttons.analyzing}
                           </span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2 md:gap-2.5">
                           <TrendingUp className="w-4.5 h-4.5" />
                           <span className="text-base">
                             {t.calculator.buttons.calculate}
