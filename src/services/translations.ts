@@ -173,7 +173,6 @@ export const translations = {
       showPassword: "Hiện mật khẩu",
       hidePassword: "Ẩn mật khẩu",
       errors: {
-        fillAll: "Vui lòng điền đầy đủ thông tin",
         passwordMismatch: "Mật khẩu không khớp",
         passwordLength: "Mật khẩu phải có ít nhất 6 ký tự",
         invalidWallet: "Địa chỉ ví không hợp lệ (phải là địa chỉ Ethereum)",
@@ -643,7 +642,6 @@ export const translations = {
       showPassword: "Show password",
       hidePassword: "Hide password",
       errors: {
-        fillAll: "Please fill in all fields",
         passwordMismatch: "Passwords do not match",
         passwordLength: "Password must be at least 6 characters",
         invalidWallet: "Invalid wallet address (must be Ethereum address)",
