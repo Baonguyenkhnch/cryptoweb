@@ -60,7 +60,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
     }
 
     if (!isValidEmail(registerEmail)) {
-      setError("Email không hợp lệ !");
+      setError("Email không hợp l���");
       return;
     }
 
@@ -139,14 +139,15 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
         {/* Header - COMPACT */}
         <div className="text-center mb-4">
           <div className="flex items-center justify-center mb-2">
-            <div className="relative">
-              <div className="absolute -inset-2 bg-gradient-to-r from-orange-500/30 to-red-500/30 rounded-xl blur-lg opacity-70 animate-pulse" />
-              <img
-                src={logoIcon}
-                alt="MigoFin"
-                className="w-11 h-11 object-contain relative z-10"
-                style={{ filter: 'drop-shadow(0 4px 12px rgba(249, 115, 22, 0.5))' }}
-              />
+            <div className="relative group cursor-pointer">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative w-12 h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
+                <img
+                  src={logoIcon}
+                  alt="ScorePage Logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
           <h1 className="text-xl mb-1 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
@@ -182,16 +183,16 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
               {/* Info Banner - COMPACT & COLLAPSIBLE */}
               <div className="p-2.5 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-500/20 rounded-lg">
                 <div className="text-[11px] text-purple-300 mb-1 font-medium">
-                  💡 Lợi ích:
+                  {t.auth.benefits}
                 </div>
                 <ul className="space-y-0.5 text-[10px] text-gray-300">
                   <li className="flex items-center gap-1">
                     <span className="text-green-400">✓</span>
-                    Nhập <strong className="text-cyan-400">email</strong> thay vì địa chỉ ví
+                    {t.auth.benefit1}
                   </li>
                   <li className="flex items-center gap-1">
                     <span className="text-green-400">✓</span>
-                    Dashboard chi tiết với biểu đồ
+                    {t.auth.benefit3}
                   </li>
                 </ul>
               </div>
@@ -250,7 +251,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                     </Button>
                   </div>
                   <p className="text-[9px] text-gray-500">
-                    💡 Không có ví? Bấm để tạo ví
+                    💡 Không có ví? Bấm để tạo test
                   </p>
                 </div>
 

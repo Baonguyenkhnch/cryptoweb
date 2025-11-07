@@ -444,13 +444,102 @@ export const calculateCreditScore = async (walletAddress: string): Promise<Credi
     };
 };
 
-export const getScoreHistory = async (walletAddress: string): Promise<Array<{ date: string; score: number }>> => {
-    // TODO: Có thể thêm API endpoint cho score history
-    // Tạm thời dùng mock data
+// =====================================================
+// SCORE HISTORY API - Backend CÓ endpoint này! ✅
+// Endpoint: GET /api/credit-score/{wallet}/history?days=30
+// =====================================================
+
+export const getScoreHistory = async (
+    walletAddress: string,
+    days: number = 30
+): Promise<Array<{ date: string; score: number }>> => {
+    debugLog(`📊 Getting score history for: ${walletAddress} (${days} days)`);
+
+    try {
+        // Validate wallet address
+        if (!isValidWalletAddress(walletAddress)) {
+            throw new Error("Invalid wallet address format");
+        }
+
+        // Build API URL
+        const url = `${API_BASE_URL}/api/credit-score/${walletAddress}/history?days=${days}`;
+        debugLog(`📡 Calling Score History API: ${url}`);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+        const startTime = Date.now();
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        const endTime = Date.now();
+
+        debugLog(`⏱️ Score History API response time: ${endTime - startTime}ms`);
+        debugLog(`📊 Score History API status: ${response.status}`);
+
+        if (!response.ok) {
+            debugLog(`⚠️ Score History API error (${response.status}), using mock data`);
+            return generateMockScoreHistory(days);
+        }
+
+        const data = await response.json();
+        debugLog(`✅ Score History data received:`, data);
+
+        // Map response to expected format
+        // Backend có thể trả về array trực tiếp hoặc object với field history
+        let historyArray = [];
+
+        if (Array.isArray(data)) {
+            historyArray = data;
+        } else if (data.history && Array.isArray(data.history)) {
+            historyArray = data.history;
+        } else if (data.data && Array.isArray(data.data)) {
+            historyArray = data.data;
+        } else {
+            debugLog(`⚠️ Unexpected response format, using mock data`);
+            return generateMockScoreHistory(days);
+        }
+
+        // Map to standard format
+        const mappedHistory = historyArray.map((item: any) => ({
+            date: item.date || item.timestamp || item.created_at,
+            score: item.score || item.credit_score || item.final_score || 0,
+        }));
+
+        if (mappedHistory.length === 0) {
+            debugLog(`⚠️ No history data returned, using mock data`);
+            return generateMockScoreHistory(days);
+        }
+
+        debugLog(`✅ Successfully mapped ${mappedHistory.length} history records`);
+        return mappedHistory;
+
+    } catch (error: any) {
+        if (error.name === 'AbortError') {
+            debugLog(`⏱️ Score History API timeout, using mock data`);
+        } else {
+            debugLog(`❌ Error getting score history:`, error.message);
+        }
+
+        // Fallback to mock data
+        return generateMockScoreHistory(days);
+    }
+};
+
+// Helper function to generate mock score history (fallback)
+function generateMockScoreHistory(days: number): Array<{ date: string; score: number }> {
+    debugLog(`⚠️ Generating mock score history for ${days} days`);
     const history = [];
     const baseScore = 700;
 
-    for (let i = 29; i >= 0; i--) {
+    for (let i = days - 1; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
         const variation = Math.random() * 50 - 25;
@@ -461,8 +550,8 @@ export const getScoreHistory = async (walletAddress: string): Promise<Array<{ da
         });
     }
 
-    return simulateApiCall(history, 1000);
-};
+    return history;
+}
 
 export const getUserProfile = async (userId: string): Promise<UserProfile> => {
     const mockProfile: UserProfile = {
@@ -719,4 +808,4 @@ export default {
     formatWalletAddress,
     registerWalletWithEmail,
     getWalletByEmail,
-}
+};
