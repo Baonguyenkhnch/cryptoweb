@@ -12,33 +12,36 @@ import { Card, CardContent } from "./ui/card";
 interface LoadingProgressProps {
     isVisible: boolean;
     walletAddress?: string;
+    onCancel?: () => void; // Thêm callback để cancel
+    onTryDemo?: () => void; // Thêm callback để thử demo mode
 }
 
-export function LoadingProgress({ isVisible, walletAddress }: LoadingProgressProps) {
+export function LoadingProgress({ isVisible, walletAddress, onCancel, onTryDemo }: LoadingProgressProps) {
     const [progress, setProgress] = useState(0);
     const [currentStep, setCurrentStep] = useState(0);
     const [timeElapsed, setTimeElapsed] = useState(0);
+    const [showDemoButton, setShowDemoButton] = useState(false);
 
     const steps = [
         {
             icon: Database,
             title: "Đang kết nối blockchain...",
             titleEn: "Connecting to blockchain...",
-            duration: 3000,
+            duration: 1500, // Giảm từ 2000 → 1500
             tips: "Đang truy xuất dữ liệu từ mạng Ethereum",
         },
         {
             icon: TrendingUp,
             title: "Đang phân tích giao dịch...",
             titleEn: "Analyzing transactions...",
-            duration: 5000,
+            duration: 1500, // Giảm từ 3000 → 1500
             tips: "Đang xử lý lịch sử giao dịch và token balances",
         },
         {
             icon: CheckCircle,
             title: "Đang tính toán điểm...",
             titleEn: "Calculating credit score...",
-            duration: 4000,
+            duration: 2000, // Giảm từ 3000 → 2000
             tips: "Áp dụng thuật toán đánh giá tín dụng",
         },
     ];
@@ -51,25 +54,32 @@ export function LoadingProgress({ isVisible, walletAddress }: LoadingProgressPro
             return;
         }
 
-        // Progress bar animation
+        // Progress bar animation - CỰC NHANH!
         const progressInterval = setInterval(() => {
             setProgress((prev) => {
                 if (prev >= 95) return 95; // Stop at 95%, complete when done
-                return prev + 1;
+                return prev + 3; // Tăng từ +2 → +3 để chạy CỰC NHANH
             });
-        }, 400);
+        }, 250); // Giảm từ 300ms → 250ms để còn nhanh hơn nữa
 
-        // Step progression
+        // Step progression - CỰC NHANH!
         const stepInterval = setInterval(() => {
             setCurrentStep((prev) => {
                 if (prev >= steps.length - 1) return prev;
                 return prev + 1;
             });
-        }, 4000);
+        }, 1800); // Giảm từ 3000ms → 1800ms để chạy qua steps nhanh hơn
 
         // Time counter
         const timeInterval = setInterval(() => {
-            setTimeElapsed((prev) => prev + 1);
+            setTimeElapsed((prev) => {
+                const newTime = prev + 1;
+                // Hiện nút Demo sau 4 giây - NHANH HƠN!
+                if (newTime >= 4) {
+                    setShowDemoButton(true);
+                }
+                return newTime;
+            });
         }, 1000);
 
         return () => {
@@ -82,7 +92,7 @@ export function LoadingProgress({ isVisible, walletAddress }: LoadingProgressPro
     if (!isVisible) return null;
 
     const CurrentIcon = steps[currentStep].icon;
-    const estimatedTime = 5; // seconds - Timeout tối đa
+    const estimatedTime = 6; // seconds - Giảm từ 10s → 6s để user cảm thấy cực nhanh
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -163,14 +173,11 @@ export function LoadingProgress({ isVisible, walletAddress }: LoadingProgressPro
                         })}
                     </div>
 
-                    {/* Time Info */}
-                    <div className="flex items-center justify-between text-sm">
+                    {/* Time Info - CHỈ HIỂN THỊ THỜI GIAN TRÔI QUA */}
+                    <div className="flex items-center justify-center text-sm">
                         <div className="flex items-center gap-2 text-gray-400">
                             <Clock className="w-4 h-4" />
-                            <span>Đã trôi qua: {timeElapsed}s</span>
-                        </div>
-                        <div className="text-gray-500">
-                            Ước tính: ~{estimatedTime}s
+                            <span>Đã phân tích: {timeElapsed}s</span>
                         </div>
                     </div>
 
@@ -184,19 +191,47 @@ export function LoadingProgress({ isVisible, walletAddress }: LoadingProgressPro
                         </div>
                     )}
 
-                    {/* Info Message */}
+                    {/* Info Message - LAC QUAN HƠN */}
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
                         <p className="text-xs text-blue-300 text-center">
-                            {timeElapsed > 5
-                                ? "⚠️ Quá thời gian chờ (5s). Vui lòng thử lại..."
-                                : "💡 Backend đang phân tích dữ liệu blockchain..."}
+                            {timeElapsed > 6
+                                ? "⚡ Sắp xong! Đang hoàn tất phân tích..."
+                                : timeElapsed > 3
+                                    ? "🔍 Đang phân tích sâu lịch sử giao dịch..."
+                                    : "💡 Đang thu thập dữ liệu từ blockchain..."}
                         </p>
                     </div>
 
-                    {/* Cancel hint */}
-                    <p className="text-xs text-gray-500 text-center">
-                        Đang xử lý... Vui lòng đợi hoặc thử lại sau
-                    </p>
+                    {/* Action Buttons - HIỆN SAU 8 GIÂY */}
+                    {showDemoButton ? (
+                        <div className="space-y-2">
+                            <p className="text-xs text-orange-400 text-center font-medium">
+                                ⚠️ Backend đang chậm hơn bình thường
+                            </p>
+                            <div className="flex gap-2">
+                                {onTryDemo && (
+                                    <button
+                                        onClick={onTryDemo}
+                                        className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-green-500/50"
+                                    >
+                                        🎨 Xem Demo Ngay
+                                    </button>
+                                )}
+                                {onCancel && (
+                                    <button
+                                        onClick={onCancel}
+                                        className="flex-1 bg-slate-700 hover:bg-slate-600 text-gray-300 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+                                    >
+                                        ❌ Hủy
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-xs text-gray-500 text-center">
+                            🚀 Vui lòng đợi trong giây lát...
+                        </p>
+                    )}
                 </CardContent>
             </Card>
 
