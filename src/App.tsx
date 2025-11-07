@@ -20,11 +20,12 @@ import { ErrorDialog } from "./components/ErrorDialog";
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
-import logoImage from "../src/components/images/logonhap.jpg";
+import logoImage from "./components/images/logonhap.jpg";
 import {
   Wallet,
   TrendingUp,
   Shield,
+
   Star,
   Mail,
   Lock,
@@ -422,10 +423,10 @@ export default function App() {
       </div>
 
       {/* Top Left - Logo */}
-      <div className="absolute top-3 md:top-4 left-3 md:left-4 z-20">
+      <div className="absolute top-2.5 md:top-4 left-2.5 md:left-4 z-20">
         <div className="relative group cursor-pointer">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
+          <div className="relative w-9 h-9 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
             <ImageWithFallback
               src={logoImage}
               alt="ScorePage Logo"
@@ -437,7 +438,7 @@ export default function App() {
 
       {/* Top Right - Register & Login Buttons & Language Switcher (if not logged in) */}
       {!currentUser && (
-        <div className="absolute top-3 md:top-4 right-3 md:right-4 z-20 flex items-center gap-1.5">
+        <div className="absolute top-2.5 md:top-4 right-2.5 md:right-4 z-20 flex items-center gap-1">
           <LanguageSwitcher size="sm" />
 
           {/* Đăng ký button */}
@@ -447,21 +448,19 @@ export default function App() {
               setCurrentPage("login");
             }}
             variant="outline"
-            className="bg-gradient-to-r from-orange-600/20 to-yellow-600/20 backdrop-blur-sm border-orange-500/40 text-orange-400 hover:bg-orange-500/30 hover:border-orange-400/50 rounded-lg h-8 md:h-9 px-3 md:px-4 text-xs md:text-sm"
+            className="bg-gradient-to-r from-orange-600/20 to-yellow-600/20 backdrop-blur-sm border-orange-500/40 text-orange-400 hover:bg-orange-500/30 hover:border-orange-400/50 rounded-lg h-7 md:h-9 px-2.5 md:px-4 text-[11px] md:text-sm whitespace-nowrap"
           >
-            <span>
-              {t.auth.register}
-            </span>
+            {t.auth.register}
           </Button>
 
-          {/* Đăng nhập button */}
+          {/* Đăng nhập button - Icon only on mobile */}
           <Button
             onClick={() => setShowEmailLoginDialog(true)}
             variant="outline"
-            className="bg-slate-800/80 backdrop-blur-sm border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400/50 rounded-lg h-8 md:h-9 px-3 md:px-4 text-xs md:text-sm"
+            className="bg-slate-800/80 backdrop-blur-sm border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400/50 rounded-lg h-7 md:h-9 px-2 md:px-4 text-[11px] md:text-sm"
           >
-            <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5" />
-            <span className="hidden sm:inline">
+            <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 md:mr-1.5" />
+            <span className="hidden md:inline">
               {t.navigation.login}
             </span>
           </Button>
@@ -469,33 +468,33 @@ export default function App() {
       )}
 
       <div
-        className={`relative z-10 container mx-auto px-4 ${!showResults ? "h-full flex flex-col justify-center py-6 md:py-8" : "py-3 md:py-4"}`}
+        className={`relative z-10 container mx-auto px-3 md:px-4 ${!showResults ? "h-full flex flex-col justify-center py-4 md:py-8" : "py-3 md:py-4"}`}
       >
         {!showResults ? (
           /* Input Form - Center Focus */
           <div className="max-w-[42rem] mx-auto w-full space-y-5">
             {/* Title - Center */}
-            <div className="text-center animate-in fade-in-0 duration-1000">
-              <h1 className="text-[2rem] md:text-[2.5rem] mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-tight pb-1">
+            <div className="text-center animate-in fade-in-0 duration-1000 pt-12 md:pt-0">
+              <h1 className="text-[1.75rem] md:text-[2.5rem] mb-3 md:mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-tight pb-1 px-2">
                 {t.calculator.title}
               </h1>
 
-              {/* 3 Privacy Icons ngay dưới title - Always horizontal with decoration */}
-              <div className="flex items-center justify-center">
-                <div className="inline-flex flex-nowrap items-center gap-3 px-5 py-2 bg-gradient-to-r from-cyan-500/5 via-blue-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-full backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 whitespace-nowrap">
-                    <Shield className="w-3.5 h-3.5 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
-                    <span className="text-xs text-cyan-300">{t.calculator.privacy.decentralized}</span>
+              {/* 3 Privacy Icons ngay dưới title - Responsive layout */}
+              <div className="flex items-center justify-center px-2">
+                <div className="inline-flex flex-nowrap items-center gap-1.5 md:gap-3 px-3 md:px-5 py-1.5 md:py-2 bg-gradient-to-r from-cyan-500/5 via-blue-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-full backdrop-blur-sm">
+                  <div className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
+                    <Shield className="w-3 h-3 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
+                    <span className="text-[10px] md:text-xs text-cyan-300">{t.calculator.privacy.decentralized}</span>
                   </div>
                   <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0"></div>
-                  <div className="flex items-center gap-1.5 whitespace-nowrap">
-                    <Lock className="w-3.5 h-3.5 md:w-4 md:h-4 text-purple-400 flex-shrink-0" />
-                    <span className="text-xs text-purple-300">{t.calculator.privacy.noPersonalInfo}</span>
+                  <div className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
+                    <Lock className="w-3 h-3 md:w-4 md:h-4 text-purple-400 flex-shrink-0" />
+                    <span className="text-[10px] md:text-xs text-purple-300">{t.calculator.privacy.noPersonalInfo}</span>
                   </div>
                   <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0"></div>
-                  <div className="flex items-center gap-1.5 whitespace-nowrap">
-                    <Info className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400 flex-shrink-0" />
-                    <span className="text-xs text-blue-300">{t.calculator.privacy.onlyPublicData}</span>
+                  <div className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
+                    <Info className="w-3 h-3 md:w-4 md:h-4 text-blue-400 flex-shrink-0" />
+                    <span className="text-[10px] md:text-xs text-blue-300">{t.calculator.privacy.onlyPublicData}</span>
                   </div>
                 </div>
               </div>
@@ -754,6 +753,13 @@ export default function App() {
       <LoadingProgress
         isVisible={isLoading}
         walletAddress={walletAddress}
+        onCancel={() => {
+          setIsLoading(false);
+          setLoadingProgress(0);
+          setLoadingMessage("");
+          setLoadingStep(0);
+        }}
+        onTryDemo={handleTryDemoMode}
       />
 
       {/* Error Dialog */}
