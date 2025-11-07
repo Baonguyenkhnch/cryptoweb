@@ -40,9 +40,10 @@ import {
   Activity,
   Clock
 } from "lucide-react";
-import type { UserProfile } from "../services/api";
-import { updateUserProfile, formatWalletAddress } from "../services/api";
-import { useTranslation } from "react-i18next";
+import type { UserProfile } from "../services/api-real";
+import { updateUserProfile, formatWalletAddress } from "../services/api-real";
+import { useLanguage } from "../services/LanguageContext";
+import { copyToClipboard } from "./ui/utils";
 
 // ============================================
 // TYPES
@@ -71,7 +72,9 @@ const MOCK_PROFILE_STATS = {
 // ============================================
 
 export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps) {
-  const { t } = useTranslation();
+  // Language context
+  const { t, language } = useLanguage();
+
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -99,13 +102,11 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
 
   // Copy wallet address to clipboard
   const handleCopyWallet = async () => {
-    try {
-      await navigator.clipboard.writeText(user.walletAddress);
-      setCopiedWallet(true);
-      setTimeout(() => setCopiedWallet(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
+    const success = await copyToClipboard(user.walletAddress);
+    // Show copied state regardless of success for better UX
+    // (the fallback methods usually work even if modern API is blocked)
+    setCopiedWallet(true);
+    setTimeout(() => setCopiedWallet(false), 2000);
   };
 
   // Cancel editing
@@ -125,13 +126,13 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
 
     // Validation
     if (!formData.name.trim()) {
-      setErrorMessage("Tên không được để trống");
+      setErrorMessage(t.profile.messages.nameRequired);
       setShowError(true);
       return;
     }
 
     if (!formData.email.trim() || !formData.email.includes("@")) {
-      setErrorMessage("Email không hợp lệ");
+      setErrorMessage(t.profile.messages.emailInvalid);
       setShowError(true);
       return;
     }
@@ -153,7 +154,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
       // Hide success message after 3s
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (error) {
-      setErrorMessage("Có lỗi xảy ra khi cập nhật profile");
+      setErrorMessage(t.profile.messages.updateError);
       setShowError(true);
       console.error("Update profile error:", error);
     } finally {
@@ -161,10 +162,11 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
     }
   };
 
-  // Format date
+  // Format date based on language
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
+    const locale = language === 'vi' ? 'vi-VN' : 'en-US';
+    return date.toLocaleDateString(locale, {
       year: "numeric",
       month: "long",
       day: "numeric"
@@ -204,10 +206,10 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-4xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
-              {t("profile.title")}
+            <h1 className="text-4xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent leading-tight">
+              {t.profile.title}
             </h1>
-            <p className="text-gray-400">{t("profile.subtitle")}</p>
+            <p className="text-gray-400">{t.profile.subtitle}</p>
           </div>
 
           {onBack && (
@@ -216,7 +218,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
               variant="outline"
               className="bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
             >
-              {t("profile.back")}
+              ← {t.profile.back}
             </Button>
           )}
         </div>
@@ -225,7 +227,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
         {showSuccess && (
           <Alert className="mb-6 bg-green-500/10 border-green-500/30 text-green-400">
             <Check className="w-4 h-4" />
-            <AlertDescription>{t("profile.success")}</AlertDescription>
+            <AlertDescription>{t.profile.success}</AlertDescription>
           </Alert>
         )}
 
@@ -260,12 +262,12 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                 <div className="text-center space-y-3">
                   <div>
                     <h2 className="text-2xl text-white font-mono">{formatWalletAddress(user.walletAddress)}</h2>
-                    <p className="text-gray-400 text-sm">{user.email || "Chưa có email"}</p>
+                    <p className="text-gray-400 text-sm">{user.email || t.profile.fields.noEmail}</p>
                   </div>
 
                   <Badge className="bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-400 border-emerald-500/30">
                     <Award className="w-3 h-3 mr-1" />
-                    {t("profile.badge.aaaMember")}
+                    {t.profile.badges.member}
                   </Badge>
                 </div>
 
@@ -276,7 +278,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-400 flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      {t("profile.stats.joined")}
+                      {t.profile.stats.joined}
                     </span>
                     <span className="text-gray-300">{formatDate(user.createdAt)}</span>
                   </div>
@@ -284,17 +286,17 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-400 flex items-center gap-2">
                       <Clock className="w-4 h-4" />
-                      {t("profile.stats.activeDays")}
+                      {t.profile.stats.active}
                     </span>
-                    <span className="text-gray-300">{MOCK_PROFILE_STATS.daysActive} {t("profile.stats.activeDays")}</span>
+                    <span className="text-gray-300">{MOCK_PROFILE_STATS.daysActive} {t.profile.stats.days}</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-400 flex items-center gap-2">
                       <Activity className="w-4 h-4" />
-                      {t("profile.stats.checks")}
+                      {t.profile.stats.totalChecks}
                     </span>
-                    <span className="text-gray-300">{MOCK_PROFILE_STATS.totalScoreChecks} {t("profile.stats.checks")}</span>
+                    <span className="text-gray-300">{MOCK_PROFILE_STATS.totalScoreChecks} {t.profile.stats.times}</span>
                   </div>
                 </div>
               </CardContent>
@@ -305,16 +307,16 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
               <CardHeader>
                 <CardTitle className="text-lg text-cyan-400 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
-                  {t("profile.stats.title")}
+                  {t.profile.stats.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="p-3 bg-slate-900/50 rounded-lg">
-                  <div className="text-gray-400 text-xs mb-1">{t("profile.stats.average")}</div>
+                  <div className="text-gray-400 text-xs mb-1">{t.profile.stats.averageScore}</div>
                   <div className="text-2xl text-cyan-400">{MOCK_PROFILE_STATS.averageScore}</div>
                 </div>
                 <div className="p-3 bg-slate-900/50 rounded-lg">
-                  <div className="text-gray-400 text-xs mb-1">{t("profile.stats.highest")}</div>
+                  <div className="text-gray-400 text-xs mb-1">{t.profile.stats.highestScore}</div>
                   <div className="text-2xl text-emerald-400">{MOCK_PROFILE_STATS.highestScore}</div>
                 </div>
               </CardContent>
@@ -329,12 +331,11 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                   <div>
                     <CardTitle className="text-2xl text-white flex items-center gap-2">
                       <User className="w-6 h-6 text-cyan-400" />
-                      {t("profile.details.title")}
+                      {t.profile.details.title}
                     </CardTitle>
                     <CardDescription className="text-gray-400 mt-1">
-                      {isEditing ? t("profile.details.editing") : t("profile.details.viewing")}
+                      {isEditing ? t.profile.editing : t.profile.details.viewandfix}
                     </CardDescription>
-
                   </div>
 
                   {!isEditing && (
@@ -343,7 +344,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
                     >
                       <Edit className="w-4 h-4 mr-2" />
-                      {t("profile.edit")}
+                      {t.profile.edit}
                     </Button>
                   )}
                 </div>
@@ -356,13 +357,13 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       value="personal"
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
-                      {t("profile.tabs.personal")}
+                      {t.profile.tabs.personal}
                     </TabsTrigger>
                     <TabsTrigger
                       value="wallet"
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
-                      {t("profile.tabs.wallet")}
+                      {t.profile.tabs.wallet}
                     </TabsTrigger>
                   </TabsList>
 
@@ -373,7 +374,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       <div className="space-y-2">
                         <Label htmlFor="name" className="text-gray-300 flex items-center gap-2">
                           <User className="w-4 h-4 text-cyan-400" />
-                          {t("profile.fields.name")}
+                          {t.profile.fields.name}
                         </Label>
                         <Input
                           id="name"
@@ -389,7 +390,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
                           <Mail className="w-4 h-4 text-blue-400" />
-                          {t("profile.fields.email")}
+                          {t.profile.fields.email}
                         </Label>
                         <Input
                           id="email"
@@ -406,7 +407,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       <div className="space-y-2">
                         <Label className="text-gray-300 flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-teal-400" />
-                          {t("profile.fields.createdAt")}
+                          {t.profile.fields.createdAt}
                         </Label>
                         <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 text-gray-300">
                           {formatDate(user.createdAt)}
@@ -417,7 +418,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                       <div className="space-y-2">
                         <Label className="text-gray-300 flex items-center gap-2">
                           <Clock className="w-4 h-4 text-purple-400" />
-                          {t("profile.fields.lastLogin")}
+                          {t.profile.fields.lastLogin}
                         </Label>
                         <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 text-gray-300">
                           {formatDate(user.lastLogin)}
@@ -436,12 +437,12 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           {isSaving ? (
                             <>
                               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                              {t("profile.saving")}
+                              {t.profile.saving}
                             </>
                           ) : (
                             <>
                               <Save className="w-4 h-4 mr-2" />
-                              {t("profile.save")}
+                              {t.profile.save}
                             </>
                           )}
                         </Button>
@@ -452,7 +453,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           className="flex-1 bg-slate-900/50 border-red-500/30 text-red-400 hover:bg-red-500/20"
                         >
                           <X className="w-4 h-4 mr-2" />
-                          {t("profile.cancel")}
+                          {t.navigation.cancel || "Hủy"}
                         </Button>
                       </div>
                     )}
@@ -464,11 +465,11 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                     <div className="space-y-2">
                       <Label className="text-gray-300 flex items-center gap-2">
                         <Wallet className="w-4 h-4 text-cyan-400" />
-                        {t("profile.fields.wallet")}
+                        {t.profile.fields.wallet}
                       </Label>
                       <div className="flex gap-2">
                         <div className="flex-1 p-3 bg-slate-900/50 rounded-lg border border-cyan-500/30 text-cyan-400 font-mono break-all">
-                          {user.walletAddress || "Chưa có địa chỉ ví"}
+                          {user.walletAddress || t.profile.messages.walletSavedAddress}
                         </div>
                         <Button
                           onClick={handleCopyWallet}
@@ -484,9 +485,8 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                         </Button>
                       </div>
                       <p className="text-gray-500 text-xs">
-                        {copiedWallet ? t("profile.copied") : t("profile.copiedHint")}
+                        {copiedWallet ? t.profile.wallet.copied : t.profile.security.autosave}
                       </p>
-
                     </div>
 
                     {/* Security Badge */}
@@ -496,9 +496,9 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           <Shield className="w-6 h-6 text-green-400" />
                         </div>
                         <div className="flex-1">
-                          <div className="text-green-400 mb-1">{t("profile.security.title")}</div>
+                          <div className="text-green-400 mb-1">{t.profile.security.title}</div>
                           <div className="text-gray-400 text-sm">
-                            {t("profile.security.description")}
+                            {t.profile.security.description}
                           </div>
                         </div>
                       </div>
@@ -507,11 +507,11 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                     {/* Wallet Stats */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                        <div className="text-gray-400 text-sm mb-2">{t("profile.stats.check")}</div>
+                        <div className="text-gray-400 text-sm mb-2">{t.profile.stats.checks}</div>
                         <div className="text-3xl text-cyan-400">{MOCK_PROFILE_STATS.totalScoreChecks}</div>
                       </div>
                       <div className="p-4 bg-slate-900/50 rounded-xl border border-blue-500/20">
-                        <div className="text-gray-400 text-sm mb-2">{t("profile.stats.lastCheck")}</div>
+                        <div className="text-gray-400 text-sm mb-2">{t.profile.stats.lastCheck}</div>
                         <div className="text-lg text-blue-400">{MOCK_PROFILE_STATS.lastScoreCheck}</div>
                       </div>
                     </div>

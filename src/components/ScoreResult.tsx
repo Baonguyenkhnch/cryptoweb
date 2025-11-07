@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
 import { Crown, Trophy, Award, Star, TrendingUp, Wallet, Activity } from "lucide-react";
-import type { TokenBalance, Transaction } from "../services/api";
+import type { TokenBalance, Transaction } from "../services/api-real";
 import { ActionButtons } from "./ActionButtons";
 import { useLanguage } from "../services/LanguageContext";
 
@@ -520,7 +520,7 @@ export function ScoreResult({
                         />
                         <span className="text-gray-300">{token.symbol}</span>
                       </div>
-                      <span className="text-cyan-400">{token.percentage.toFixed(1)}%</span>
+                      <span className="text-cyan-400">{(token.percentage || 0).toFixed(1)}%</span>
                     </div>
                   ))}
                 </div>

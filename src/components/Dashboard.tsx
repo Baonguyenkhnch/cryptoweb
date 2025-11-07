@@ -10,8 +10,7 @@ import {
   TrendingUp,
   Calendar,
   Activity,
-  User,
-  Sparkles
+  User
 } from "lucide-react";
 import {
   AreaChart,
@@ -22,8 +21,8 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import type { UserProfile, WalletAnalysis } from "../services/api";
-import { getScoreHistory } from "../services/api";
+import type { UserProfile, WalletAnalysis } from "../services/api-real";
+import { getScoreHistory } from "../services/api-real";
 
 // ============================================
 // TYPES
@@ -113,6 +112,17 @@ export function Dashboard({
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  // Helper function to format assets
+  const formatAssets = (value: number): string => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}k`;
+    } else {
+      return `$${value.toFixed(2)}`;
+    }
+  };
+
   // ============================================
   // LIFECYCLE & DATA LOADING
   // ============================================
@@ -153,6 +163,8 @@ export function Dashboard({
   const tokenDiversity = walletData?.tokenDiversity || MOCK_STATS.tokenDiversity;
   const totalAssets = walletData?.totalAssets || MOCK_STATS.totalAssets;
   const rating = walletData?.rating || MOCK_STATS.rating;
+  const tokenBalances = walletData?.tokenBalances || MOCK_WALLET_DATA.tokenBalances;
+  const recentTransactions = walletData?.recentTransactions || MOCK_WALLET_DATA.recentTransactions;
 
   const scoreChange = MOCK_STATS.currentScore - MOCK_STATS.previousScore;
   const scoreChangePercent = ((scoreChange / MOCK_STATS.previousScore) * 100).toFixed(1);
@@ -177,8 +189,8 @@ export function Dashboard({
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-4xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent animate-pulse drop-shadow-[0_0_10px_rgba(6,182,212,0.6)]">
-                {t.nav.dashboard}
+              <h1 className="text-4xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
+                Dashboard
               </h1>
               <p className="text-gray-400 flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-cyan-400" />
@@ -193,7 +205,7 @@ export function Dashboard({
                 className="bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
               >
                 <User className="w-4 h-4 mr-2" />
-                {t.nav.profile}
+                {t.navigation.profile}
               </Button>
 
               {/* Button Tính Điểm Mới - Design đẹp với stats */}
@@ -212,7 +224,6 @@ export function Dashboard({
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5 mr-2" />
                     <div className="flex flex-col items-start">
                       <span className="text-sm">{t.dashboard.recalculate}</span>
                       <span className="text-[10px] opacity-80">{t.statsLabels.calculatedTimes} {MOCK_STATS.totalChecks} {t.statsLabels.times}</span>
@@ -257,7 +268,7 @@ export function Dashboard({
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-4 text-center">
               <Wallet className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
-              <div className="text-2xl text-emerald-400 mb-1">${(totalAssets / 1000).toFixed(0)}k</div>
+              <div className="text-2xl text-emerald-400 mb-1">{formatAssets(totalAssets)}</div>
               <div className="text-gray-400 text-xs">{t.statsLabels.assets}</div>
             </CardContent>
           </Card>
@@ -273,35 +284,11 @@ export function Dashboard({
               </CardTitle>
 
               <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as any)}>
-                <TabsList className="bg-slate-900/50 p-1 rounded-lg">
-                  <TabsTrigger
-                    value="7d"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500
-               data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/40
-               transition-all duration-300 text-gray-400 rounded-md px-3 py-1"
-                  >
-                    {t.statsLabels.period7d}
-                  </TabsTrigger>
-
-                  <TabsTrigger
-                    value="30d"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500
-               data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/40
-               transition-all duration-300 text-gray-400 rounded-md px-3 py-1"
-                  >
-                    {t.statsLabels.period30d}
-                  </TabsTrigger>
-
-                  <TabsTrigger
-                    value="90d"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500
-               data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/40
-               transition-all duration-300 text-gray-400 rounded-md px-3 py-1"
-                  >
-                    {t.statsLabels.period90d}
-                  </TabsTrigger>
+                <TabsList className="bg-slate-900/50">
+                  <TabsTrigger value="7d">{t.statsLabels.period7d}</TabsTrigger>
+                  <TabsTrigger value="30d">{t.statsLabels.period30d}</TabsTrigger>
+                  <TabsTrigger value="90d">{t.statsLabels.period90d}</TabsTrigger>
                 </TabsList>
-
               </Tabs>
             </div>
           </CardHeader>
@@ -360,7 +347,6 @@ export function Dashboard({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-2xl text-white flex items-center gap-2 mb-1">
-                <Sparkles className="w-6 h-6 text-cyan-400" />
                 {t.statsLabels.detailedAnalysis}
               </h2>
               <p className="text-gray-400 text-sm">
@@ -375,8 +361,8 @@ export function Dashboard({
             totalTransactions={totalTransactions}
             tokenDiversity={tokenDiversity}
             totalAssets={totalAssets}
-            tokenBalances={MOCK_WALLET_DATA.tokenBalances}
-            recentTransactions={MOCK_WALLET_DATA.recentTransactions}
+            tokenBalances={tokenBalances}
+            recentTransactions={recentTransactions}
             onSubscribe={undefined}
             onFeedback={undefined}
             onRecalculate={undefined}

@@ -2,6 +2,7 @@
     "hello": "Xin chào",
     "welcome": "Chào mừng bạn đến với trang web",
     "nav": {
+        "register": "Đăng ký",
         "login": "Đăng nhập",
         "dashboard": "Bảng điều khiển",
         "profile": "Hồ sơ",
@@ -9,6 +10,9 @@
     },
     "common": {
         "loading": "Đang tải..."
+    },
+    "idwallet": {
+        "place": "Nhập địa chỉ ví (0x + 8 ký tự)"
     },
     "emailLogin": {
         "title": "Đăng nhập qua Email",
@@ -218,12 +222,14 @@
         },
         "security": {
             "title": "Tài khoản an toàn",
-            "description": "Ví của bạn đã được xác minh và bảo vệ."
+            "description": "Ví của bạn đã được xác minh và bảo vệ.",
+            "autosave": "Địa chỉ ví được lưu tự động khi bạn đăng nhập"
         },
         "copied": "✓ Đã sao chép!",
         "copyWallet": "Sao chép địa chỉ",
         "copiedHint": "Địa chỉ ví được lưu tự động khi bạn đăng nhập.",
         "details": {
+            "viewandfix": "Xem và sửa thông tin của bạn",
             "title": "Chi tiết hồ sơ",
             "editing": "Đang chỉnh sửa thông tin của bạn",
             "viewing": "Đang xem hồ sơ"
@@ -237,14 +243,39 @@
     },
     "nav": {
         "dashboard": "Bảng điều khiển",
-        "calculator": "Máy tính",
         "profile": "Hồ sơ",
-        "logout": "Đăng xuất",
         "profile_settings": "Cài đặt hồ sơ",
-        "my_dashboard": "Bảng điều khiển của tôi",
+        "my_dashboard": "Bảng của tôi",
         "account_settings": "Cài đặt tài khoản",
-        "online": "Trực tuyến",
-        "member": "Thành viên AAA",
-        "nowallet": "Chưa có ví"
+        "logout": "Đăng xuất"
+    },
+    "featureDialog": {
+        "title": "Đề Xuất Tính Năng Mới",
+        "description": "Ý tưởng của bạn giúp chúng tôi phát triển tốt hơn",
+        "featureName": "Tên Tính Năng",
+        "featureNamePlaceholder": "VD: Tích hợp với MetaMask",
+        "featureDesc": "Mô Tả Chi Tiết",
+        "featureDescPlaceholder": "Mô tả chi tiết về tính năng bạn muốn đề xuất...",
+        "emailLabel": "📧 Email Nhận Phản Hồi",
+        "emailOptional": "(Không bắt buộc)",
+        "emailPlaceholder": "your.email@example.com",
+        "emailNote": "Chúng tôi sẽ liên hệ nếu cần thêm thông tin",
+        "benefitsTitle": "Đề xuất của bạn sẽ được:",
+        "benefit1": "✓ Xem xét bởi đội ngũ phát triển",
+        "benefit2": "✓ Ưu tiên phát triển nếu phù hợp",
+        "benefit3": "✓ Nhận thông báo khi tính năng ra mắt",
+        "cancel": "Hủy",
+        "submit": "Gửi Đề Xuất",
+        "sending": "Đang Gửi...",
+        "successTitle": "Cảm Ơn Bạn!",
+        "successMessage": "Đề xuất của bạn đã được ghi nhận",
+        "successFollowup": "Chúng tôi sẽ xem xét và phản hồi sớm nhất",
+        "autoClose": "Đóng tự động sau giây lát...",
+        "errorFeature": "Vui lòng nhập tên tính năng",
+        "errorDesc": "Vui lòng mô tả chi tiết tính năng",
+        "errorGeneral": "Có lỗi xảy ra. Vui lòng thử lại."
+    },
+    "idea": {
+        "buttonidea": "chia sẻ ý tưởng"
     }
 }

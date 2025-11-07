@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { MessageCircle, Lightbulb } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface FloatingFeedbackButtonProps {
   onClick: () => void;
@@ -8,6 +9,7 @@ interface FloatingFeedbackButtonProps {
 
 export function FloatingFeedbackButton({ onClick }: FloatingFeedbackButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 flex flex-col items-end gap-2 md:gap-3">
@@ -16,7 +18,7 @@ export function FloatingFeedbackButton({ onClick }: FloatingFeedbackButtonProps)
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-200 hidden md:block">
           <div className="bg-gradient-to-r from-cyan-900/95 to-blue-900/95 backdrop-blur-xl border border-cyan-400/30 rounded-xl px-4 py-2 shadow-xl">
             <p className="text-white text-sm whitespace-nowrap">
-              💡 Chia sẻ ý tưởng của bạn
+              💡 {t("idea.buttonidea")}
             </p>
           </div>
         </div>

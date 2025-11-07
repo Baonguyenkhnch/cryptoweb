@@ -1,60 +1,64 @@
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "./components/ui/card";
-import { Input } from "./components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
 import { Label } from "./components/ui/label";
-import { ScoreResult } from "./components/ScoreResult";
-import { ResultsSummary } from "./components/ResultsSummary";
-import { RatingGuide } from "./components/RatingGuide";
+import { Navigation } from "./components/Navigation";
 import { Login } from "./components/Login";
 import { Dashboard } from "./components/Dashboard";
 import { ProfilePage } from "./components/ProfilePage";
-import { Navigation } from "./components/Navigation";
+import { ScoreResult } from "./components/ScoreResult";
+import { ResultsSummary } from "./components/ResultsSummary";
 import { OTPVerificationDialog } from "./components/OTPVerificationDialog";
 import { EmailLoginDialog } from "./components/EmailLoginDialog";
-import { FeatureFeedbackDialog } from "./components/FeatureFeedbackDialog";
 import { FloatingFeedbackButton } from "./components/FloatingFeedbackButton";
+import { FeatureFeedbackDialog } from "./components/FeatureFeedbackDialog";
+import { QuickRegisterDialog } from "./components/QuickRegisterDialog";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
+import { LoadingProgress } from "./components/LoadingProgress";
+import { ErrorDialog } from "./components/ErrorDialog";
 import { useLanguage } from "./services/LanguageContext";
+import { ImageWithFallback } from "./components/figma/ImageWithFallback";
+import { Toaster } from "./components/ui/sonner";
+import logoImage from "../src/components/images/logonhap.jpg";
 import {
   Wallet,
   TrendingUp,
   Shield,
-  Sparkles,
   Star,
   Mail,
   Lock,
   Info,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import type {
   UserProfile,
   WalletAnalysis,
   EmailSubscription,
-} from "./services/api";
+} from "./services/api-real";
 import {
   analyzeWallet,
   subscribeToUpdates,
   checkSubscriptionStatus,
   unsubscribe,
   sendWeeklyReport,
-} from "./services/api";
-import logoIcon from "./components/images/logonhap.jpg";
-import logoFull from "./components/images/logodash.jpg";
+  isValidEmail,
+  isValidWalletAddress,
+  getWalletByEmail,
+} from "./services/api-real";
+import { generateMockWalletData } from "./services/mock-data";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
 export default function App() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [currentPage, setCurrentPage] =
     useState<Page>("calculator");
   const [currentUser, setCurrentUser] =
     useState<UserProfile | null>(null);
   const [walletAddress, setWalletAddress] = useState("");
+  const [showWalletAddress, setShowWalletAddress] = useState(false); // Show/hide wallet
   const [showResults, setShowResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [walletData, setWalletData] =
@@ -64,9 +68,19 @@ export default function App() {
     useState(false);
   const [showFeedbackDialog, setShowFeedbackDialog] =
     useState(false);
+  const [showQuickRegisterDialog, setShowQuickRegisterDialog] =
+    useState(false);
   const [subscriptionStatus, setSubscriptionStatus] =
     useState<EmailSubscription | null>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [loginTab, setLoginTab] = useState<"login" | "register">("login");
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorType, setErrorType] = useState<"quota" | "network" | "general">("general");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [useDemoMode, setUseDemoMode] = useState(false); // Demo mode toggle
 
   // check xem có login chưa khi vào trang
   useEffect(() => {
@@ -86,92 +100,183 @@ export default function App() {
     }
   }, []);
 
-  const handleLoginSuccess = (user: UserProfile) => {
-    // Tự động lưu wallet address hiện tại vào user profile
-    const updatedUser = {
-      ...user,
-      walletAddress: walletAddress || user.walletAddress || "",
-    };
-    setCurrentUser(updatedUser);
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify(updatedUser),
-    );
-    setCurrentPage("dashboard");
-  };
+  // Auto-load wallet data khi vào Dashboard lần đầu
+  useEffect(() => {
+    const loadWalletDataForDashboard = async () => {
+      if (
+        currentPage === "dashboard" &&
+        currentUser?.walletAddress &&
+        !walletData
+      ) {
+        console.log(
+          "📊 Loading wallet data for dashboard:",
+          currentUser.walletAddress,
+        );
+        setIsLoading(true);
+        try {
+          const data = await analyzeWallet(
+            currentUser.walletAddress,
+          );
+          setWalletData(data);
+          setWalletAddress(currentUser.walletAddress);
 
-  const handleRegisterSuccess = (user: UserProfile) => {
-    // Tự động lưu wallet address hiện tại vào user profile
-    const updatedUser = {
-      ...user,
-      walletAddress: walletAddress || user.walletAddress || "",
+          // Kiểm tra subscription status
+          const status = await checkSubscriptionStatus(
+            currentUser.walletAddress,
+          );
+          setSubscriptionStatus(status);
+        } catch (error) {
+          console.error("Lỗi khi load wallet data:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
     };
-    setCurrentUser(updatedUser);
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify(updatedUser),
-    );
+
+    loadWalletDataForDashboard();
+  }, [currentPage, currentUser, walletData]);
+
+  const handleLogin = (user: UserProfile) => {
+    setCurrentUser(user);
+
+    // Lưu vào localStorage
+    const mockToken = `mock_jwt_${Date.now()}`;
+    localStorage.setItem("authToken", mockToken);
+    localStorage.setItem("currentUser", JSON.stringify(user));
+
+    // Chuyển đến Dashboard
     setCurrentPage("dashboard");
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    // Xóa localStorage
     localStorage.removeItem("authToken");
     localStorage.removeItem("currentUser");
-    setCurrentPage("calculator"); // Về trang calculator thay vì login
-  };
 
-  const handleGoToCalculator = () => {
-    setCurrentPage("calculator");
-    setShowResults(false);
+    // Reset state
+    setCurrentUser(null);
+    setWalletData(null);
     setWalletAddress("");
-  };
+    setShowResults(false);
 
-  const handleGoToDashboard = () => {
-    if (currentUser) {
-      setCurrentPage("dashboard");
-    } else {
-      setCurrentPage("login");
-    }
-  };
+    // Về trang Calculator (KHÔNG về trang login)
+    setCurrentPage("calculator");
 
-  const handleGoToProfile = () => {
-    if (currentUser) {
-      setCurrentPage("profile");
-    } else {
-      setCurrentPage("login");
-    }
-  };
-
-  const handleUpdateProfile = (updatedUser: UserProfile) => {
-    setCurrentUser(updatedUser);
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify(updatedUser),
-    );
+    console.log("✅ Đăng xuất thành công - về Calculator");
   };
 
   const handleCalculateScore = async () => {
-    if (!walletAddress.trim()) {
-      return;
-    }
+    if (!walletAddress.trim()) return;
+
     setIsLoading(true);
     try {
+      let actualWalletAddress = walletAddress.trim();
+
+      // Kiểm tra nếu là email, cần lấy wallet address
+      if (isValidEmail(actualWalletAddress)) {
+        console.log("🔍 Email phát hiện, đang tìm ví...");
+        const result = await getWalletByEmail(actualWalletAddress);
+
+        if (result.success && result.walletAddress) {
+          actualWalletAddress = result.walletAddress;
+          console.log("✅ Tìm thấy ví:", actualWalletAddress);
+        } else {
+          alert(
+            result.message ||
+            t.calculator.input.emailNotFound
+          );
+          setIsLoading(false);
+          return;
+        }
+      } else if (!isValidWalletAddress(actualWalletAddress)) {
+        // Nếu không phải email và không phải wallet address hợp lệ
+        alert(
+          "Vui lòng nhập địa chỉ ví hợp lệ (0x...) hoặc email đã đăng ký."
+        );
+        setIsLoading(false);
+        return;
+      }
+
       // Gọi API phân tích ví
-      const data = await analyzeWallet(walletAddress);
+      const data = await analyzeWallet(actualWalletAddress);
       setWalletData(data);
+      setWalletAddress(actualWalletAddress); // Cập nhật lại với wallet address thực
       setShowResults(true);
 
       // Kiểm tra subscription status
-      const status =
-        await checkSubscriptionStatus(walletAddress);
+      const status = await checkSubscriptionStatus(actualWalletAddress);
       setSubscriptionStatus(status);
     } catch (error) {
-      console.error("Lỗi khi phân tích ví:", error);
-      alert(
-        t.calculator.buttons.analyzing +
-        " - Có lỗi xảy ra. Vui lòng thử lại.",
-      );
+      // Extract error message first
+      const errorMsg = error instanceof Error ? error.message : String(error);
+
+      // Check if it's a backend quota/rate limit error
+      const isQuotaError =
+        errorMsg.includes('401') ||
+        errorMsg.includes('quota') ||
+        errorMsg.includes('rate limit') ||
+        errorMsg.includes('consumed') ||
+        errorMsg.includes('upgrade your plan') ||
+        errorMsg.includes('Validation service blocked') ||
+        errorMsg.includes('Moralis API error') ||
+        (errorMsg.includes('500') && errorMsg.includes('free-plan'));
+
+      // Pretty console logging (instead of ugly error dump)
+      if (isQuotaError) {
+        console.log(
+          '%c⚠️ BACKEND QUOTA ERROR',
+          'background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;'
+        );
+        console.log(
+          '%c📊 Issue: Moralis Free Plan quota exhausted',
+          'color: #fbbf24; font-weight: bold;'
+        );
+        console.log(
+          '%c💡 Solution: Backend needs to upgrade plan at moralis.io/pricing',
+          'color: #60a5fa;'
+        );
+        console.log(
+          '%c⏰ Alternative: Wait for quota reset (daily)',
+          'color: #60a5fa;'
+        );
+        console.log(
+          '%c🔗 More info: https://moralis.io/pricing',
+          'color: #34d399;'
+        );
+      } else {
+        console.log(
+          '%c❌ API ERROR',
+          'background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;'
+        );
+        console.log('%cError details:', 'color: #f87171; font-weight: bold;', errorMsg);
+        // Only log full error object for non-quota errors
+        console.error('Full error:', error);
+      }
+
+      // Set error state and show dialog
+      setErrorMessage(errorMsg);
+
+      if (isQuotaError) {
+        setErrorType("quota");
+      } else if (errorMsg.includes('network') || errorMsg.includes('timeout')) {
+        setErrorType("network");
+      } else {
+        setErrorType("general");
+      }
+
+      setShowErrorDialog(true);
+
+      // Fallback alert if dialog fails to show (shouldn't happen)
+      setTimeout(() => {
+        if (!document.querySelector('[role="dialog"]')) {
+          console.warn('⚠️ ErrorDialog did not show, using fallback alert');
+          alert(
+            isQuotaError
+              ? '⚠️ Backend đang hết quota Moralis.\n\nVui lòng thử lại sau 1-2 giờ hoặc liên hệ admin@migofin.com'
+              : `❌ Lỗi: ${errorMsg.substring(0, 200)}`
+          );
+        }
+      }, 100);
     } finally {
       setIsLoading(false);
     }
@@ -189,10 +294,10 @@ export default function App() {
 
   const handleSubscribeClick = () => {
     if (subscriptionStatus?.verified) {
-      // Nếu đã subscribe, hiển th option để unsubscribe
+      // Nếu đã subscribe, hiển thị option để unsubscribe
       handleUnsubscribe();
     } else {
-      // M dialog OTP verification
+      // Mở dialog OTP verification
       setShowOTPDialog(true);
     }
   };
@@ -240,15 +345,15 @@ export default function App() {
     }
   };
 
-  const handleNavigate = (page: Page) => {
-    if (page === "dashboard") handleGoToDashboard();
-    else if (page === "calculator") handleGoToCalculator();
-    else if (page === "profile") handleGoToProfile();
-  };
+  const handleEmailLogin = (email: string) => {
+    // DEMO: Giả lập đng nhập qua magic link
+    // Trong thực tế, backend sẽ verify JWT token từ link
 
-  const handleMagicLinkLogin = (email: string) => {
-    // DEMO: Giả lập đăng nhập qua magic link
-    // Trong thực tế, backend s verify JWT token từ link
+    // Validate email
+    if (!email || typeof email !== 'string') {
+      console.error('Invalid email:', email);
+      return;
+    }
 
     // Tạo mock user từ email và tự động lưu wallet address hiện tại
     const mockUser: UserProfile = {
@@ -281,6 +386,27 @@ export default function App() {
     console.log("📍 Wallet Address:", walletAddress);
   };
 
+  // Handle Demo Mode - Use mock data when backend is down
+  const handleTryDemoMode = () => {
+    console.log(
+      '%c🎨 DEMO MODE ACTIVATED',
+      'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;'
+    );
+    console.log(
+      '%c📊 Using mock data for wallet:',
+      'color: #34d399; font-weight: bold;',
+      walletAddress
+    );
+
+    // Generate mock data
+    const mockData = generateMockWalletData(walletAddress);
+    setWalletData(mockData);
+    setShowResults(true);
+    setShowErrorDialog(false);
+
+    console.log('%c✅ Demo data loaded successfully', 'color: #10b981;');
+  };
+
   // trang calculator chính
   const renderCalculatorPage = () => (
     <div
@@ -295,239 +421,259 @@ export default function App() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
       </div>
 
-      {/* Top Right - Login Button & Language Switcher (if not logged in) */}
+      {/* Top Left - Logo */}
+      <div className="absolute top-3 md:top-4 left-3 md:left-4 z-20">
+        <div className="relative group cursor-pointer">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
+            <ImageWithFallback
+              src={logoImage}
+              alt="ScorePage Logo"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Top Right - Register & Login Buttons & Language Switcher (if not logged in) */}
       {!currentUser && (
-        <div className="absolute top-3 md:top-4 right-3 md:right-4 z-20 flex items-center gap-1.5 md:gap-2">
+        <div className="absolute top-3 md:top-4 right-3 md:right-4 z-20 flex items-center gap-1.5">
           <LanguageSwitcher size="sm" />
+
+          {/* Đăng ký button */}
+          <Button
+            onClick={() => {
+              setLoginTab("register");
+              setCurrentPage("login");
+            }}
+            variant="outline"
+            className="bg-gradient-to-r from-orange-600/20 to-yellow-600/20 backdrop-blur-sm border-orange-500/40 text-orange-400 hover:bg-orange-500/30 hover:border-orange-400/50 rounded-lg h-8 md:h-9 px-3 md:px-4 text-xs md:text-sm"
+          >
+            <span>
+              {t.auth.register}
+            </span>
+          </Button>
+
+          {/* Đăng nhập button */}
           <Button
             onClick={() => setShowEmailLoginDialog(true)}
             variant="outline"
-            className="bg-slate-800/80 backdrop-blur-sm border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400/50 rounded-lg md:rounded-xl h-9 md:h-10 px-3 md:px-4 text-xs md:text-sm"
+            className="bg-slate-800/80 backdrop-blur-sm border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400/50 rounded-lg h-8 md:h-9 px-3 md:px-4 text-xs md:text-sm"
           >
-            <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" />
+            <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5" />
             <span className="hidden sm:inline">
-              {t.nav.login}
+              {t.navigation.login}
             </span>
           </Button>
         </div>
       )}
 
       <div
-        className={`relative z-10 container mx-auto px-4 ${!showResults ? "h-full flex flex-col justify-center py-4 md:py-6" : "py-6 md:py-8"}`}
+        className={`relative z-10 container mx-auto px-4 ${!showResults ? "h-full flex flex-col justify-center py-6 md:py-8" : "py-3 md:py-4"}`}
       >
-        {/* Header - Simplified & Compact */}
-        <div className="text-center mb-4 md:mb-6 animate-in fade-in-0 duration-1000">
-          <div className="flex items-center justify-center mb-3 md:mb-4">
-            {currentUser ? (
-              // Logo khi đã login - giống Navigation (icon + text)
-              <div className="relative group cursor-pointer">
-                <div className="absolute -inset-1.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl blur-lg opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden hover:bg-gradient-to-r hover:from-orange-500/5 hover:to-red-500/5 transition-all duration-300">
-                  {/* Gradient border effect */}
-                  <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md group-hover:blur-lg opacity-50 group-hover:opacity-100 transition-all duration-300" />
-
-                  {/* White background container for both logos */}
-                  <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 py-1 md:py-1.5">
-                    {/* Logo Icon */}
-                    <div className="relative w-7 h-7 md:w-9 md:h-9 flex items-center justify-center">
-                      <img
-                        src={logoIcon}
-                        alt="MigoFin"
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                      />
-                    </div>
-
-                    {/* Logo Text */}
-                    <div className="flex items-center">
-                      <img
-                        src={logoFull}
-                        alt="MigoFin"
-                        className="h-4 md:h-5 object-contain group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // Logo khi chưa login - chỉ có icon
-              <div className="relative group">
-                <div className="absolute -inset-2 md:-inset-3 bg-gradient-to-r from-orange-500/25 to-red-500/25 rounded-xl md:rounded-2xl blur-xl md:blur-2xl opacity-70 group-hover:opacity-100 animate-pulse transition-opacity duration-500" />
-                <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden">
-                  <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-lg md:rounded-xl blur-md opacity-50 group-hover:opacity-100 transition-all duration-300" />
-                  <div className="relative w-full h-full bg-white rounded-md md:rounded-lg overflow-hidden flex items-center justify-center p-1.5 md:p-2">
-                    <img
-                      src={logoIcon}
-                      alt="MigoFin"
-                      className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="relative mb-2 md:mb-3 px-3 md:px-4">
-            <h1 className="text-2xl md:text-4xl mb-2 md:mb-3 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-tight pb-1">
-              {t.calculator.title}
-            </h1>
-          </div>
-
-          <p className="text-sm md:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed mb-2 px-2 md:px-0">
-            {t.calculator.description}
-          </p>
-          <div className="text-xs md:text-sm text-cyan-400 max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2">
-            <div className="flex items-center gap-1.5">
-              <Shield className="w-3 h-3" />
-              <span>{t.calculator.privacy.decentralized}</span>
-            </div>
-            <span className="hidden sm:inline">•</span>
-            <div className="flex items-center gap-1.5">
-              <Lock className="w-3 h-3" />
-              <span>{t.calculator.privacy.noIdentity}</span>
-            </div>
-            <span className="hidden sm:inline">•</span>
-            <div className="flex items-center gap-1.5">
-              <Info className="w-3 h-3" />
-              <span>{t.calculator.privacy.transparent}</span>
-            </div>
-          </div>
-        </div>
-
         {!showResults ? (
-          /* Input Form - Compact */
-          <div className="max-w-2xl mx-auto w-full">
-            <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl animate-in fade-in-50 slide-in-from-bottom-10 duration-1000 rounded-3xl">
-              <div className="absolute -inset-1 bg-gradient-to-r from-slate-600/20 to-slate-500/15 rounded-3xl blur-xl opacity-50" />
+          /* Input Form - Center Focus */
+          <div className="max-w-[42rem] mx-auto w-full space-y-5">
+            {/* Title - Center */}
+            <div className="text-center animate-in fade-in-0 duration-1000">
+              <h1 className="text-[2rem] md:text-[2.5rem] mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight leading-tight pb-1">
+                {t.calculator.title}
+              </h1>
+
+              {/* 3 Privacy Icons ngay dưới title - Always horizontal with decoration */}
+              <div className="flex items-center justify-center">
+                <div className="inline-flex flex-nowrap items-center gap-3 px-5 py-2 bg-gradient-to-r from-cyan-500/5 via-blue-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-full backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 whitespace-nowrap">
+                    <Shield className="w-3.5 h-3.5 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
+                    <span className="text-xs text-cyan-300">{t.calculator.privacy.decentralized}</span>
+                  </div>
+                  <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0"></div>
+                  <div className="flex items-center gap-1.5 whitespace-nowrap">
+                    <Lock className="w-3.5 h-3.5 md:w-4 md:h-4 text-purple-400 flex-shrink-0" />
+                    <span className="text-xs text-purple-300">{t.calculator.privacy.noPersonalInfo}</span>
+                  </div>
+                  <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0"></div>
+                  <div className="flex items-center gap-1.5 whitespace-nowrap">
+                    <Info className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400 flex-shrink-0" />
+                    <span className="text-xs text-blue-300">{t.calculator.privacy.onlyPublicData}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Card - Calculator */}
+            <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl animate-in fade-in-50 slide-in-from-bottom-10 duration-1000 rounded-xl">
+              <div className="absolute -inset-1 bg-gradient-to-r from-slate-600/20 to-slate-500/15 rounded-xl blur-lg opacity-50" />
 
               <div className="relative">
-                <CardHeader className="text-center pb-3 md:pb-4 pt-4 md:pt-6 px-4 md:px-6">
-                  <CardTitle className="text-lg md:text-xl text-white flex items-center justify-center gap-2 md:gap-3 mb-1 md:mb-2">
+                <CardHeader className="text-center pb-3 pt-5 px-5">
+                  <CardTitle className="text-lg md:text-xl text-white flex items-center justify-center gap-2.5 mb-2">
                     <div className="relative">
-                      <Wallet className="w-5 h-5 md:w-6 md:h-6 text-cyan-400" />
-                      <div className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-pulse" />
+                      <Wallet className="w-5 h-5 text-cyan-400" />
+                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
                     </div>
                     {t.calculator.input.title}
                   </CardTitle>
-                  <p className="text-gray-400 text-xs md:text-sm mt-1">
+                  <p className="text-gray-400 text-sm">
                     {t.calculator.input.subtitle}
                   </p>
                 </CardHeader>
 
-                <CardContent className="space-y-4 md:space-y-5 p-4 md:p-6 pb-6 md:pb-8">
-                  <div className="space-y-2 md:space-y-3">
+                <CardContent className="space-y-3 p-5 pb-5">
+                  <div className="space-y-2 mt-2">
                     <Label
                       htmlFor="wallet"
-                      className="text-gray-300 text-sm md:text-base"
+                      className="text-gray-300 text-sm"
                     >
                       {t.calculator.input.label}
                     </Label>
-                    <div className="relative">
+                    <div className="relative w-full">
                       <Input
                         id="wallet"
-                        placeholder={
-                          t.calculator.input.placeholder
-                        }
+                        type={showWalletAddress ? "text" : "password"}
+                        placeholder={t.calculator.input.placeholder}
+                        inputMode="none"
+                        autoComplete="new-password"
                         value={walletAddress}
-                        onChange={(e) =>
-                          setWalletAddress(e.target.value)
-                        }
-                        className="h-11 md:h-12 bg-slate-900/50 border border-cyan-500/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 text-sm rounded-xl transition-all duration-300"
+                        onChange={(e) => {
+                          setWalletAddress(e.target.value);
+                        }}
+                        className="h-12 md:h-13 bg-slate-900/50 border border-cyan-500/30 
+                          focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 
+                          text-white placeholder:text-gray-500 text-base rounded-lg 
+                          transition-all duration-300 pr-12 w-full"
                       />
+
+                      {/* 👁 Nút hiện/ẩn */}
+                      <div className="absolute inset-y-0 right-4 flex items-center h-full">
+                        <button
+                          type="button"
+                          onClick={() => setShowWalletAddress(!showWalletAddress)}
+                          className="text-gray-400 hover:text-cyan-400 transition-colors"
+                        >
+                          {showWalletAddress ? <Eye size={20} /> : <EyeOff size={20} />}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+                  {/* ℹ️ Gợi ý định dạng */}
+                  {walletAddress && walletAddress.length > 0 && (
+                    <p className="text-gray-400 text-sm md:text-base flex items-center gap-2">
+                      {isValidEmail(walletAddress) ? (
+                        <>
+                          <Mail className="w-4 h-4 text-cyan-400" />
+                          <span className="text-cyan-400">Email phát hiện - Sẽ tìm ví</span>
+                        </>
+                      ) : walletAddress.startsWith("0x") ? (
+                        <>
+                          <Wallet className="w-4 h-4 text-teal-400" />
+                          <span className="text-teal-400">
+                            {walletAddress.length === 42
+                              ? "✓ Hợp lệ"
+                              : `${walletAddress.length}/42`}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-gray-500">💡 Email hoặc 0x...</span>
+                      )}
+                    </p>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                       onClick={handleCalculateScore}
                       disabled={
                         !walletAddress.trim() || isLoading
                       }
-                      className="relative flex-1 h-11 md:h-12 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-sm shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 disabled:opacity-50 rounded-xl group overflow-hidden"
+                      className="relative flex-1 h-12 md:h-13 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-base shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 disabled:opacity-50 rounded-lg group overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
 
                       {isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span className="text-xs md:text-sm">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-4.5 h-4.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span className="text-base">
                             {t.calculator.buttons.analyzing}
                           </span>
-                          <Sparkles className="w-4 h-4 animate-pulse" />
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4" />
-                          <span className="text-xs md:text-sm">
+                        <div className="flex items-center gap-2.5">
+                          <TrendingUp className="w-4.5 h-4.5" />
+                          <span className="text-base">
                             {t.calculator.buttons.calculate}
                           </span>
                           <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                         </div>
                       )}
                     </Button>
-
-                    {/* Quick Feedback Button */}
-                    <Button
-                      onClick={() =>
-                        setShowFeedbackDialog(true)
-                      }
-                      variant="outline"
-                      className="h-11 md:h-12 px-4 md:px-5 bg-purple-600/20 border-purple-500/40 text-purple-300 hover:bg-purple-600/30 hover:border-purple-400/50 hover:text-white transition-all duration-300 rounded-xl group"
-                    >
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 transition-transform duration-300" />
-                        <span className="hidden sm:inline text-xs md:text-sm">
-                          {t.calculator.buttons.feedback}
-                        </span>
-                      </div>
-                    </Button>
                   </div>
 
-                  {/* Feature highlights - Compact */}
-                  <div className="grid grid-cols-3 gap-2 md:gap-3 pt-3 border-t border-cyan-500/20">
-                    <div className="text-center group">
-                      <div className="w-9 h-9 md:w-10 md:h-10 mx-auto mb-1 md:mb-1.5 bg-purple-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-purple-400/30 group-hover:scale-110 transition-transform duration-300">
-                        <Lock className="w-4 h-4 md:w-5 md:h-5 text-purple-400" />
-                      </div>
-                      <div className="text-purple-400 text-[9px] md:text-[10px] leading-tight">
-                        {t.calculator.features.noStore}
-                      </div>
-                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">
-                        {t.calculator.features.identity}
-                      </div>
+                  {/* Feature highlights - Ultra Compact */}
+                  <div className="flex items-center justify-center gap-3 pt-3 border-t border-cyan-500/10 text-xs text-gray-500">
+                    <div className="flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-purple-400" />
+                      <span>{t.calculator.features.noStore}</span>
                     </div>
-
-                    <div className="text-center group">
-                      <div className="w-9 h-9 md:w-10 md:h-10 mx-auto mb-1 md:mb-1.5 bg-cyan-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-cyan-400/30 group-hover:scale-110 transition-transform duration-300">
-                        <Shield className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
-                      </div>
-                      <div className="text-cyan-400 text-[9px] md:text-[10px] leading-tight">
-                        {t.calculator.features.decentralized}
-                      </div>
-                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">
-                        {t.calculator.features.security}
-                      </div>
+                    <div className="flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>{t.calculator.features.decentralized}</span>
                     </div>
+                    <div className="flex items-center gap-1.5">
+                      <Info className="w-3.5 h-3.5 text-blue-400" />
+                      <span>{t.calculator.features.transparent}</span>
+                    </div>
+                  </div>
 
-                    <div className="text-center group">
-                      <div className="w-9 h-9 md:w-10 md:h-10 mx-auto mb-1 md:mb-1.5 bg-blue-500/20 rounded-lg md:rounded-xl flex items-center justify-center border border-blue-400/30 group-hover:scale-110 transition-transform duration-300">
-                        <Info className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
-                      </div>
-                      <div className="text-blue-400 text-[9px] md:text-[10px] leading-tight">
-                        {t.calculator.features.transparent}
-                      </div>
-                      <div className="text-gray-500 text-[9px] md:text-[10px] leading-tight">
-                        {t.calculator.features.algorithm}
-                      </div>
+                  {/* Description text - Đánh giá độ tin cậy */}
+                  <div className="text-center pt-2 pb-1">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-slate-800/40 via-slate-700/30 to-slate-800/40 border border-cyan-500/10 rounded-full backdrop-blur-sm">
+                      <div className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse"></div>
+                      <p className="text-xs md:text-sm text-gray-400 italic">
+                        {t.calculator.subtitle}
+                      </p>
+                      <div className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse"></div>
                     </div>
                   </div>
                 </CardContent>
               </div>
             </Card>
+
+            {/* Info Banner - Below Card */}
+            <div className="max-w-[42rem] mx-auto px-4">
+              <div className="p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg backdrop-blur-sm">
+                <div className="flex items-start gap-2">
+                  <div className="flex-shrink-0">
+                    <div className="p-1.5 bg-purple-500/20 rounded-lg">
+                      <Star className="w-4 h-4 text-purple-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xs text-purple-300 mb-0.5">
+                      💡 {t.calculator.registerBanner.newUser}
+                    </h3>
+                    <p className="text-xs text-gray-300 leading-snug mb-1.5">
+                      <span className="text-orange-400">{t.calculator.registerBanner.registerFree}</span> {t.calculator.registerBanner.description} <span className="text-cyan-400">{t.calculator.registerBanner.descriptionEmail}</span> {t.calculator.registerBanner.descriptionEnd}
+                    </p>
+                    <Button
+                      onClick={() => {
+                        setLoginTab("register");
+                        setCurrentPage("login");
+                      }}
+                      size="sm"
+                      className="h-7 px-3 bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-500 hover:to-yellow-500 text-white text-xs shadow-lg shadow-orange-500/30"
+                    >
+                      {t.calculator.registerBanner.registerNow}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           /* Results Section - Can scroll */
           <div className="space-y-6 md:space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
-            <div className="text-center">
+            <div className="flex justify-start pl-4">
               <Button
                 onClick={handleReset}
                 variant="outline"
@@ -539,139 +685,64 @@ export default function App() {
 
             {walletData ? (
               <>
-                {/* Section 1: Results Summary - Thông tin tóm tắt dạng bảng/số với CTA đăng nhập */}
-                <ResultsSummary
-                  data={walletData}
-                  onLoginClick={
-                    !currentUser
-                      ? () => setShowEmailLoginDialog(true)
-                      : undefined
-                  }
+                <ScoreResult
+                  score={walletData.score}
+                  walletAge={walletData.walletAge}
+                  totalTransactions={walletData.totalTransactions}
+                  tokenDiversity={walletData.tokenDiversity}
+                  totalAssets={walletData.totalAssets}
+                  tokenBalances={walletData.tokenBalances}
+                  recentTransactions={walletData.recentTransactions}
                 />
-
-                {/* Section 2: Rating Guide */}
-                <div className="pt-4">
-                  <RatingGuide />
-                </div>
+                <ResultsSummary
+                  walletData={walletData}
+                  isRecalculating={isRecalculating}
+                  onRecalculate={handleRecalculate}
+                  subscriptionStatus={subscriptionStatus}
+                  onSubscribeClick={() => setShowEmailLoginDialog(true)}
+                  onRegisterClick={() => setShowQuickRegisterDialog(true)}
+                  onSendReport={handleSendReport}
+                />
               </>
             ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-gray-400">
-                  {t.common.loading}
-                </p>
+              <div className="text-center text-gray-400">
+                <p>{t.calculator.noData}</p>
               </div>
             )}
           </div>
         )}
       </div>
-    </div>
-  );
 
-  // xử lý render theo page
-  if (currentPage === "login") {
-    return (
-      <Login
-        onLoginSuccess={handleLoginSuccess}
-        onRegisterSuccess={handleRegisterSuccess}
+      {/* OTP Verification Dialog */}
+      <OTPVerificationDialog
+        open={showOTPDialog}
+        onOpenChange={setShowOTPDialog}
+        walletAddress={walletAddress}
+        onSuccess={handleOTPSuccess}
       />
-    );
-  }
 
-  if (currentPage === "dashboard") {
-    if (!currentUser) {
-      setCurrentPage("login");
-      return null;
-    }
-    return (
-      <>
-        <Navigation
-          currentPage={currentPage}
-          user={currentUser}
-          onNavigate={handleNavigate}
-          onLogout={handleLogout}
-        />
-        <Dashboard
-          user={currentUser}
-          onCalculateScore={handleGoToCalculator}
-          onViewProfile={handleGoToProfile}
-          onRecalculate={async () => {
-            // Recalculate với wallet hiện tại
-            if (currentUser?.walletAddress) {
-              setIsRecalculating(true);
-              try {
-                const data = await analyzeWallet(
-                  currentUser.walletAddress,
-                );
-                setWalletData(data);
-                setWalletAddress(currentUser.walletAddress);
-              } catch (error) {
-                console.error("Lỗi khi tính lại điểm:", error);
-              } finally {
-                setIsRecalculating(false);
-              }
-            }
-          }}
-        />
-      </>
-    );
-  }
-
-  if (currentPage === "profile") {
-    if (!currentUser) {
-      setCurrentPage("login");
-      return null;
-    }
-    return (
-      <>
-        <Navigation
-          currentPage={currentPage}
-          user={currentUser}
-          onNavigate={handleNavigate}
-          onLogout={handleLogout}
-        />
-        <ProfilePage
-          user={currentUser}
-          onUpdateProfile={handleUpdateProfile}
-          onBack={handleGoToDashboard}
-        />
-      </>
-    );
-  }
-
-  // calculator page - ai cũng vào được
-  return (
-    <>
-      {currentUser && (
-        <Navigation
-          currentPage={currentPage}
-          user={currentUser}
-          onNavigate={handleNavigate}
-          onLogout={handleLogout}
-        />
-      )}
-      {renderCalculatorPage()}
-
-      {/* Email Login Dialog (Passwordless) */}
+      {/* Email Login Dialog */}
       <EmailLoginDialog
         open={showEmailLoginDialog}
         onOpenChange={setShowEmailLoginDialog}
-        onSuccess={() => {
-          // Sau khi gửi email thành công, có thể hiển thị thông báo
-          console.log("Magic link đã được gửi!");
-        }}
-        onMagicLinkSuccess={handleMagicLinkLogin}
+        onMagicLinkSuccess={handleEmailLogin}
       />
 
-      {/* OTP Verification Dialog */}
-      {walletAddress && (
-        <OTPVerificationDialog
-          open={showOTPDialog}
-          onOpenChange={setShowOTPDialog}
-          walletAddress={walletAddress}
-          onSuccess={handleOTPSuccess}
-        />
-      )}
+      {/* Quick Register Dialog */}
+      <QuickRegisterDialog
+        open={showQuickRegisterDialog}
+        onOpenChange={setShowQuickRegisterDialog}
+        walletAddress={walletAddress}
+        onSuccess={(user) => {
+          handleLogin(user);
+          setShowQuickRegisterDialog(false);
+        }}
+      />
+
+      {/* Floating Feedback Button */}
+      <FloatingFeedbackButton
+        onClick={() => setShowFeedbackDialog(true)}
+      />
 
       {/* Feature Feedback Dialog */}
       <FeatureFeedbackDialog
@@ -679,12 +750,68 @@ export default function App() {
         onOpenChange={setShowFeedbackDialog}
       />
 
-      {/* Floating Feedback Button */}
-      {currentPage === "calculator" && (
-        <FloatingFeedbackButton
-          onClick={() => setShowFeedbackDialog(true)}
+      {/* Loading Progress Overlay */}
+      <LoadingProgress
+        isVisible={isLoading}
+        walletAddress={walletAddress}
+      />
+
+      {/* Error Dialog */}
+      <ErrorDialog
+        open={showErrorDialog}
+        onOpenChange={setShowErrorDialog}
+        errorType={errorType}
+        errorMessage={errorMessage}
+        onTryDemoMode={handleTryDemoMode}
+      />
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#0f1419]">
+      {/* Navigation - Only show when logged in */}
+      {currentUser && (
+        <Navigation
+          currentPage={currentPage}
+          user={currentUser}
+          onNavigate={setCurrentPage}
+          onLogout={handleLogout}
         />
       )}
-    </>
+
+      {/* Page Content */}
+      {currentPage === "login" && (
+        <Login
+          onRegisterSuccess={handleLogin}
+          onBackToCalculator={() => setCurrentPage("calculator")}
+        />
+      )}
+      {currentPage === "calculator" && renderCalculatorPage()}
+      {currentPage === "dashboard" && currentUser && (
+        <Dashboard
+          user={currentUser}
+          walletData={walletData}
+          isLoading={isLoading}
+        />
+      )}
+      {currentPage === "profile" && currentUser && (
+        <ProfilePage
+          user={currentUser}
+          onUpdateUser={setCurrentUser}
+        />
+      )}
+
+      {/* Floating Feedback Button - Show on all pages */}
+      <FloatingFeedbackButton onClick={() => setShowFeedbackDialog(true)} />
+
+      {/* Feature Feedback Dialog */}
+      <FeatureFeedbackDialog
+        open={showFeedbackDialog}
+        onOpenChange={setShowFeedbackDialog}
+      />
+
+      {/* Toast Notifications */}
+      <Toaster position="top-right" richColors />
+    </div>
   );
 }

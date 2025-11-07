@@ -2,6 +2,7 @@
     "hello": "Hello",
     "welcome": "Welcome to the site",
     "nav": {
+        "register": "Register",
         "login": "Login",
         "dashboard": "Dashboard",
         "profile": "Profile",
@@ -9,6 +10,9 @@
     },
     "common": {
         "loading": "Loading..."
+    },
+    "idwallet": {
+        "place": "Enter wallet address (0x + 8 characters)"
     },
     "emailLogin": {
         "title": "Login via Email",
@@ -240,12 +244,14 @@
         },
         "security": {
             "title": "Account Security",
-            "description": "Your wallet is verified and protected."
+            "description": "Your wallet is verified and protected.",
+            "autosave": "Address is saved automatically when you log in"
         },
         "copied": "✓ Copied!",
         "copyWallet": "Copy Address",
         "copiedHint": "Your wallet address is saved automatically when you log in.",
         "details": {
+            "viewandfix": "View and edit your information",
             "title": "Detailed Information",
             "editing": "Editing your profile information",
             "viewing": "Viewing profile information"
@@ -259,14 +265,39 @@
     },
     "nav": {
         "dashboard": "Dashboard",
-        "calculator": "Calculator",
         "profile": "Profile",
-        "logout": "Logout",
         "profile_settings": "Profile Settings",
         "my_dashboard": "My Dashboard",
         "account_settings": "Account Settings",
-        "online": "Online",
-        "member": "AAA Member",
-        "nowallet": "No Wallet"
+        "logout": "Logout"
+    },
+    "featureDialog": {
+        "title": "Suggest a New Feature",
+        "description": "Your ideas help us improve!",
+        "featureName": "Feature Name",
+        "featureNamePlaceholder": "e.g. Integrate with MetaMask",
+        "featureDesc": "Detailed Description",
+        "featureDescPlaceholder": "Describe the feature you want to suggest...",
+        "emailLabel": "📧 Feedback Email",
+        "emailOptional": "(Optional)",
+        "emailPlaceholder": "your.email@example.com",
+        "emailNote": "We’ll contact you if we need more info.",
+        "benefitsTitle": "Your suggestion will be:",
+        "benefit1": "✓ Reviewed by our dev team",
+        "benefit2": "✓ Prioritized if relevant",
+        "benefit3": "✓ Notified when released",
+        "cancel": "Cancel",
+        "submit": "Submit Suggestion",
+        "sending": "Sending...",
+        "successTitle": "Thank You!",
+        "successMessage": "Your suggestion has been recorded.",
+        "successFollowup": "We'll review and respond soon.",
+        "autoClose": "Closing shortly...",
+        "errorFeature": "Please enter a feature name",
+        "errorDesc": "Please describe the feature in detail",
+        "errorGeneral": "Something went wrong. Please try again."
+    },
+    "idea": {
+        "buttonidea": "Share ideas"
     }
 }

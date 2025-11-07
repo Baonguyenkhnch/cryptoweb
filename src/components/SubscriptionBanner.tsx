@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
-import { Bell, X, Sparkles } from "lucide-react";
+import { Bell, X } from "lucide-react";
 
 interface SubscriptionBannerProps {
   onSubscribeClick: () => void;
@@ -62,7 +62,6 @@ export function SubscriptionBanner({ onSubscribeClick, show = true }: Subscripti
               <h4 className="text-white">
                 Bạn muốn nhận thông tin biến động ví này mỗi tuần qua email không?
               </h4>
-              <Sparkles className="w-4 h-4 text-yellow-400 animate-pulse" />
             </div>
             <p className="text-gray-300 text-sm">
               Nhận cập nhật về thay đổi điểm số, biến động token và link dashboard chi tiết

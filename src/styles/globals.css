@@ -219,3 +219,6 @@ html {
 html {
   scroll-behavior: smooth;
 }
+.text-hidden {
+  -webkit-text-security: disc;
+}

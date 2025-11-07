@@ -20,12 +20,12 @@ import {
   X,
   ChevronDown,
 } from "lucide-react";
-import type { UserProfile } from "../services/api";
-import { formatWalletAddress } from "../services/api";
+import type { UserProfile } from "../services/api-real";
+import { formatWalletAddress } from "../services/api-real";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
-import logoIcon from "./images/logonhap.jpg";
-import logoFull from "./images/logodash.jpg";
+import logoIcon from "../components/images/logonhap.jpg";
+import logoFull from "../components/images/logodash.jpg"
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -43,13 +43,13 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
   const NAV_ITEMS = [
     {
       id: "dashboard" as Page,
-      label: t.nav.dashboard,
+      label: t.navigation.dashboard,
       icon: TrendingUp,
       color: "cyan",
     },
     {
       id: "profile" as Page,
-      label: t.nav.profile,
+      label: t.navigation.profile,
       icon: UserIcon,
       color: "teal",
     },
@@ -79,34 +79,28 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
           <div className="flex items-center gap-4">
             {/* MigoFin Logo */}
             <div className="relative group cursor-pointer" onClick={() => handleNavigate("dashboard")}>
-              <div className="absolute -inset-1.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 overflow-hidden hover:bg-gradient-to-r hover:from-orange-500/5 hover:to-red-500/5 transition-all duration-300">
-                {/* Gradient border effect */}
-                <div className="absolute -inset-1 bg-gradient-to-br from-orange-500/30 to-red-500/30 rounded-xl blur-md group-hover:blur-lg opacity-50 group-hover:opacity-100 transition-all duration-300" />
+              {/* White background container with simple orange border */}
+              <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-2 px-3 py-2 border border-orange-400/40 hover:border-orange-500/60 transition-all duration-300">
+                {/* Logo Icon - Always visible */}
+                <div className="relative w-10 h-10 flex items-center justify-center">
+                  <img
+                    src={logoIcon}
+                    alt="MigoFin"
+                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                  />
+                </div>
 
-                {/* White background container for both logos */}
-                <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-2 px-2 py-1.5">
-                  {/* Logo Icon - Always visible */}
-                  <div className="relative w-9 h-9 flex items-center justify-center">
+                {/* Logo Text - Hidden on mobile, visible on sm+ */}
+                {/* Only show text logo in authenticated pages (dashboard/profile) */}
+                {(currentPage === 'dashboard' || currentPage === 'profile') && (
+                  <div className="hidden sm:flex items-center">
                     <img
-                      src={logoIcon}
+                      src={logoFull}
                       alt="MigoFin"
-                      className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                      className="h-5 object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-
-                  {/* Logo Text - Hidden on mobile, visible on sm+ */}
-                  {/* Only show text logo in authenticated pages (dashboard/profile) */}
-                  {(currentPage === 'dashboard' || currentPage === 'profile') && (
-                    <div className="hidden sm:flex items-center">
-                      <img
-                        src={logoFull}
-                        alt="MigoFin"
-                        className="h-5 object-contain group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
             </div>
 
@@ -231,7 +225,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                     className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-300"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    {t.nav.logout}
+                    {t.navigation.logout}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -301,7 +295,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-400/40 transition-all duration-300 mt-2"
               >
                 <LogOut className="w-5 h-5" />
-                <span>{t.nav.logout}</span>
+                <span>{t.navigation.logout}</span>
               </button>
             </div>
           </div>
