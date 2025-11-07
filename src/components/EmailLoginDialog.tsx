@@ -90,36 +90,36 @@ export function EmailLoginDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] bg-slate-800/95 backdrop-blur-xl border border-cyan-500/30 shadow-2xl rounded-2xl">
+      <DialogContent className="sm:max-w-[440px] bg-slate-800/95 backdrop-blur-xl border border-cyan-500/30 shadow-2xl rounded-xl">
         {!showSuccess ? (
           <>
             <DialogHeader>
-              <div className="flex items-center justify-center mb-4">
+              <div className="flex items-center justify-center mb-3">
                 <div className="relative">
-                  <div className="absolute -inset-3 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-full blur-xl opacity-60 animate-pulse" />
-                  <div className="relative p-4 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl border border-cyan-400/30">
-                    <Mail className="w-8 h-8 text-cyan-400" />
+                  <div className="absolute -inset-2 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-full blur-lg opacity-60 animate-pulse" />
+                  <div className="relative p-3 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl border border-cyan-400/30">
+                    <Mail className="w-6 h-6 text-cyan-400" />
                   </div>
                 </div>
               </div>
 
-              <DialogTitle className="text-center text-2xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              <DialogTitle className="text-center text-xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                 {t.emailLogin.title}
               </DialogTitle>
 
-              <DialogDescription className="text-center text-gray-300 mt-2">
+              <DialogDescription className="text-center text-gray-300 mt-1 text-sm">
                 {t.emailLogin.description}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-6 py-6">
+            <div className="space-y-4 py-4">
               {/* Security Info */}
-              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
+              <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Shield className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-gray-300">
-                    <div className="text-purple-400 mb-1">🔐 {t.emailLogin.security.title}</div>
-                    <ul className="space-y-1 text-xs text-gray-400">
+                    <div className="text-purple-400 mb-1 text-sm">🔐 {t.emailLogin.security.title}</div>
+                    <ul className="space-y-0.5 text-xs text-gray-400">
                       <li>✓ {t.emailLogin.security.noPassword}</li>
                       <li>✓ {t.emailLogin.security.oneTime}</li>
                       <li>✓ {t.emailLogin.security.noStorage}</li>
@@ -129,8 +129,8 @@ export function EmailLoginDialog({
               </div>
 
               {/* Email Input */}
-              <div className="space-y-3">
-                <Label htmlFor="login-email" className="text-gray-300 flex items-center gap-2">
+              <div className="space-y-2">
+                <Label htmlFor="login-email" className="text-gray-300 flex items-center gap-2 text-sm">
                   <Mail className="w-4 h-4 text-cyan-400" />
                   {t.emailLogin.emailLabel}
                 </Label>
@@ -145,7 +145,7 @@ export function EmailLoginDialog({
                       handleSubmit();
                     }
                   }}
-                  className="bg-slate-900/50 border-cyan-500/30 focus:border-cyan-400 text-white placeholder:text-gray-500 h-12 text-base"
+                  className="bg-slate-900/50 border-cyan-500/30 focus:border-cyan-400 text-white placeholder:text-gray-500 h-10"
                   autoFocus
                 />
                 <p className="text-xs text-gray-400 flex items-center gap-1">
@@ -155,16 +155,16 @@ export function EmailLoginDialog({
               </div>
 
               {/* How it works */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="text-sm text-gray-400">{t.emailLogin.howItWorks.title}</div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {[
                     { step: "1", text: t.emailLogin.howItWorks.step1 },
                     { step: "2", text: t.emailLogin.howItWorks.step2 },
                     { step: "3", text: t.emailLogin.howItWorks.step3 }
                   ].map((item, index) => (
-                    <div key={index} className="flex items-center gap-3 text-xs text-gray-400">
-                      <div className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                    <div key={index} className="flex items-center gap-2 text-xs text-gray-400">
+                      <div className="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xs">
                         {item.step}
                       </div>
                       <span>{item.text}</span>
@@ -183,11 +183,11 @@ export function EmailLoginDialog({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-2 pt-3">
               <Button
                 onClick={handleClose}
                 variant="outline"
-                className="flex-1 bg-slate-700/30 border-slate-600 text-gray-300 hover:bg-slate-700/50 hover:text-white h-12"
+                className="flex-1 bg-slate-700/30 border-slate-600 text-gray-300 hover:bg-slate-700/50 hover:text-white h-10"
               >
                 {t.emailLogin.cancel}
               </Button>
@@ -195,7 +195,7 @@ export function EmailLoginDialog({
               <Button
                 onClick={handleSubmit}
                 disabled={!email.trim() || !validateEmail(email) || isLoading}
-                className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30 h-12"
+                className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30 h-10"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
@@ -213,33 +213,33 @@ export function EmailLoginDialog({
           </>
         ) : (
           // Success state
-          <div className="py-12 text-center space-y-6">
+          <div className="py-8 text-center space-y-4">
             <div className="flex justify-center">
               <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-full blur-xl opacity-60 animate-pulse" />
-                <CheckCircle2 className="relative w-16 h-16 text-cyan-400" />
+                <div className="absolute -inset-3 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-full blur-lg opacity-60 animate-pulse" />
+                <CheckCircle2 className="relative w-12 h-12 text-cyan-400" />
               </div>
             </div>
 
             <div>
-              <h3 className="text-2xl text-white mb-3">{t.emailLogin.success.title}</h3>
-              <p className="text-gray-300 mb-2">
+              <h3 className="text-xl text-white mb-2">{t.emailLogin.success.title}</h3>
+              <p className="text-gray-300 mb-1 text-sm">
                 {t.emailLogin.success.sentTo}
               </p>
-              <p className="text-cyan-400 mb-4">{email}</p>
+              <p className="text-cyan-400 mb-3 text-sm">{email}</p>
 
-              <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg inline-block">
+              <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg inline-block">
                 <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <Mail className="w-5 h-5 text-cyan-400" />
+                  <Mail className="w-4 h-4 text-cyan-400" />
                   <span>{t.emailLogin.success.checkEmail}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-gray-400 mt-1">
                   {t.emailLogin.success.checkSpam}
                 </p>
               </div>
             </div>
 
-            <div className="space-y-2 pt-4">
+            <div className="space-y-1 pt-2">
               <div className="text-sm text-gray-400">
                 {t.emailLogin.success.validFor} <span className="text-cyan-400">{t.emailLogin.success.minutes}</span>
               </div>
@@ -249,10 +249,10 @@ export function EmailLoginDialog({
             </div>
 
             {/* DEMO: Simulate magic link click */}
-            <div className="space-y-3">
-              <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-yellow-400 mb-1">
-                  <span className="text-lg">⚡</span>
+            <div className="space-y-2">
+              <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-yellow-400 mb-0.5">
+                  <span>⚡</span>
                   <span>{t.emailLogin.success.demoMode}</span>
                 </div>
                 <p className="text-xs text-gray-400">
@@ -262,10 +262,10 @@ export function EmailLoginDialog({
 
               <Button
                 onClick={handleMagicLinkClick}
-                className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-500/30"
+                className="w-full h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-500/30"
               >
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5" />
+                  <CheckCircle2 className="w-4 h-4" />
                   <span>{t.emailLogin.success.simulateClick}</span>
                 </div>
               </Button>
@@ -273,7 +273,7 @@ export function EmailLoginDialog({
               <Button
                 onClick={handleClose}
                 variant="outline"
-                className="w-full bg-slate-700/30 border-slate-600 text-gray-300 hover:bg-slate-700/50"
+                className="w-full h-9 bg-slate-700/30 border-slate-600 text-gray-300 hover:bg-slate-700/50"
               >
                 {t.emailLogin.success.close}
               </Button>
