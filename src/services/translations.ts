@@ -43,10 +43,10 @@ export const translations = {
       },
       privacy: {
         title: "🔒 Bảo Mật & Riêng Tư",
-        noLogin: "✅ Không cần đăng nhập",
-        noPersonalInfo: "✅ Không lưu thông tin cá nhân",
-        decentralized: "✅ Hoàn toàn phi tập trung",
-        onlyPublicData: "✅ Chỉ phân tích dữ liệu công khai trên blockchain",
+        noLogin: " Không cần đăng nhập",
+        noPersonalInfo: " Không lưu thông tin cá nhân",
+        decentralized: " Hoàn toàn phi tập trung",
+        onlyPublicData: " Chỉ phân tích dữ liệu công khai trên blockchain",
         description:
           "Chúng tôi chỉ phân tích dữ liệu công khai từ blockchain. Không yêu cầu thông tin cá nhân, không lưu trữ danh tính người dùng.",
       },
@@ -513,10 +513,10 @@ export const translations = {
       },
       privacy: {
         title: "🔒 Security & Privacy",
-        noLogin: "✅ No login required",
-        noPersonalInfo: "✅ No personal information stored",
-        decentralized: "✅ Fully decentralized",
-        onlyPublicData: "✅ Only analyzes public blockchain data",
+        noLogin: " No login required",
+        noPersonalInfo: " No personal information stored",
+        decentralized: " Fully decentralized",
+        onlyPublicData: " Only analyzes public blockchain data",
         description:
           "We only analyze public data from the blockchain. No personal information required, no user identity storage.",
       },

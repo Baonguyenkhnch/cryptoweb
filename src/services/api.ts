@@ -47,6 +47,8 @@ export interface WalletAnalysis {
   creditLevel?: string;
   createdAt?: string;
   updatedAt?: string;
+  walletTransactionsLast30d?: number;
+  stablecoinInflow30d?: number;
 }
 
 export interface CreditScoreData {

@@ -56,6 +56,8 @@ export interface WalletAnalysis {
     creditLevel?: string;
     createdAt?: string;
     updatedAt?: string;
+    walletTransactionsLast30d?: number;
+    stablecoinInflow30d?: number;
 }
 
 export interface CreditScoreData {
@@ -141,8 +143,8 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
         const url = `${API_BASE_URL}/api/credit-score/${walletAddress}`;
         debugLog(`📡 Calling API: ${url}`);
 
-        // Call API với timeout 5 giây và NO retry (backend phải nhanh)
-        const maxRetries = 1; // Không retry, timeout ngay
+        // Call API với timeout 30 giây với retry
+        const maxRetries = 2; // Retry 1 lần nếu timeout
         let lastError;
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -150,7 +152,7 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
                 debugLog(`🔄 Attempt ${attempt}/${maxRetries}`);
 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // Tối đa 5 giây
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // Tối đa 30 giây
 
                 const startTime = Date.now();
                 const response = await fetch(url, {
@@ -193,10 +195,10 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
 
                 // Nếu là AbortError (timeout)
                 if (error.name === 'AbortError') {
-                    debugLog(`⏱️ Attempt ${attempt} timeout`);
+                    debugLog(`⏱️ Attempt ${attempt} timeout (30s)`);
                     if (attempt < maxRetries) {
-                        debugLog(`🔄 Retrying in 2 seconds...`);
-                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        debugLog(`🔄 Retrying in 3 seconds...`);
+                        await new Promise(resolve => setTimeout(resolve, 3000));
                         continue;
                     }
                 } else {
@@ -207,14 +209,14 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
         }
 
         // Nếu hết retry vẫn timeout
-        throw new Error('⏱️ Backend phản hồi quá chậm (>5s). Vui lòng thử lại hoặc liên hệ support nếu lỗi tiếp tục.');
+        throw new Error('⏱️ Backend phản hồi quá chậm (>30s). Backend đang xử lý dữ liệu blockchain, vui lòng đợi 1-2 phút rồi thử lại.');
 
     } catch (error: any) {
         debugLog(`❌ Error analyzing wallet:`, error);
 
         // Handle different error types
         if (error.name === 'AbortError') {
-            throw new Error('⏱️ Backend phản hồi quá chậm (>5s). Vui lòng thử lại hoặc liên hệ support nếu lỗi tiếp tục.');
+            throw new Error('⏱️ Backend phản hồi quá chậm (>30s). Backend đang xử lý dữ liệu blockchain, vui lòng đợi 1-2 phút rồi thử lại.');
         }
 
         if (error.message.includes('Failed to fetch')) {
@@ -290,6 +292,8 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
         creditLevel: data.credit_level,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
+        walletTransactionsLast30d: data.wallet_transactions_last_30d,
+        stablecoinInflow30d: data.stablecoin_inflow_30d,
     };
 
     debugLog(`✅ Mapped wallet analysis:`, walletAnalysis);
@@ -715,4 +719,4 @@ export default {
     formatWalletAddress,
     registerWalletWithEmail,
     getWalletByEmail,
-};
+}
