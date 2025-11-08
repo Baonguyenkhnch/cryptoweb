@@ -303,7 +303,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
             </Card>
 
             {/* Stats Card */}
-            <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl border border-cyan-500/30 rounded-2xl">
+            <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg text-cyan-400 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
@@ -311,11 +311,11 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="p-3 bg-slate-900/50 rounded-lg">
+                <div className="p-3 bg-slate-900/50 rounded-lg border border-cyan-500/20">
                   <div className="text-gray-400 text-xs mb-1">{t.profile.stats.averageScore}</div>
                   <div className="text-2xl text-cyan-400">{MOCK_PROFILE_STATS.averageScore}</div>
                 </div>
-                <div className="p-3 bg-slate-900/50 rounded-lg">
+                <div className="p-3 bg-slate-900/50 rounded-lg border border-blue-500/20">
                   <div className="text-gray-400 text-xs mb-1">{t.profile.stats.highestScore}</div>
                   <div className="text-2xl text-emerald-400">{MOCK_PROFILE_STATS.highestScore}</div>
                 </div>
