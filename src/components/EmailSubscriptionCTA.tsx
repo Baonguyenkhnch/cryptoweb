@@ -1,6 +1,7 @@
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Mail, Bell, Zap, CheckCircle2, Shield } from "lucide-react";
+import { useLanguage } from "../services/LanguageContext";
 
 interface EmailSubscriptionCTAProps {
   onSubscribe: () => void;
@@ -8,6 +9,8 @@ interface EmailSubscriptionCTAProps {
 }
 
 export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscriptionCTAProps) {
+  const { t } = useLanguage();
+
   if (isSubscribed) {
     return (
       <Card className="relative overflow-hidden bg-gradient-to-br from-green-900/40 to-emerald-900/40 backdrop-blur-xl border border-green-500/30 shadow-2xl rounded-2xl">
@@ -22,9 +25,9 @@ export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscri
             </div>
 
             <div className="flex-1 text-center md:text-left">
-              <h3 className="text-2xl text-white mb-2">Bạn Đã Đăng Ký!</h3>
+              <h3 className="text-2xl text-white mb-2">{t.emailSubscription.subscribed.title}</h3>
               <p className="text-gray-300">
-                Chúng tôi sẽ gửi cập nhật điểm tín dụng và phân tích chi tiết đến email của bạn định kỳ.
+                {t.emailSubscription.subscribed.description}
               </p>
             </div>
           </div>
@@ -46,11 +49,11 @@ export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscri
               <div className="p-3 bg-cyan-500/20 rounded-xl border border-cyan-400/30">
                 <Mail className="w-6 h-6 text-cyan-400" />
               </div>
-              <h3 className="text-2xl text-white">Nhận Cập Nhật Định Kỳ</h3>
+              <h3 className="text-2xl text-white">{t.emailSubscription.cta.title}</h3>
             </div>
 
             <p className="text-gray-300 text-lg leading-relaxed">
-              Để lại email để nhận thông báo khi điểm tín dụng của bạn thay đổi và các phân tích chi tiết về ví.
+              {t.emailSubscription.cta.description}
             </p>
 
             <Button
@@ -60,37 +63,37 @@ export function EmailSubscriptionCTA({ onSubscribe, isSubscribed }: EmailSubscri
             >
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5" />
-                <span>Đăng Ký Ngay</span>
+                <span>{t.emailSubscription.cta.button}</span>
                 <Zap className="w-4 h-4 group-hover:animate-pulse" />
               </div>
             </Button>
 
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <Shield className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-400">100% tự nguyện</span>
-              <span>• Email chỉ dùng để gửi cập nhật</span>
+              <span className="text-purple-400">{t.emailSubscription.cta.privacy}</span>
+              <span>• {t.emailSubscription.cta.emailUse}</span>
             </div>
           </div>
 
           {/* Right side - Benefits */}
           <div className="space-y-4">
-            <div className="text-cyan-300 mb-4">Lợi ích khi đăng ký:</div>
+            <div className="text-cyan-300 mb-4">{t.emailSubscription.benefits.title}</div>
 
             {[
               {
                 icon: Bell,
-                title: "Thông báo tức thì",
-                desc: "Nhận cảnh báo khi điểm số thay đổi"
+                title: t.emailSubscription.benefits.notification.title,
+                desc: t.emailSubscription.benefits.notification.desc,
               },
               {
                 icon: Zap,
-                title: "Phân tích chi tiết",
-                desc: "Báo cáo tuần/tháng về hoạt động ví"
+                title: t.emailSubscription.benefits.analysis.title,
+                desc: t.emailSubscription.benefits.analysis.desc,
               },
               {
                 icon: Shield,
-                title: "Bảo mật & riêng tư",
-                desc: "Email được mã hóa, không chia sẻ"
+                title: t.emailSubscription.benefits.security.title,
+                desc: t.emailSubscription.benefits.security.desc,
               }
             ].map((benefit, index) => {
               const Icon = benefit.icon;

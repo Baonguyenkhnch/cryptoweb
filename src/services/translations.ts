@@ -20,6 +20,7 @@ export const translations = {
         title: "Nhập Địa Chỉ Ví hoặc Email",
         subtitle: "Kết nối ví của bạn để khám phá tiềm năng tín dụng",
         label: "Địa Chỉ Ví hoặc Email",
+        placeholder: "0x742d... hoặc email@example.com",
         emailSearching: "Đang tìm ví từ email...",
         emailNotFound: "Email chưa đăng ký hoặc chưa liên kết ví",
         emailFound: "Tìm thấy ví! Đang phân tích...",
@@ -32,7 +33,7 @@ export const translations = {
         calculate: "Tính Điểm Tín Dụng",
         calculating: "Đang Tính Toán...",
         analyzing: "Đang Phân Tích",
-        reset: "T��nh Lại",
+        reset: "Tnh Lại",
         viewDetails: "Xem Chi Tiết",
         tryAnother: "Thử Ví Khác",
       },
@@ -43,10 +44,10 @@ export const translations = {
       },
       privacy: {
         title: "🔒 Bảo Mật & Riêng Tư",
-        noLogin: " Không cần đăng nhập",
-        noPersonalInfo: " Không lưu thông tin cá nhân",
-        decentralized: " Hoàn toàn phi tập trung",
-        onlyPublicData: " Chỉ phân tích dữ liệu công khai trên blockchain",
+        noLogin: "✅ Không cần đăng nhập",
+        noPersonalInfo: "✅ Không lưu thông tin cá nhân",
+        decentralized: "✅ Hoàn toàn phi tập trung",
+        onlyPublicData: "✅ Chỉ phân tích dữ liệu công khai trên blockchain",
         description:
           "Chúng tôi chỉ phân tích dữ liệu công khai từ blockchain. Không yêu cầu thông tin cá nhân, không lưu trữ danh tính người dùng.",
       },
@@ -205,6 +206,7 @@ export const translations = {
         noEmail: "Không nhận được email? Kiểm tra hộp thư spam",
       },
       validationErrors: {
+        fillAll: "Vui lòng điền đầy đủ thông tin",
         invalidEmail: "Email không hợp lệ",
         invalidWalletFormat: "Địa chỉ ví không hợp lệ",
         validEmail: "Vui lòng nhập email hợp lệ",
@@ -327,7 +329,7 @@ export const translations = {
         title: "Đăng Ký Thành Công!",
         description: "Bạn sẽ nhận thông báo qua email:",
         walletSaved:
-          "Ví của bạn đã được lưu. Bạn sẽ được thông báo khi có thay đổi quan trọng.",
+          "Ví của bạn ��ã được lưu. Bạn sẽ được thông báo khi có thay đổi quan trọng.",
       },
       errors: {
         enterEmail: "Vui lòng nhập email hợp lệ",
@@ -474,7 +476,7 @@ export const translations = {
         notification: "Nhận thông báo khi tính năng ra mắt",
       },
       buttons: {
-        cancel: "Hủy",
+        cancel: "H��y",
         submit: "Gửi Đề Xuất",
         submitting: "Đang Gửi...",
       },
@@ -496,7 +498,37 @@ export const translations = {
 
     // Floating Feedback Button
     floatingButton: {
-      tooltip: "Chia sẻ ý tưởng của bạn",
+      tooltip: " của bạn",
+    },
+
+    // Email Subscription CTA
+    emailSubscription: {
+      subscribed: {
+        title: "Bạn Đã Đăng Ký!",
+        description: "Chúng tôi sẽ gửi cập nhật điểm tín dụng và phân tích chi tiết đến email của bạn định kỳ.",
+      },
+      cta: {
+        title: "Nhận Cập Nhật Định Kỳ",
+        description: "Để lại email để nhận thông báo khi điểm tín dụng của bạn thay đổi và các phân tích chi tiết về ví.",
+        button: "Đăng Ký Ngay",
+        privacy: "100% tự nguyện",
+        emailUse: "Email chỉ dùng để gửi cập nhật",
+      },
+      benefits: {
+        title: "Lợi ích khi đăng ký:",
+        notification: {
+          title: "Thông báo tức thì",
+          desc: "Nhận cảnh báo khi điểm số thay đổi",
+        },
+        analysis: {
+          title: "Phân tích chi tiết",
+          desc: "Báo cáo tuần/tháng về hoạt động ví",
+        },
+        security: {
+          title: "Bảo mật & riêng tư",
+          desc: "Email được mã hóa, không chia sẻ",
+        },
+      },
     },
   },
 
@@ -521,6 +553,7 @@ export const translations = {
         title: "Enter Wallet Address or Email",
         subtitle: "Connect your wallet to discover credit potential",
         label: "Wallet Address or Email",
+        placeholder: "0x742d... or email@example.com",
         emailSearching: "Searching wallet from email...",
         emailNotFound: "Email not registered or not linked to wallet",
         emailFound: "Wallet found! Analyzing...",
@@ -544,10 +577,10 @@ export const translations = {
       },
       privacy: {
         title: "🔒 Security & Privacy",
-        noLogin: " No login required",
-        noPersonalInfo: " No personal information stored",
-        decentralized: " Fully decentralized",
-        onlyPublicData: " Only analyzes public blockchain data",
+        noLogin: "✅ No login required",
+        noPersonalInfo: "✅ No personal information stored",
+        decentralized: "✅ Fully decentralized",
+        onlyPublicData: "✅ Only analyzes public blockchain data",
         description:
           "We only analyze public data from the blockchain. No personal information required, no user identity storage.",
       },
@@ -706,6 +739,7 @@ export const translations = {
         noEmail: "Didn't receive email? Check spam folder",
       },
       validationErrors: {
+        fillAll: "Please fill in all information",
         invalidEmail: "Invalid email",
         invalidWalletFormat: "Invalid wallet address",
         validEmail: "Please enter a valid email",
@@ -996,6 +1030,36 @@ export const translations = {
     // Floating Feedback Button
     floatingButton: {
       tooltip: "Share your idea",
+    },
+
+    // Email Subscription CTA
+    emailSubscription: {
+      subscribed: {
+        title: "You're Subscribed!",
+        description: "We will send credit score updates and detailed analysis to your email periodically.",
+      },
+      cta: {
+        title: "Get Periodic Updates",
+        description: "Leave your email to receive notifications when your credit score changes and detailed wallet analysis.",
+        button: "Subscribe Now",
+        privacy: "100% voluntary",
+        emailUse: "Email only used for updates",
+      },
+      benefits: {
+        title: "Subscription benefits:",
+        notification: {
+          title: "Instant notifications",
+          desc: "Get alerts when score changes",
+        },
+        analysis: {
+          title: "Detailed analysis",
+          desc: "Weekly/monthly wallet activity reports",
+        },
+        security: {
+          title: "Security & privacy",
+          desc: "Email encrypted, not shared",
+        },
+      },
     },
   },
 };
