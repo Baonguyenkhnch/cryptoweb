@@ -8,7 +8,7 @@ i18n.use(initReactI18next).init({
         en: { translation: en },
         vi: { translation: vi },
     },
-    lng: "en", // ngôn ngữ mặc định
+    lng: "vi", // ngôn ngữ mặc định
     fallbackLng: "en",
     interpolation: {
         escapeValue: false, // react đã tự xử lý XSS

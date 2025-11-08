@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
+import { memo, useMemo, lazy, Suspense } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
 import { Crown, Trophy, Award, Star, TrendingUp, Wallet, Activity } from "lucide-react";
 import type { TokenBalance, Transaction } from "../services/api-real";
@@ -14,6 +15,7 @@ interface ScoreResultProps {
   totalAssets: number;
   tokenBalances?: TokenBalance[];
   recentTransactions?: Transaction[];
+  scoreHistory?: Array<{ date: string; score: number }>;
   onSubscribe?: () => void;
   onFeedback?: () => void;
   onRecalculate?: () => void;
@@ -65,7 +67,7 @@ const getRatingIcon = (rating: string) => {
   }
 };
 
-export function ScoreResult({
+function ScoreResultComponent({
   score,
   walletAge,
   totalTransactions,
@@ -73,6 +75,7 @@ export function ScoreResult({
   totalAssets,
   tokenBalances = [],
   recentTransactions = [],
+  scoreHistory = [],
   onSubscribe,
   onFeedback,
   onRecalculate,
@@ -81,42 +84,49 @@ export function ScoreResult({
   isRecalculating = false,
 }: ScoreResultProps) {
   const { t } = useLanguage();
-  const rating = getRating(score);
-  const percentage = Math.min((score / 850) * 100, 100);
+  const rating = useMemo(() => getRating(score), [score]);
+  const percentage = useMemo(() => Math.min((score / 850) * 100, 100), [score]);
 
-  const chartData = [
+  const chartData = useMemo(() => [
     { name: 'Score', value: percentage },
     { name: 'Remaining', value: 100 - percentage }
-  ];
+  ], [percentage]);
 
   const COLORS = ['url(#gradient)', '#e5e7eb'];
 
   // Colors cho token pie chart
   const TOKEN_COLORS = ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#6366f1'];
 
-  // Generate mock score trend data (last 30 days)
-  const scoreTrendData = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (29 - i));
-    const variation = Math.sin(i / 5) * 30 + (Math.random() - 0.5) * 20;
-    return {
-      date: date.toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' }),
-      score: Math.max(500, Math.min(850, score + variation)),
-    };
-  });
+  // Use real score history data if available, otherwise generate mock data
+  const scoreTrendData = useMemo(() =>
+    scoreHistory.length > 0
+      ? scoreHistory.map(item => ({
+        date: new Date(item.date).toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' }),
+        score: item.score,
+      }))
+      : Array.from({ length: 30 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (29 - i));
+        const variation = Math.sin(i / 5) * 30 + (Math.random() - 0.5) * 20;
+        return {
+          date: date.toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' }),
+          score: Math.max(500, Math.min(850, score + variation)),
+        };
+      }), [scoreHistory, score]);
 
   // Generate activity timeline from transactions
-  const activityData = recentTransactions.reduce((acc: any[], tx) => {
-    const dateKey = new Date(tx.date).toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' });
-    const existing = acc.find(item => item.date === dateKey);
-    if (existing) {
-      existing.count += 1;
-      existing.volume += tx.value;
-    } else {
-      acc.push({ date: dateKey, count: 1, volume: tx.value });
-    }
-    return acc;
-  }, []).reverse();
+  const activityData = useMemo(() =>
+    recentTransactions.reduce((acc: any[], tx) => {
+      const dateKey = new Date(tx.date).toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' });
+      const existing = acc.find(item => item.date === dateKey);
+      if (existing) {
+        existing.count += 1;
+        existing.volume += tx.value;
+      } else {
+        acc.push({ date: dateKey, count: 1, volume: tx.value });
+      }
+      return acc;
+    }, []).reverse(), [recentTransactions]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -546,3 +556,6 @@ export function ScoreResult({
     </div>
   );
 }
+
+// Export memoized version to prevent unnecessary re-renders
+export const ScoreResult = memo(ScoreResultComponent);

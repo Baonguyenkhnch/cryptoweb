@@ -5,7 +5,7 @@
  * Context để quản lý ngôn ngữ toàn ứng dụng
  */
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useMemo } from "react";
 import { translations, Language, TranslationKeys } from "./translations";
 
 interface LanguageContextType {
@@ -39,23 +39,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   // Lưu ngôn ngữ vào localStorage khi thay đổi
   const setLanguage = (lang: Language) => {
-    console.log('🌐 Language changing from', language, 'to', lang);
     setLanguageState(lang);
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem("language", lang);
-        console.log('✅ Language saved to localStorage:', lang);
       } catch (error) {
-        console.error("Failed to save language to localStorage:", error);
+        // Silently fail to avoid memory issues
       }
     }
   };
 
-  const value: LanguageContextType = {
+  const value: LanguageContextType = useMemo(() => ({
     language,
     setLanguage,
     t: translations[language],
-  };
+  }), [language]);
 
   return (
     <LanguageContext.Provider value={value}>

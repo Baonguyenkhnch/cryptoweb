@@ -11,12 +11,14 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Mail, Send, CheckCircle2, AlertCircle, Lock, Shield } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
+import { sendMagicLink } from "../services/api-real";
 
 interface EmailLoginDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   onMagicLinkSuccess?: (email: string) => void;
+  walletAddress?: string; // Wallet address để gắn với email
 }
 
 export function EmailLoginDialog({
@@ -24,6 +26,7 @@ export function EmailLoginDialog({
   onOpenChange,
   onSuccess,
   onMagicLinkSuccess,
+  walletAddress = "",
 }: EmailLoginDialogProps) {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
@@ -51,23 +54,34 @@ export function EmailLoginDialog({
     setIsLoading(true);
 
     try {
-      // TODO: Gọi API POST /auth/send-magic-link
-      // Backend sẽ gửi email chứa link xác thực
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // ✅ GỌI API THẬT - Gửi Magic Link
+      // Backend endpoint: POST /api/auth/send-magic-link
+      const result = await sendMagicLink(email, walletAddress);
 
-      console.log("Gửi magic link đến:", email);
+      if (result.success) {
+        console.log("✅ Magic link đã gửi:", result.message);
+        setShowSuccess(true);
 
-      setShowSuccess(true);
-
-      // Tự động đóng sau 5s
-      setTimeout(() => {
-        handleClose();
-        if (onSuccess) {
-          onSuccess();
-        }
-      }, 5000);
+        // Tự động đóng sau 5s
+        setTimeout(() => {
+          handleClose();
+          if (onSuccess) {
+            onSuccess();
+          }
+        }, 5000);
+      } else {
+        throw new Error(result.message || "Gửi email thất bại");
+      }
     } catch (err) {
-      setError(t.emailLogin.errors.generalError);
+      const errorMsg = err instanceof Error ? err.message : t.emailLogin.errors.generalError;
+      console.error("❌ Lỗi gửi magic link:", errorMsg);
+
+      // Nếu backend offline, hiển thị demo mode
+      if (errorMsg.includes('DEMO')) {
+        setShowSuccess(true);
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setIsLoading(false);
     }

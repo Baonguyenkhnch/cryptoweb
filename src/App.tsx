@@ -17,6 +17,7 @@ import { QuickRegisterDialog } from "./components/QuickRegisterDialog";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { LoadingProgress } from "./components/LoadingProgress";
 import { ErrorDialog } from "./components/ErrorDialog";
+import { QuotaWarningBanner } from "./components/QuotaWarningBanner";
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
@@ -82,6 +83,7 @@ export default function App() {
   const [errorType, setErrorType] = useState<"quota" | "network" | "general">("general");
   const [errorMessage, setErrorMessage] = useState("");
   const [useDemoMode, setUseDemoMode] = useState(false); // Demo mode toggle
+  const [showQuotaWarning, setShowQuotaWarning] = useState(false); // Quota warning banner
 
   // check xem có login chưa khi vào trang
   useEffect(() => {
@@ -259,6 +261,7 @@ export default function App() {
 
       if (isQuotaError) {
         setErrorType("quota");
+        setShowQuotaWarning(true); // Show quota warning banner
       } else if (errorMsg.includes('network') || errorMsg.includes('timeout')) {
         setErrorType("network");
       } else {
@@ -291,6 +294,46 @@ export default function App() {
     setShowEmailLoginDialog(false);
     setShowFeedbackDialog(false);
     setSubscriptionStatus(null);
+    setUseDemoMode(false); // Reset demo mode
+  };
+
+  // Handler for Demo Mode when quota error occurs
+  const handleTryDemoMode = async () => {
+    if (!walletAddress.trim()) {
+      console.warn('⚠️ No wallet address for demo mode');
+      return;
+    }
+
+    console.log(
+      '%c🎨 DEMO MODE ACTIVATED',
+      'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;'
+    );
+    console.log('%c📊 Using mock data for demo purposes', 'color: #34d399;');
+
+    // Close error dialog
+    setShowErrorDialog(false);
+    setIsLoading(true);
+    setUseDemoMode(true);
+
+    try {
+      // Generate mock data for demo
+      const mockData = generateMockWalletData(walletAddress);
+
+      // Simulate loading delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      setWalletData(mockData);
+      setShowResults(true);
+
+      console.log(
+        '%c✅ Demo data loaded successfully',
+        'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px;'
+      );
+    } catch (error) {
+      console.error('Error in demo mode:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubscribeClick = () => {
@@ -387,32 +430,16 @@ export default function App() {
     console.log("📍 Wallet Address:", walletAddress);
   };
 
-  // Handle Demo Mode - Use mock data when backend is down
-  const handleTryDemoMode = () => {
-    console.log(
-      '%c🎨 DEMO MODE ACTIVATED',
-      'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;'
-    );
-    console.log(
-      '%c📊 Using mock data for wallet:',
-      'color: #34d399; font-weight: bold;',
-      walletAddress
-    );
-
-    // Generate mock data
-    const mockData = generateMockWalletData(walletAddress);
-    setWalletData(mockData);
-    setShowResults(true);
-    setShowErrorDialog(false);
-
-    console.log('%c✅ Demo data loaded successfully', 'color: #10b981;');
-  };
-
   // trang calculator chính
   const renderCalculatorPage = () => (
     <div
       className={`relative overflow-hidden bg-[#0f1419] ${!showResults ? "h-screen" : "min-h-screen"}`}
     >
+      {/* Quota Warning Banner */}
+      {showQuotaWarning && (
+        <QuotaWarningBanner onDismiss={() => setShowQuotaWarning(false)} />
+      )}
+
       {/* Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0f1419] via-[#1a2332] to-[#0f1419]" />
@@ -448,7 +475,7 @@ export default function App() {
               setCurrentPage("login");
             }}
             variant="outline"
-            className="bg-gradient-to-r from-orange-600/20 to-yellow-600/20 backdrop-blur-sm border-orange-500/40 text-orange-400 hover:bg-orange-500/30 hover:border-orange-400/50 rounded-lg h-7 md:h-9 px-2.5 md:px-4 text-[11px] md:text-sm whitespace-nowrap"
+            className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/20 hover:border-cyan-400/60 hover:text-white rounded-lg h-7 md:h-9 px-2.5 md:px-4 text-[11px] md:text-sm font-medium whitespace-nowrap transition-all duration-300"
           >
             {t.auth.register}
           </Button>
@@ -457,7 +484,7 @@ export default function App() {
           <Button
             onClick={() => setShowEmailLoginDialog(true)}
             variant="outline"
-            className="bg-slate-800/80 backdrop-blur-sm border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400/50 rounded-lg h-7 md:h-9 px-2 md:px-4 text-[11px] md:text-sm"
+            className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/20 hover:border-cyan-400/60 hover:text-white rounded-lg h-7 md:h-9 px-2 md:px-4 text-[11px] md:text-sm font-medium transition-all duration-300"
           >
             <Mail className="w-3.5 h-3.5 md:w-4 md:h-4 md:mr-1.5" />
             <span className="hidden md:inline">
@@ -672,14 +699,26 @@ export default function App() {
         ) : (
           /* Results Section - Can scroll */
           <div className="space-y-6 md:space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
-            <div className="flex justify-start pl-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pl-4">
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="mb-3 md:mb-4 bg-cyan-500/20 backdrop-blur-sm border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200 hover:border-cyan-400/50 transition-all duration-300 rounded-xl px-4 md:px-6 py-2 md:py-3 text-sm md:text-base"
+                className="bg-cyan-500/20 backdrop-blur-sm border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200 hover:border-cyan-400/50 transition-all duration-300 rounded-xl px-4 md:px-6 py-2 md:py-3 text-sm md:text-base"
               >
                 ← {t.calculator.buttons.tryAnother}
               </Button>
+
+              {/* Demo Mode Banner */}
+              {useDemoMode && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg backdrop-blur-sm animate-in fade-in-0 duration-500">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    <span className="text-green-400 text-sm">
+                      🎨 {language === "vi" ? "Demo Mode - Dữ liệu mẫu" : "Demo Mode - Sample Data"}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {walletData ? (
@@ -725,6 +764,7 @@ export default function App() {
         open={showEmailLoginDialog}
         onOpenChange={setShowEmailLoginDialog}
         onMagicLinkSuccess={handleEmailLogin}
+        walletAddress={walletAddress}
       />
 
       {/* Quick Register Dialog */}

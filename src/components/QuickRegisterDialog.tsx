@@ -9,7 +9,7 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import { Mail, Lock, CheckCircle2, Eye, EyeOff, Wallet } from "lucide-react";
+import { Mail, CheckCircle2, Wallet, Sparkles, Clock, ArrowRight } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
 
 interface QuickRegisterDialogProps {
@@ -28,14 +28,12 @@ export function QuickRegisterDialog({
     const { t } = useLanguage();
 
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
+    const [showEmailSent, setShowEmailSent] = useState(false);
+    const [verificationToken, setVerificationToken] = useState("");
     const [error, setError] = useState("");
 
-    const handleRegister = async () => {
+    const handleSendMagicLink = async () => {
         setError("");
 
         // Validation
@@ -44,49 +42,58 @@ export function QuickRegisterDialog({
             return;
         }
 
-        if (password.length < 6) {
-            setError("Mật khẩu phải có ít nhất 6 ký tự");
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            setError("Mật khẩu xác nhận không khớp");
-            return;
-        }
-
         setIsLoading(true);
         try {
             // Import API function
-            const { registerWalletWithEmail } = await import("../services/api");
+            const { sendMagicLink } = await import("../services/api-real");
 
-            // Đăng ký
-            const result = await registerWalletWithEmail({
-                email: email.trim(),
-                password,
-                walletAddress,
-            });
+            // Gửi magic link
+            const result = await sendMagicLink(email.trim(), walletAddress);
 
             if (result.success) {
-                setShowSuccess(true);
+                setShowEmailSent(true);
+                setVerificationToken(result.verificationToken || "");
+            } else {
+                setError(result.message || "Gửi email thất bại. Vui lòng thử lại.");
+            }
+        } catch (error) {
+            console.error("Lỗi khi gửi magic link:", error);
+            setError("Có lỗi xảy ra. Vui lòng thử lại.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-                // Đóng dialog sau 2 giây và callback
+    const handleVerifyDemo = async () => {
+        setIsLoading(true);
+        try {
+            const { verifyMagicLink } = await import("../services/api-real");
+
+            const result = await verifyMagicLink(verificationToken);
+
+            if (result.success && result.user) {
+                // Lưu auth token
+                if (result.authToken) {
+                    localStorage.setItem("authToken", result.authToken);
+                    localStorage.setItem("currentUser", JSON.stringify(result.user));
+                }
+
+                // Show success briefly then redirect
                 setTimeout(() => {
                     onOpenChange(false);
                     onRegisterSuccess(email, walletAddress);
 
                     // Reset form
                     setEmail("");
-                    setPassword("");
-                    setConfirmPassword("");
-                    setShowSuccess(false);
+                    setShowEmailSent(false);
                     setError("");
-                }, 2000);
+                }, 1000);
             } else {
-                setError(result.message || "Đăng ký thất bại. Vui lòng thử lại.");
+                setError(result.message || "Xác thực thất bại");
             }
         } catch (error) {
-            console.error("Lỗi khi đăng ký:", error);
-            setError("Có lỗi xảy ra. Vui lòng thử lại.");
+            console.error("Lỗi khi verify:", error);
+            setError("Có lỗi xảy ra khi xác thực");
         } finally {
             setIsLoading(false);
         }
@@ -95,63 +102,75 @@ export function QuickRegisterDialog({
     const handleSkip = () => {
         onOpenChange(false);
         setEmail("");
-        setPassword("");
-        setConfirmPassword("");
-        setShowSuccess(false);
+        setShowEmailSent(false);
+        setError("");
+    };
+
+    const handleBack = () => {
+        setShowEmailSent(false);
         setError("");
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[calc(100%-1rem)] sm:max-w-[320px] max-h-[80vh] overflow-y-auto bg-slate-800/95 backdrop-blur-xl border border-cyan-500/30 shadow-2xl p-3">
-                {!showSuccess ? (
+            <DialogContent className="w-[calc(100%-1rem)] sm:max-w-[380px] max-h-[85vh] overflow-y-auto bg-slate-800/95 backdrop-blur-xl border border-cyan-500/30 shadow-2xl p-4">
+                {!showEmailSent ? (
                     <>
                         <DialogHeader>
-                            <div className="flex items-center justify-center mb-1">
+                            <div className="flex items-center justify-center mb-2">
                                 <div className="relative">
                                     <div className="absolute -inset-1 bg-gradient-to-r from-orange-500/30 to-yellow-500/30 rounded-full blur-lg opacity-60 animate-pulse" />
-                                    <div className="relative p-1.5 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-xl border border-orange-400/30 text-xl">
-                                        ✨
+                                    <div className="relative p-2 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-xl border border-orange-400/30">
+                                        <Sparkles className="w-6 h-6 text-orange-400" />
                                     </div>
                                 </div>
                             </div>
 
-                            <DialogTitle className="text-center bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent text-base">
-                                💾 Lưu Kết Quả?
+                            <DialogTitle className="text-center bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
+                                💾 Lưu Kết Quả Của Bạn
                             </DialogTitle>
 
-                            <DialogDescription className="text-center text-gray-300 mt-0.5 text-xs leading-tight">
-                                Lần sau chỉ cần nhập email!
+                            <DialogDescription className="text-center text-gray-300 mt-1 text-sm">
+                                Nhập email để nhận link xác nhận
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="space-y-2 py-1">
+                        <div className="space-y-3 py-2">
                             {/* Wallet Info */}
-                            <div className="p-1.5 bg-slate-700/30 rounded border border-cyan-500/20">
-                                <div className="flex items-center gap-1 mb-0.5">
-                                    <Wallet className="w-3 h-3 text-cyan-400" />
-                                    <span className="text-[10px] text-gray-400">Địa chỉ ví:</span>
+                            <div className="p-2 bg-slate-700/30 rounded-lg border border-cyan-500/20">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                    <Wallet className="w-3.5 h-3.5 text-cyan-400" />
+                                    <span className="text-xs text-gray-400">Địa chỉ ví của bạn:</span>
                                 </div>
-                                <div className="text-white text-[10px] font-mono break-all leading-tight">
+                                <div className="text-white text-xs font-mono break-all leading-tight">
                                     {walletAddress}
                                 </div>
                             </div>
 
                             {/* Benefits */}
-                            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded p-1.5">
-                                <div className="text-[10px] text-gray-200 mb-0.5">🎁 Lợi ích:</div>
-                                <ul className="space-y-0 text-[10px] text-gray-300 leading-tight">
-                                    <li>✅ Lần sau chỉ cần email</li>
-                                    <li>✅ Lưu lịch sử điểm số</li>
-                                    <li>✅ Nhận thông báo</li>
+                            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-2.5">
+                                <div className="text-xs text-gray-200 mb-1.5 font-medium">🎁 Lợi ích khi đăng ký:</div>
+                                <ul className="space-y-1 text-xs text-gray-300">
+                                    <li className="flex items-start gap-1.5">
+                                        <span className="text-green-400 mt-0.5">✓</span>
+                                        <span>Không cần mật khẩu - Đăng nhập bằng email</span>
+                                    </li>
+                                    <li className="flex items-start gap-1.5">
+                                        <span className="text-green-400 mt-0.5">✓</span>
+                                        <span>Truy cập Dashboard cá nhân</span>
+                                    </li>
+                                    <li className="flex items-start gap-1.5">
+                                        <span className="text-green-400 mt-0.5">✓</span>
+                                        <span>Nhận thông báo cập nhật điểm</span>
+                                    </li>
                                 </ul>
                             </div>
 
                             {/* Email Input */}
-                            <div className="space-y-0.5">
-                                <Label htmlFor="quick-email" className="text-gray-300 flex items-center gap-1 text-[10px]">
-                                    <Mail className="w-3 h-3 text-cyan-400" />
-                                    Email
+                            <div className="space-y-1.5">
+                                <Label htmlFor="quick-email" className="text-gray-300 flex items-center gap-1.5 text-xs">
+                                    <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                                    Email của bạn
                                 </Label>
                                 <Input
                                     id="quick-email"
@@ -159,119 +178,163 @@ export function QuickRegisterDialog({
                                     placeholder="email@example.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="h-8 bg-slate-900/50 border-cyan-500/30 focus:border-cyan-400 text-white text-xs px-2"
-                                />
-                            </div>
-
-                            {/* Password Input */}
-                            <div className="space-y-0.5">
-                                <Label htmlFor="quick-password" className="text-gray-300 flex items-center gap-1 text-[10px]">
-                                    <Lock className="w-3 h-3 text-cyan-400" />
-                                    Mật khẩu (tối thiểu 6 ký tự)
-                                </Label>
-                                <div className="relative">
-                                    <Input
-                                        id="quick-password"
-                                        type={showPassword ? "text" : "password"}
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="h-8 bg-slate-900/50 border-cyan-500/30 focus:border-cyan-400 text-white text-xs px-2 pr-8"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="w-3 h-3" />
-                                        ) : (
-                                            <Eye className="w-3 h-3" />
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Confirm Password Input */}
-                            <div className="space-y-0.5">
-                                <Label htmlFor="quick-confirm-password" className="text-gray-300 flex items-center gap-1 text-[10px]">
-                                    <Lock className="w-3 h-3 text-cyan-400" />
-                                    Xác nhận mật khẩu
-                                </Label>
-                                <Input
-                                    id="quick-confirm-password"
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="h-8 bg-slate-900/50 border-cyan-500/30 focus:border-cyan-400 text-white text-xs px-2"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && email.trim()) {
+                                            handleSendMagicLink();
+                                        }
+                                    }}
+                                    className="h-10 bg-slate-900/50 border-cyan-500/30 focus:border-cyan-400 text-white text-sm"
+                                    autoFocus
                                 />
                             </div>
 
                             {/* Error Message */}
                             {error && (
-                                <div className="p-1.5 bg-red-500/10 border border-red-500/30 rounded">
-                                    <p className="text-red-400 text-[10px] leading-tight">{error}</p>
+                                <div className="p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
+                                    <p className="text-red-400 text-xs">{error}</p>
                                 </div>
                             )}
 
+                            {/* How it works */}
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2">
+                                <div className="text-xs text-blue-300">
+                                    <div className="font-medium mb-1">📬 Cách hoạt động:</div>
+                                    <ol className="space-y-0.5 text-xs text-gray-300 ml-4 list-decimal">
+                                        <li>Nhập email và nhấn "Gửi Link"</li>
+                                        <li>Kiểm tra hộp thư email</li>
+                                        <li>Click vào link xác nhận</li>
+                                        <li>Tự động vào Dashboard! ✨</li>
+                                    </ol>
+                                </div>
+                            </div>
+
                             {/* Buttons */}
-                            <div className="flex gap-1.5 pt-0.5">
+                            <div className="flex gap-2 pt-1">
                                 <Button
                                     onClick={handleSkip}
                                     variant="outline"
-                                    className="flex-1 h-8 bg-slate-700/50 border-slate-600 text-gray-300 hover:bg-slate-700 hover:text-white text-xs px-2"
+                                    className="flex-1 h-10 bg-slate-700/50 border-slate-600 text-gray-300 hover:bg-slate-700 hover:text-white text-sm"
                                 >
                                     Bỏ Qua
                                 </Button>
 
                                 <Button
-                                    onClick={handleRegister}
-                                    disabled={isLoading || !email || !password || !confirmPassword}
-                                    className="flex-1 h-8 bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-500 hover:to-yellow-500 text-white shadow-lg shadow-orange-500/30 text-xs px-2"
+                                    onClick={handleSendMagicLink}
+                                    disabled={isLoading || !email}
+                                    className="flex-1 h-10 bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-500 hover:to-yellow-500 text-white shadow-lg shadow-orange-500/30 text-sm"
                                 >
                                     {isLoading ? (
-                                        <div className="flex items-center gap-1">
-                                            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            <span>Đăng ký...</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            <span>Đang gửi...</span>
                                         </div>
                                     ) : (
-                                        <span>Đăng Ký</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <Mail className="w-4 h-4" />
+                                            <span>Gửi Link</span>
+                                        </div>
                                     )}
                                 </Button>
                             </div>
 
                             {/* Privacy Note */}
-                            <p className="text-[10px] text-gray-500 text-center leading-tight">
-                                🔒 Chỉ lưu email để tra cứu ví
+                            <p className="text-xs text-gray-500 text-center">
+                                🔒 Phi tập trung - Chỉ lưu email để liên kết ví
                             </p>
                         </div>
                     </>
                 ) : (
-                    /* Success State */
-                    <div className="py-4 text-center">
+                    /* Email Sent State */
+                    <div className="py-3 text-center space-y-4">
                         <div className="flex items-center justify-center mb-3">
                             <div className="relative">
                                 <div className="absolute -inset-2 bg-gradient-to-r from-green-500/30 to-emerald-500/30 rounded-full blur-lg opacity-60 animate-pulse" />
-                                <div className="relative p-2 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
-                                    <CheckCircle2 className="w-8 h-8 text-green-400" />
+                                <div className="relative p-3 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
+                                    <CheckCircle2 className="w-10 h-10 text-green-400" />
                                 </div>
                             </div>
                         </div>
 
                         <DialogTitle className="text-center bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent mb-2">
-                            ✅ Thành Công!
+                            📧 Email Đã Gửi!
                         </DialogTitle>
 
-                        <DialogDescription className="text-center text-gray-300 text-xs leading-tight px-2">
-                            Lần sau chỉ cần nhập <span className="text-cyan-400">{email}</span> để xem điểm!
+                        <DialogDescription className="text-center text-gray-300 text-sm space-y-2">
+                            <p>
+                                Chúng tôi đã gửi link xác nhận đến:
+                            </p>
+                            <p className="text-cyan-400 font-medium">{email}</p>
                         </DialogDescription>
 
-                        <div className="mt-3 p-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded">
-                            <p className="text-[10px] text-gray-300 leading-tight">
-                                💡 <span className="text-cyan-400">Mẹo:</span> Bookmark trang này!
-                            </p>
+                        {/* Instructions */}
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-left">
+                            <div className="text-xs text-blue-300 space-y-2">
+                                <div className="font-medium mb-2">📝 Bước tiếp theo:</div>
+                                <ol className="space-y-1.5 ml-4 list-decimal text-gray-300">
+                                    <li>Mở hộp thư <span className="text-cyan-400">{email}</span></li>
+                                    <li>Tìm email từ <span className="text-orange-400">ScorePage</span></li>
+                                    <li>Click vào nút <span className="text-green-400">"Xác Nhận Email"</span></li>
+                                    <li>Tự động chuyển đến Dashboard ✨</li>
+                                </ol>
+                            </div>
                         </div>
+
+                        {/* Demo Button - For Testing */}
+                        <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-3">
+                            <p className="text-xs text-purple-300 mb-2">
+                                🎨 <span className="font-medium">Demo Mode:</span> Giả lập click email
+                            </p>
+                            <Button
+                                onClick={handleVerifyDemo}
+                                disabled={isLoading}
+                                className="w-full h-9 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-sm shadow-lg"
+                            >
+                                {isLoading ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <span>Đang xác thực...</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        <span>Giả Lập Click Email</span>
+                                        <ArrowRight className="w-4 h-4" />
+                                    </div>
+                                )}
+                            </Button>
+                        </div>
+
+                        {/* Resend / Back */}
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleBack}
+                                variant="outline"
+                                className="flex-1 h-9 bg-slate-700/50 border-slate-600 text-gray-300 hover:bg-slate-700 text-sm"
+                            >
+                                ← Quay Lại
+                            </Button>
+                            <Button
+                                onClick={handleSendMagicLink}
+                                variant="outline"
+                                disabled={isLoading}
+                                className="flex-1 h-9 bg-blue-600/20 border-blue-500/40 text-blue-400 hover:bg-blue-600/30 text-sm"
+                            >
+                                <Clock className="w-4 h-4 mr-1.5" />
+                                Gửi Lại
+                            </Button>
+                        </div>
+
+                        {/* Error Message */}
+                        {error && (
+                            <div className="p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
+                                <p className="text-red-400 text-xs">{error}</p>
+                            </div>
+                        )}
+
+                        {/* Help Text */}
+                        <p className="text-xs text-gray-500">
+                            Không nhận được email? Kiểm tra hộp thư spam hoặc gửi lại
+                        </p>
                     </div>
                 )}
             </DialogContent>

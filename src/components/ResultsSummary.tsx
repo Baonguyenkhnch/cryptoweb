@@ -370,7 +370,7 @@ export function ResultsSummary({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Login Card - Blue */}
           {onSubscribeClick && (
-            <Card className="relative overflow-hidden bg-gradient-to-br from-cyan-900/20 via-blue-900/20 to-cyan-900/20 backdrop-blur-xl border-2 border-cyan-500/30 rounded-2xl">
+            <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-2xl">
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl" />
               <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl" />
 
@@ -394,16 +394,16 @@ export function ResultsSummary({
 
                       {/* Feature Badges */}
                       <div className="flex flex-wrap gap-1.5">
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30 border text-[10px] px-1.5 py-0.5">
+                        <Badge className="bg-green-500/25 text-green-300 border-green-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
                           📊 Token Diversity Charts
                         </Badge>
-                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 border text-[10px] px-1.5 py-0.5">
+                        <Badge className="bg-blue-500/25 text-blue-300 border-blue-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
                           📈 Score Trend Analysis
                         </Badge>
-                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 border text-[10px] px-1.5 py-0.5">
+                        <Badge className="bg-purple-500/25 text-purple-300 border-purple-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
                           🔄 Transaction History
                         </Badge>
-                        <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 border text-[10px] px-1.5 py-0.5">
+                        <Badge className="bg-cyan-500/25 text-cyan-300 border-cyan-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
                           📧 Email Updates
                         </Badge>
                       </div>
@@ -413,7 +413,7 @@ export function ResultsSummary({
                   {/* Right Section - Login Button */}
                   <Button
                     onClick={onSubscribeClick}
-                    className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all duration-300 group flex-shrink-0"
+                    className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all duration-300 group flex-shrink-0 font-medium"
                   >
                     <Mail className="w-4 h-4 mr-2" />
                     {language === 'vi' ? 'Đăng Nhập Ngay' : 'Login Now'}
@@ -426,7 +426,7 @@ export function ResultsSummary({
 
           {/* Register Card - Orange */}
           {onRegisterClick && (
-            <Card className="relative overflow-hidden bg-gradient-to-br from-orange-900/20 via-yellow-900/20 to-orange-900/20 backdrop-blur-xl border-2 border-orange-500/30 rounded-2xl">
+            <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-orange-500/20 rounded-2xl">
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-orange-500/10 to-yellow-500/10 rounded-full blur-3xl" />
               <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-yellow-500/10 to-orange-500/10 rounded-full blur-3xl" />
 
@@ -450,16 +450,16 @@ export function ResultsSummary({
 
                       {/* Feature Badges */}
                       <div className="flex flex-wrap gap-1.5">
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30 border text-[10px] px-1.5 py-0.5">
+                        <Badge className="bg-green-500/25 text-green-300 border-green-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
                           💾 Save Wallets
                         </Badge>
-                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 border text-[10px] px-1.5 py-0.5">
+                        <Badge className="bg-blue-500/25 text-blue-300 border-blue-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
                           📊 Track Score
                         </Badge>
-                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 border text-[10px] px-1.5 py-0.5">
+                        <Badge className="bg-purple-500/25 text-purple-300 border-purple-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
                           🔔 Notifications
                         </Badge>
-                        <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30 border text-[10px] px-1.5 py-0.5">
+                        <Badge className="bg-cyan-500/25 text-cyan-300 border-cyan-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
                           🔒 Privacy First
                         </Badge>
                       </div>
@@ -469,7 +469,7 @@ export function ResultsSummary({
                   {/* Right Section - Register Button */}
                   <Button
                     onClick={onRegisterClick}
-                    className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-500 hover:to-yellow-500 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all duration-300 group flex-shrink-0"
+                    className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-500 hover:to-yellow-500 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all duration-300 group flex-shrink-0 font-medium"
                   >
                     <UserPlus className="w-4 h-4 mr-2" />
                     {language === 'vi' ? 'Đăng Ký Ngay' : 'Register Now'}

@@ -1,11 +1,15 @@
-import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./index.css";
-import { LanguageProvider } from "./services/LanguageContext"; // 👈 phải có dòng này
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './styles/globals.css'
+import { LanguageProvider } from './services/LanguageContext'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import "./i18n";
 
-createRoot(document.getElementById("root")!).render(
-  <LanguageProvider>       {/* 👈 bắt buộc phải bọc */}
-    <App />
-  </LanguageProvider>
-);
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <ErrorBoundary>
+    <LanguageProvider>
+      <App />
+    </LanguageProvider>
+  </ErrorBoundary>,
+)
