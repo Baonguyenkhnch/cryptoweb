@@ -205,7 +205,6 @@ export const translations = {
         noEmail: "Không nhận được email? Kiểm tra hộp thư spam",
       },
       validationErrors: {
-        fillAll: "Vui lòng điền đầy đủ thông tin",
         invalidEmail: "Email không hợp lệ",
         invalidWalletFormat: "Địa chỉ ví không hợp lệ",
         validEmail: "Vui lòng nhập email hợp lệ",
@@ -707,7 +706,6 @@ export const translations = {
         noEmail: "Didn't receive email? Check spam folder",
       },
       validationErrors: {
-        fillAll: "Please fill in all information",
         invalidEmail: "Invalid email",
         invalidWalletFormat: "Invalid wallet address",
         validEmail: "Please enter a valid email",

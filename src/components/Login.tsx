@@ -157,15 +157,15 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 w-full max-w-md px-2 py-14 md:py-16">
+      <div className="relative z-10 w-full max-w-md px-2 py-6 md:py-8">
         {!showEmailSent ? (
           <>
             {/* Header - Compact */}
-            <div className="text-center mb-2.5">
-              <div className="flex items-center justify-center mb-1">
+            <div className="text-center mb-1.5">
+              <div className="flex items-center justify-center mb-0.5">
                 <div className="relative group cursor-pointer">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="relative w-10 h-10 md:w-11 md:h-11 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
+                  <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
                     <img
                       src={logoIcon}
                       alt="ScorePage Logo"
@@ -174,10 +174,10 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                   </div>
                 </div>
               </div>
-              <h1 className="text-lg md:text-xl mb-0.5 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
+              <h1 className="text-base md:text-lg mb-0.5 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent leading-tight">
                 {t.auth.registerTitle}
               </h1>
-              <p className="text-gray-400 text-[10px] md:text-xs">
+              <p className="text-gray-400 text-[10px] md:text-xs leading-tight">
                 {t.auth.passwordlessSubtitle}
               </p>
             </div>
@@ -187,47 +187,47 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl blur-lg opacity-50" />
 
               <div className="relative">
-                <CardHeader className="pb-1.5 pt-2.5 px-3">
-                  <CardTitle className="text-sm md:text-base text-white flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-orange-400" />
+                <CardHeader className="pb-1 pt-2 px-3">
+                  <CardTitle className="text-xs md:text-sm text-white flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-orange-400" />
                     {t.auth.createAccount}
                   </CardTitle>
                 </CardHeader>
 
-                <CardContent className="space-y-2 pb-2.5 px-3">
+                <CardContent className="space-y-1.5 pb-2 px-3">
                   {/* Alert */}
                   {error && (
                     <Alert className="bg-red-500/10 border-red-500/30 text-red-400 py-1.5 px-2.5">
-                      <AlertDescription className="text-[10px]">{error}</AlertDescription>
+                      <AlertDescription className="text-xs">{error}</AlertDescription>
                     </Alert>
                   )}
 
                   {/* Info Banner - Compact */}
-                  <div className="p-2 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-500/20 rounded-lg">
-                    <div className="text-[10px] text-purple-300 mb-0.5">
+                  <div className="p-1.5 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-500/20 rounded-lg">
+                    <div className="text-[10px] text-purple-300 mb-0.5 leading-tight">
                       {t.auth.benefits}
                     </div>
-                    <ul className="space-y-0 text-[9px] md:text-[10px] text-gray-300">
+                    <ul className="space-y-0 text-[10px] md:text-xs text-gray-300 leading-tight">
                       <li className="flex items-start gap-1">
-                        <span className="text-green-400 mt-0.5">✓</span>
+                        <span className="text-green-400">✓</span>
                         <span>{t.auth.benefitNoPassword}</span>
                       </li>
                       <li className="flex items-start gap-1">
-                        <span className="text-green-400 mt-0.5">✓</span>
+                        <span className="text-green-400">✓</span>
                         <span>{t.auth.benefit1}</span>
                       </li>
                       <li className="flex items-start gap-1">
-                        <span className="text-green-400 mt-0.5">✓</span>
+                        <span className="text-green-400">✓</span>
                         <span>{t.auth.benefit3}</span>
                       </li>
                     </ul>
                   </div>
 
-                  <form onSubmit={handleSendMagicLink} className="space-y-2">
+                  <form onSubmit={handleSendMagicLink} className="space-y-1.5">
                     {/* Email */}
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       <Label htmlFor="register-email" className="text-gray-300 flex items-center gap-1 text-[10px] md:text-xs">
-                        <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                        <Mail className="w-3 h-3 text-cyan-400" />
                         {t.auth.email}
                       </Label>
                       <Input
@@ -238,20 +238,20 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                         placeholder={t.auth.placeholders.email}
                         value={registerEmail}
                         onChange={(e) => setRegisterEmail(e.target.value)}
-                        className={`bg-slate-900/50 border h-9 md:h-10 text-xs transition-colors ${hasAttemptedSubmit && !isValidEmail(registerEmail)
+                        className={`bg-slate-900/50 border h-8 md:h-9 text-xs transition-colors ${hasAttemptedSubmit && !isValidEmail(registerEmail)
                           ? 'border-red-500/50 focus:border-red-400'
                           : 'border-cyan-500/30 focus:border-cyan-400'
                           } text-white placeholder:text-gray-500`}
                       />
                       {hasAttemptedSubmit && !isValidEmail(registerEmail) && (
-                        <p className="text-[9px] text-red-400">{t.auth.validationErrors.validEmail}</p>
+                        <p className="text-[10px] text-red-400 leading-tight">{t.auth.validationErrors.validEmail}</p>
                       )}
                     </div>
 
                     {/* Wallet */}
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       <Label htmlFor="register-wallet" className="text-gray-300 flex items-center gap-1 text-[10px] md:text-xs">
-                        <Wallet className="w-3.5 h-3.5 text-teal-400" />
+                        <Wallet className="w-3 h-3 text-teal-400" />
                         {t.auth.walletAddress}
                       </Label>
                       <div className="flex gap-1.5">
@@ -263,7 +263,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                           placeholder={t.auth.placeholders.walletShort}
                           value={registerWallet}
                           onChange={(e) => setRegisterWallet(e.target.value)}
-                          className={`flex-1 bg-slate-900/50 border h-9 md:h-10 text-[10px] transition-colors ${hasAttemptedSubmit && !isValidWallet(registerWallet)
+                          className={`flex-1 bg-slate-900/50 border h-8 md:h-9 text-[10px] transition-colors ${hasAttemptedSubmit && !isValidWallet(registerWallet)
                             ? 'border-red-500/50 focus:border-red-400'
                             : 'border-cyan-500/30 focus:border-cyan-400'
                             } text-white font-mono placeholder:text-gray-600`}
@@ -272,22 +272,22 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                           type="button"
                           onClick={() => setRegisterWallet(generateRandomWallet())}
                           variant="outline"
-                          className="bg-gradient-to-r from-teal-600/20 to-cyan-600/20 border-teal-500/40 text-teal-400 hover:bg-teal-500/30 px-2.5 h-9 md:h-10"
+                          className="bg-gradient-to-r from-teal-600/20 to-cyan-600/20 border-teal-500/40 text-teal-400 hover:bg-teal-500/30 px-2 h-8 md:h-9"
                           title={t.auth.generateTest}
                         >
-                          <Copy className="w-3.5 h-3.5" />
+                          <Copy className="w-3 h-3" />
                         </Button>
                       </div>
-                      <p className="text-[9px] text-gray-500">
-                        {t.auth.noWalletHintShort} <Copy className="w-2.5 h-2.5 inline" /> {t.auth.generateTest}
+                      <p className="text-[10px] text-gray-500 leading-tight">
+                        {t.auth.noWalletHintShort} <Copy className="w-2 h-2 inline" /> {t.auth.generateTest}
                       </p>
                     </div>
 
                     {/* How it works - Compact */}
-                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2">
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-1.5">
                       <div className="text-[10px] text-blue-300">
-                        <div className="mb-0.5">{t.auth.howItWorks}</div>
-                        <ol className="space-y-0 text-[9px] md:text-[10px] text-gray-300 ml-3 list-decimal">
+                        <div className="mb-0.5 leading-tight">{t.auth.howItWorks}</div>
+                        <ol className="space-y-0 text-[10px] md:text-xs text-gray-300 ml-3 list-decimal leading-tight">
                           <li>{t.auth.howItWorksSteps.step1}</li>
                           <li>{t.auth.howItWorksSteps.step2}</li>
                           <li>{t.auth.howItWorksSteps.step3}</li>
@@ -300,24 +300,24 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 hover:from-blue-500 hover:via-purple-500 hover:to-blue-500 text-white h-10 md:h-11 text-xs md:text-sm shadow-lg shadow-purple-500/30"
+                      className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 hover:from-blue-500 hover:via-purple-500 hover:to-blue-500 text-white h-9 md:h-10 text-xs md:text-sm shadow-lg shadow-purple-500/30"
                     >
                       {isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           {t.auth.sending}
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-1.5">
+                          <Mail className="w-3 h-3" />
                           {t.auth.sendMagicLink}
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          <ArrowRight className="w-3 h-3" />
                         </div>
                       )}
                     </Button>
 
                     {/* Demo Note */}
-                    <p className="text-center text-[9px] text-gray-500">
+                    <p className="text-center text-[10px] text-gray-500 leading-tight">
                       {t.auth.decentralizedFooter}
                     </p>
                   </form>
@@ -425,8 +425,8 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
         )}
 
         {/* Footer */}
-        <div className="text-center mt-3 text-[10px] text-gray-500 flex items-center justify-center gap-1">
-          <Shield className="w-3.5 h-3.5 text-cyan-400" />
+        <div className="text-center mt-1.5 text-[10px] md:text-xs text-gray-500 flex items-center justify-center gap-1 leading-tight">
+          <Shield className="w-3 h-3 text-cyan-400" />
           {t.auth.decentralizedFooter}
         </div>
       </div>
