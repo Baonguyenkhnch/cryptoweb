@@ -837,7 +837,10 @@ export default function App() {
         <Dashboard
           user={currentUser}
           walletData={walletData}
-          isLoading={isLoading}
+          onLogout={handleLogout}
+          onViewProfile={() => setCurrentPage("profile")}
+          onCalculateScore={() => setCurrentPage("calculator")}
+          onRecalculate={handleRecalculate}
         />
       )}
       {currentPage === "profile" && currentUser && (
