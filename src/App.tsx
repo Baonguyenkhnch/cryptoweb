@@ -846,7 +846,8 @@ export default function App() {
       {currentPage === "profile" && currentUser && (
         <ProfilePage
           user={currentUser}
-          onUpdateUser={setCurrentUser}
+          onUpdateProfile={setCurrentUser}
+          onBack={() => setCurrentPage("dashboard")}
         />
       )}
 
