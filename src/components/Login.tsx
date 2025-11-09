@@ -315,11 +315,6 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                         </div>
                       )}
                     </Button>
-
-                    {/* Demo Note */}
-                    <p className="text-center text-[10px] text-gray-500 leading-tight">
-                      {t.auth.decentralizedFooter}
-                    </p>
                   </form>
                 </CardContent>
               </div>

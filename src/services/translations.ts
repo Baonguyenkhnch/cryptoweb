@@ -20,7 +20,6 @@ export const translations = {
         title: "Nhập Địa Chỉ Ví hoặc Email",
         subtitle: "Kết nối ví của bạn để khám phá tiềm năng tín dụng",
         label: "Địa Chỉ Ví hoặc Email",
-        placeholder: "0x742d... hoặc email@example.com",
         emailSearching: "Đang tìm ví từ email...",
         emailNotFound: "Email chưa đăng ký hoặc chưa liên kết ví",
         emailFound: "Tìm thấy ví! Đang phân tích...",
@@ -44,10 +43,10 @@ export const translations = {
       },
       privacy: {
         title: "🔒 Bảo Mật & Riêng Tư",
-        noLogin: "✅ Không cần đăng nhập",
-        noPersonalInfo: "✅ Không lưu thông tin cá nhân",
-        decentralized: "✅ Hoàn toàn phi tập trung",
-        onlyPublicData: "✅ Chỉ phân tích dữ liệu công khai trên blockchain",
+        noLogin: " Không cần đăng nhập",
+        noPersonalInfo: " Không lưu thông tin cá nhân",
+        decentralized: " Hoàn toàn phi tập trung",
+        onlyPublicData: " Chỉ phân tích dữ liệu công khai trên blockchain",
         description:
           "Chúng tôi chỉ phân tích dữ liệu công khai từ blockchain. Không yêu cầu thông tin cá nhân, không lưu trữ danh tính người dùng.",
       },
@@ -206,13 +205,11 @@ export const translations = {
         noEmail: "Không nhận được email? Kiểm tra hộp thư spam",
       },
       validationErrors: {
-        fillAll: "Vui lòng điền đầy đủ thông tin",
         invalidEmail: "Email không hợp lệ",
         invalidWalletFormat: "Địa chỉ ví không hợp lệ",
         validEmail: "Vui lòng nhập email hợp lệ",
       },
       errors: {
-        fillAll: "Vui lòng điền đầy đủ thông tin",
         passwordMismatch: "Mật khẩu không khớp",
         passwordLength: "Mật khẩu phải có ít nhất 6 ký tự",
         invalidWallet: "Địa chỉ ví không hợp lệ (phải là địa chỉ Ethereum)",
@@ -228,10 +225,8 @@ export const translations = {
         registerSuccess: "Đăng ký thành công! Đang chuyển hướng...",
       },
       placeholders: {
-        email: "email@cua-ban.com",
         password: "••••••••",
         wallet: "0x742d35Cc6231e4a8F5b2FaC6E9B4F9D2E5A7B8C9D1",
-        walletShort: "0x742d35Cc...",
       },
       magicLink: {
         title: "Đăng Nhập Không Mật Khẩu",
@@ -553,7 +548,6 @@ export const translations = {
         title: "Enter Wallet Address or Email",
         subtitle: "Connect your wallet to discover credit potential",
         label: "Wallet Address or Email",
-        placeholder: "0x742d... or email@example.com",
         emailSearching: "Searching wallet from email...",
         emailNotFound: "Email not registered or not linked to wallet",
         emailFound: "Wallet found! Analyzing...",
@@ -577,10 +571,10 @@ export const translations = {
       },
       privacy: {
         title: "🔒 Security & Privacy",
-        noLogin: "✅ No login required",
-        noPersonalInfo: "✅ No personal information stored",
-        decentralized: "✅ Fully decentralized",
-        onlyPublicData: "✅ Only analyzes public blockchain data",
+        noLogin: " No login required",
+        noPersonalInfo: " No personal information stored",
+        decentralized: " Fully decentralized",
+        onlyPublicData: " Only analyzes public blockchain data",
         description:
           "We only analyze public data from the blockchain. No personal information required, no user identity storage.",
       },
@@ -739,13 +733,11 @@ export const translations = {
         noEmail: "Didn't receive email? Check spam folder",
       },
       validationErrors: {
-        fillAll: "Please fill in all information",
         invalidEmail: "Invalid email",
         invalidWalletFormat: "Invalid wallet address",
         validEmail: "Please enter a valid email",
       },
       errors: {
-        fillAll: "Please fill in all fields",
         passwordMismatch: "Passwords do not match",
         passwordLength: "Password must be at least 6 characters",
         invalidWallet: "Invalid wallet address (must be Ethereum address)",
@@ -761,10 +753,8 @@ export const translations = {
         registerSuccess: "Registration successful! Redirecting...",
       },
       placeholders: {
-        email: "your@email.com",
         password: "••••••••",
         wallet: "0x742d35Cc6231e4a8F5b2FaC6E9B4F9D2E5A7B8C9D1",
-        walletShort: "0x742d35Cc...",
       },
       magicLink: {
         title: "Passwordless Login",
@@ -782,7 +772,6 @@ export const translations = {
       description:
         "Enter your email to receive a verification code - no password needed, fully decentralized",
       emailLabel: "Email Address",
-      emailPlaceholder: "name@email.com",
       sendOtp: "Send OTP",
       sendButton: "Send Magic Link",
       sending: "Sending...",
