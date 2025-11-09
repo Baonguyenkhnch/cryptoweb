@@ -38,7 +38,9 @@ import {
   TrendingUp,
   Award,
   Activity,
-  Clock
+  Clock,
+  ArrowLeft,
+  Home
 } from "lucide-react";
 import type { UserProfile } from "../services/api-real";
 import { updateUserProfile, formatWalletAddress } from "../services/api-real";
@@ -203,19 +205,21 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-4 md:py-8 max-w-5xl">
+        {/* Back Button - Prominent on mobile */}
+        {onBack && (
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="mb-4 bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400 w-full md:w-auto shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 text-sm md:text-base"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            <Home className="w-4 h-4 mr-1.5" />
+            {t.profile.back}
+          </Button>
+        )}
+
         {/* Header */}
         <div className="mb-6 md:mb-8">
-          {/* Back Button - Mobile: Full width, Desktop: Right aligned */}
-          {onBack && (
-            <Button
-              onClick={onBack}
-              variant="outline"
-              className="mb-4 md:mb-0 md:float-right bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 w-full md:w-auto"
-            >
-              ← {t.profile.back || "Quay về Dashboard"}
-            </Button>
-          )}
-
           <div>
             <h1 className="text-2xl md:text-4xl mb-1 md:mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent leading-tight">
               {t.profile.title}

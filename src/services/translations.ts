@@ -20,6 +20,7 @@ export const translations = {
         title: "Nhập Địa Chỉ Ví hoặc Email",
         subtitle: "Kết nối ví của bạn để khám phá tiềm năng tín dụng",
         label: "Địa Chỉ Ví hoặc Email",
+        placeholder: "0x742d... hoặc email@example.com",
         emailSearching: "Đang tìm ví từ email...",
         emailNotFound: "Email chưa đăng ký hoặc chưa liên kết ví",
         emailFound: "Tìm thấy ví! Đang phân tích...",
@@ -43,10 +44,10 @@ export const translations = {
       },
       privacy: {
         title: "🔒 Bảo Mật & Riêng Tư",
-        noLogin: " Không cần đăng nhập",
-        noPersonalInfo: " Không lưu thông tin cá nhân",
-        decentralized: " Hoàn toàn phi tập trung",
-        onlyPublicData: " Chỉ phân tích dữ liệu công khai trên blockchain",
+        noLogin: "✅ Không cần đăng nhập",
+        noPersonalInfo: "✅ Không lưu thông tin cá nhân",
+        decentralized: "✅ Hoàn toàn phi tập trung",
+        onlyPublicData: "✅ Chỉ phân tích dữ liệu công khai trên blockchain",
         description:
           "Chúng tôi chỉ phân tích dữ liệu công khai từ blockchain. Không yêu cầu thông tin cá nhân, không lưu trữ danh tính người dùng.",
       },
@@ -87,7 +88,7 @@ export const translations = {
     profile: {
       title: "Hồ Sơ Của Tôi",
       subtitle: "Quản lý thông tin tài khoản",
-      back: "Quay Lại",
+      back: "Quay về Dashboard",
       edit: "Chỉnh Sửa",
       save: "Lưu Thay Đổi",
       saving: "Đang Lưu...",
@@ -497,7 +498,7 @@ export const translations = {
 
     // Floating Feedback Button
     floatingButton: {
-      tooltip: " của bạn",
+      tooltip: "Chia sẻ ý tưởng của bạn",
     },
 
     // Email Subscription CTA
@@ -552,6 +553,7 @@ export const translations = {
         title: "Enter Wallet Address or Email",
         subtitle: "Connect your wallet to discover credit potential",
         label: "Wallet Address or Email",
+        placeholder: "0x742d... or email@example.com",
         emailSearching: "Searching wallet from email...",
         emailNotFound: "Email not registered or not linked to wallet",
         emailFound: "Wallet found! Analyzing...",
@@ -575,10 +577,10 @@ export const translations = {
       },
       privacy: {
         title: "🔒 Security & Privacy",
-        noLogin: " No login required",
-        noPersonalInfo: " No personal information stored",
-        decentralized: " Fully decentralized",
-        onlyPublicData: " Only analyzes public blockchain data",
+        noLogin: "✅ No login required",
+        noPersonalInfo: "✅ No personal information stored",
+        decentralized: "✅ Fully decentralized",
+        onlyPublicData: "✅ Only analyzes public blockchain data",
         description:
           "We only analyze public data from the blockchain. No personal information required, no user identity storage.",
       },
@@ -619,7 +621,7 @@ export const translations = {
     profile: {
       title: "My Profile",
       subtitle: "Manage your account information",
-      back: "Back",
+      back: "Back to Dashboard",
       edit: "Edit",
       save: "Save Changes",
       saving: "Saving...",
