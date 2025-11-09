@@ -184,51 +184,48 @@ export function Dashboard({
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-4 py-4 md:py-8">
         {/* Header */}
-        <div className="mb-8 relative z-20">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="mb-6 md:mb-8 relative z-20">
+          <div className="flex flex-col gap-3 md:gap-4">
+            {/* Title section */}
             <div>
-              <h1 className="text-4xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-4xl mb-1 md:mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
                 Dashboard
               </h1>
-              <p className="text-gray-400 flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-cyan-400" />
+              <p className="text-gray-400 text-xs md:text-sm flex items-center gap-2">
+                <Wallet className="w-3 h-3 md:w-4 md:h-4 text-cyan-400" />
                 {t.statsLabels.wallet} <span className="text-cyan-400 font-mono">{formatWalletAddress(user.walletAddress)}</span>
               </p>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap relative z-30">
+            {/* Buttons section - Full width on mobile, side by side */}
+            <div className="flex items-center gap-2 md:gap-3 w-full relative z-30">
               <Button
                 onClick={onViewProfile}
                 variant="outline"
-                className="bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 cursor-pointer relative z-40"
+                className="flex-shrink-0 bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 cursor-pointer relative z-40 px-3 md:px-4 h-9 md:h-10 text-sm md:text-base"
               >
-                <User className="w-4 h-4 mr-2" />
-                {t.navigation.profile}
+                <User className="w-4 h-4 md:mr-2" />
+                <span className="hidden md:inline">{t.navigation.profile}</span>
               </Button>
 
-              {/* Button Tính Điểm Mới - Design đẹp với stats */}
+              {/* Button Tính Điểm Mới - Compact on mobile */}
               <Button
                 onClick={handleRecalculate}
                 disabled={isRecalculating}
-                className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-lg shadow-cyan-500/30 text-white px-6 disabled:opacity-50"
+                className="flex-1 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-lg shadow-cyan-500/30 text-white disabled:opacity-50 h-9 md:h-auto px-3 md:px-6"
               >
                 {isRecalculating ? (
-                  <>
-                    <div className="w-5 h-5 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <div className="flex flex-col items-start">
-                      <span className="text-sm">{t.dashboard.recalculating}</span>
-                      <span className="text-[10px] opacity-80">{t.statsLabels.calculatedTimes} {MOCK_STATS.totalChecks} {t.statsLabels.times}</span>
-                    </div>
-                  </>
+                  <div className="flex items-center gap-2 justify-center">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="text-xs md:text-sm">{t.dashboard.recalculating}</span>
+                  </div>
                 ) : (
-                  <>
-                    <div className="flex flex-col items-start">
-                      <span className="text-sm">{t.dashboard.recalculate}</span>
-                      <span className="text-[10px] opacity-80">{t.statsLabels.calculatedTimes} {MOCK_STATS.totalChecks} {t.statsLabels.times}</span>
-                    </div>
-                  </>
+                  <div className="flex items-center gap-2 justify-center md:flex-col md:items-start">
+                    <span className="text-xs md:text-sm">{t.dashboard.recalculate}</span>
+                    <span className="text-[9px] md:text-[10px] opacity-80 hidden md:inline">{t.statsLabels.calculatedTimes} {MOCK_STATS.totalChecks} {t.statsLabels.times}</span>
+                  </div>
                 )}
               </Button>
             </div>
