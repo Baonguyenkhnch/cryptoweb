@@ -186,7 +186,7 @@ export function Dashboard({
 
       <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 relative z-20">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-4xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent">
@@ -198,11 +198,11 @@ export function Dashboard({
               </p>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap relative z-30">
               <Button
                 onClick={onViewProfile}
                 variant="outline"
-                className="bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
+                className="bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 cursor-pointer relative z-40"
               >
                 <User className="w-4 h-4 mr-2" />
                 {t.navigation.profile}
@@ -373,6 +373,7 @@ export function Dashboard({
             totalAssets={totalAssets}
             tokenBalances={tokenBalances}
             recentTransactions={recentTransactions}
+            scoreHistory={scoreHistory}
             onSubscribe={undefined}
             onFeedback={undefined}
             onRecalculate={undefined}
