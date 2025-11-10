@@ -158,7 +158,7 @@ export const translations = {
       subtitle: "Đăng nhập để quản lý điểm tín dụng của bạn",
       registerTitle: "Đăng Ký Miễn Phí",
       registerSubtitle: "Chỉ mất 30 giây • Hoàn toàn phi tập trung",
-      passwordlessSubtitle: "Đăng nhập không cần mật khẩu - Dùng Email Magic Link ✨",
+      passwordlessSubtitle: "Đăng nhập không cần mật khẩu - Dùng Email Magic Link ",
       createAccount: "Tạo Tài Khoản",
       loginButton: "Đăng Nhập",
       registerButton: "Tạo Tài Khoản",
