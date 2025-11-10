@@ -686,7 +686,7 @@ export const translations = {
       subtitle: "Login to manage your credit score",
       registerTitle: "Free Registration",
       registerSubtitle: "Takes only 30 seconds • Fully decentralized",
-      passwordlessSubtitle: "Passwordless Login - Using Email Magic Link ✨",
+      passwordlessSubtitle: "Passwordless Login - Using Email Magic Link ",
       createAccount: "Create Account",
       loginButton: "Login",
       registerButton: "Create Account",
