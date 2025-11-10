@@ -13,7 +13,7 @@ export const translations = {
 
     // Calculator Page
     calculator: {
-      title: "Tính Điểm Tín Dụng Crypto",
+      title: "Tính Điểm Ví Crypto",
       subtitle: "Đánh giá độ tin cậy của ví blockchain",
       noData: "Không có dữ liệu",
       input: {

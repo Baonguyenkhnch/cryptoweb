@@ -97,22 +97,7 @@ function ScoreResultComponent({
   // Colors cho token pie chart
   const TOKEN_COLORS = ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#6366f1'];
 
-  // Use real score history data if available, otherwise generate mock data
-  const scoreTrendData = useMemo(() =>
-    scoreHistory.length > 0
-      ? scoreHistory.map(item => ({
-        date: new Date(item.date).toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' }),
-        score: item.score,
-      }))
-      : Array.from({ length: 30 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (29 - i));
-        const variation = Math.sin(i / 5) * 30 + (Math.random() - 0.5) * 20;
-        return {
-          date: date.toLocaleDateString('vi-VN', { month: 'short', day: 'numeric' }),
-          score: Math.max(500, Math.min(850, score + variation)),
-        };
-      }), [scoreHistory, score]);
+  // REMOVED: Score Trend chart - không cần nữa vì chỉ dùng wallet_transactions_last_30d
 
   // Generate activity timeline from transactions
   const activityData = useMemo(() =>
@@ -373,56 +358,7 @@ function ScoreResultComponent({
 
       {/* Charts Section - 3 biểu đồ chính */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Score Trend */}
-        <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-blue-500/20 shadow-2xl rounded-3xl">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-3xl blur-xl opacity-50" />
-
-          <div className="relative">
-            <CardHeader className="text-center pb-4">
-              <CardTitle className="text-xl bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center justify-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-400" />
-                {t.scoreResult.scoreTrend}
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent className="p-4">
-              <div className="w-full h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={scoreTrendData.slice(-10)}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                    <XAxis
-                      dataKey="date"
-                      stroke="#9ca3af"
-                      style={{ fontSize: '10px' }}
-                    />
-                    <YAxis
-                      stroke="#9ca3af"
-                      style={{ fontSize: '10px' }}
-                      domain={[500, 850]}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#1e293b',
-                        border: '1px solid #3b82f6',
-                        borderRadius: '8px',
-                        color: '#fff',
-                        fontSize: '12px'
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="score"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={{ fill: '#06b6d4', r: 3 }}
-                      name={t.scoreResult.score}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </div>
-        </Card>
+        {/* REMOVED: Score Trend Chart - Anh chỉ muốn dùng wallet_transactions_last_30d trong Dashboard */}
 
         {/* Activity Chart */}
         {activityData.length > 0 && (

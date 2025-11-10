@@ -195,7 +195,7 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
 
                 // Nếu là AbortError (timeout)
                 if (error.name === 'AbortError') {
-                    debugLog(`⏱�� Attempt ${attempt} timeout (60s)`);
+                    debugLog(`⏱ Attempt ${attempt} timeout (60s)`);
                     if (attempt < maxRetries) {
                         debugLog(`🔄 Retrying in 3 seconds...`);
                         await new Promise(resolve => setTimeout(resolve, 3000));
@@ -417,7 +417,8 @@ export interface VerifyResponse {
  * 2. Lưu vào DB (email, wallet, token, expire time)
  * 3. Gửi email chứa link: https://yourapp.com/#/verify?token=xxx
  */
-export async function sendMagicLink(
+// DEPRECATED - Dùng sendMagicLink version mới ở cuối file
+export async function sendMagicLinkOLD(
     email: string,
     walletAddress: string
 ): Promise<MagicLinkResponse> {
@@ -466,7 +467,8 @@ export async function sendMagicLink(
  * 1. Kiểm tra token có hợp lệ & chưa expire
  * 2. Trả về user info + session token
  */
-export async function verifyMagicLink(token: string): Promise<VerifyResponse> {
+// DEPRECATED - Dùng verifyMagicLink version mới ở cuối file
+export async function verifyMagicLinkOLD(token: string): Promise<VerifyResponse> {
     try {
         console.log('🔍 Verify Magic Link:', token);
 
@@ -744,7 +746,7 @@ export const subscribeToUpdates = async (
     return simulateApiCall(
         {
             success: true,
-            message: "Đăng ký thành công! Bạn sẽ nhận được email cập nhật định kỳ.",
+            message: "Đăng ký thành công! Bạn sẽ nhận được email cập nhật đ��nh kỳ.",
         },
         1500
     );
@@ -1002,6 +1004,214 @@ function generateMockWalletData(walletAddress: string): WalletAnalysis {
     };
 }
 
+// =====================================================
+// MAGIC LINK AUTHENTICATION
+// =====================================================
+
+export const sendMagicLink = async (
+    email: string,
+    walletAddress: string
+): Promise<{
+    success: boolean;
+    message: string;
+    verificationToken?: string;
+    expiresIn?: number;
+}> => {
+    debugLog(`🔐 Sending magic link to: ${email} for wallet: ${walletAddress || 'no wallet'}`);
+
+    try {
+        // Validate inputs
+        if (!email || !email.includes('@')) {
+            return {
+                success: false,
+                message: 'Email không hợp lệ'
+            };
+        }
+
+        // ✅ Wallet address is OPTIONAL - allow login without wallet
+        if (walletAddress && !isValidWalletAddress(walletAddress)) {
+            return {
+                success: false,
+                message: 'Địa chỉ ví không hợp lệ'
+            };
+        }
+
+        // ⚠️ MOCK API - Backend chưa implement endpoint này
+        // Khi backend sẵn sàng, uncomment phần bên dưới:
+        /*
+        const url = `${API_BASE_URL}/api/auth/send-magic-link`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, wallet: walletAddress }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+        */
+
+        // MOCK RESPONSE - Tạm thời cho demo
+        debugLog(`✅ Mock: Magic link sent successfully`);
+        const mockToken = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        // Store mock token in localStorage for verification
+        const magicLinks = JSON.parse(localStorage.getItem('magicLinks') || '{}');
+        magicLinks[mockToken] = {
+            email,
+            walletAddress,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 phút
+            used: false
+        };
+        localStorage.setItem('magicLinks', JSON.stringify(magicLinks));
+
+        // Log magic link URL cho demo (production sẽ gửi email)
+        const verifyUrl = `${window.location.origin}/verify?token=${mockToken}`;
+        console.log(`\n🔗 MAGIC LINK (DEMO MODE):\n${verifyUrl}\n`);
+        console.log(`📧 Trong production, link này sẽ được gửi đến email: ${email}`);
+
+        return {
+            success: true,
+            message: 'Magic link đã được gửi đến email của bạn',
+            verificationToken: mockToken,
+            expiresIn: 900 // 15 phút
+        };
+
+    } catch (error: any) {
+        debugLog(`❌ Error sending magic link:`, error.message);
+        return {
+            success: false,
+            message: error.message || 'Không thể gửi magic link. Vui lòng thử lại.'
+        };
+    }
+};
+
+export const verifyMagicLink = async (
+    token: string
+): Promise<{
+    success: boolean;
+    message: string;
+    email?: string;
+    walletAddress?: string;
+    sessionToken?: string;
+    user?: {
+        id: string;
+        email: string;
+        walletAddress: string;
+        name?: string;
+        createdAt: string;
+        lastLogin: string;
+    };
+}> => {
+    debugLog(`🔐 Verifying magic link token: ${token}`);
+
+    try {
+        if (!token) {
+            return {
+                success: false,
+                message: 'Token không hợp lệ'
+            };
+        }
+
+        // ⚠️ MOCK API - Backend chưa implement endpoint này
+        // Khi backend sẵn sàng, uncomment phần bên dưới:
+        /*
+        const url = `${API_BASE_URL}/api/auth/verify?token=${token}`;
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+        */
+
+        // MOCK RESPONSE - Tạm thời cho demo
+        const magicLinks = JSON.parse(localStorage.getItem('magicLinks') || '{}');
+        const linkData = magicLinks[token];
+
+        if (!linkData) {
+            return {
+                success: false,
+                message: 'Token không hợp lệ hoặc đã hết hạn'
+            };
+        }
+
+        // Check if used
+        if (linkData.used) {
+            return {
+                success: false,
+                message: 'Token đã được sử dụng'
+            };
+        }
+
+        // Check expiration
+        const expiresAt = new Date(linkData.expiresAt);
+        if (expiresAt < new Date()) {
+            return {
+                success: false,
+                message: 'Token đã hết hạn'
+            };
+        }
+
+        // Mark as used
+        linkData.used = true;
+        magicLinks[token] = linkData;
+        localStorage.setItem('magicLinks', JSON.stringify(magicLinks));
+
+        // Create session
+        const sessionToken = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const userId = `user_${linkData.walletAddress.slice(-8)}`;
+
+        const user = {
+            id: userId,
+            email: linkData.email,
+            walletAddress: linkData.walletAddress,
+            name: `User ${linkData.walletAddress.slice(0, 6)}`,
+            createdAt: linkData.createdAt,
+            lastLogin: new Date().toISOString()
+        };
+
+        // Store session
+        localStorage.setItem('authToken', sessionToken);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('walletAddress', linkData.walletAddress);
+
+        debugLog(`✅ Mock: Magic link verified successfully`);
+        console.log(`✅ Logged in as:`, user);
+
+        return {
+            success: true,
+            message: 'Xác thực thành công',
+            email: linkData.email,
+            walletAddress: linkData.walletAddress,
+            sessionToken,
+            user
+        };
+
+    } catch (error: any) {
+        debugLog(`❌ Error verifying magic link:`, error.message);
+        return {
+            success: false,
+            message: error.message || 'Không thể xác thực token. Vui lòng thử lại.'
+        };
+    }
+};
+
 export default {
     login,
     register,
@@ -1018,6 +1228,8 @@ export default {
     unsubscribe,
     submitFeatureFeedback,
     sendWeeklyReport,
+    sendMagicLink,
+    verifyMagicLink,
     isValidWalletAddress,
     isValidEmail,
     formatWalletAddress,

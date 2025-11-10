@@ -23,6 +23,7 @@ import {
 } from "recharts";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
 import { getScoreHistory } from "../services/api-real";
+import { RefreshCw } from "lucide-react";
 
 // ============================================
 // TYPES
@@ -210,21 +211,21 @@ export function Dashboard({
                 <span className="hidden md:inline">{t.navigation.profile}</span>
               </Button>
 
-              {/* Button Tính Điểm Mới - Compact on mobile */}
+              {/* Button Tính Điểm Mới - Compact like profile button */}
               <Button
                 onClick={handleRecalculate}
                 disabled={isRecalculating}
-                className="flex-1 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-lg shadow-cyan-500/30 text-white disabled:opacity-50 h-9 md:h-auto px-3 md:px-6"
+                className="flex-shrink-0 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-lg shadow-cyan-500/30 text-white disabled:opacity-50 h-9 md:h-10 px-3 md:px-4 text-sm md:text-base"
               >
                 {isRecalculating ? (
-                  <div className="flex items-center gap-2 justify-center">
+                  <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span className="text-xs md:text-sm">{t.dashboard.recalculating}</span>
+                    <span className="hidden md:inline text-xs md:text-sm">{t.dashboard.recalculating}</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 justify-center md:flex-col md:items-start">
-                    <span className="text-xs md:text-sm">{t.dashboard.recalculate}</span>
-                    <span className="text-[9px] md:text-[10px] opacity-80 hidden md:inline">{t.statsLabels.calculatedTimes} {MOCK_STATS.totalChecks} {t.statsLabels.times}</span>
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4" />
+                    <span className="hidden md:inline text-xs md:text-sm">{t.dashboard.recalculate}</span>
                   </div>
                 )}
               </Button>
