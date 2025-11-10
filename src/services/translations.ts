@@ -193,7 +193,7 @@ export const translations = {
         openEmail: "Mở hộp thư",
         findEmail: "Tìm email từ",
         clickButton: "Click vào nút",
-        autoRedirect: "Tự động chuyển đến Dashboard ✨",
+        autoRedirect: "Tự động chuyển đến Dashboard ",
         confirmButton: "\"Xác Nhận Email\"",
         demoMode: "🎨",
         demoLabel: "Demo Mode:",
