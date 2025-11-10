@@ -244,7 +244,6 @@ export const translations = {
       description:
         "Nhập email để nhận mã xác minh - không cần mật khẩu, hoàn toàn phi tập trung",
       emailLabel: "Địa Chỉ Email",
-      emailPlaceholder: "ten@email.com",
       sendOtp: "Gửi Mã OTP",
       sendButton: "Gửi Magic Link",
       sending: "Đang gửi...",
