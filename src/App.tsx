@@ -515,22 +515,22 @@ export default function App() {
                 {t.calculator.title}
               </h1>
 
-              {/* 3 Privacy Icons ngay dưới title - Tăng size text và icons */}
+              {/* 3 Privacy Icons ngay dưới title - Responsive cho mobile */}
               <div className="flex items-center justify-center px-2 mb-0">
-                <div className="inline-flex flex-nowrap items-center gap-1.5 md:gap-2.5 px-2.5 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-cyan-500/5 via-blue-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-full backdrop-blur-sm">
-                  <div className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
-                    <Shield className="w-3.5 h-3.5 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
-                    <span className="text-[11px] md:text-sm text-cyan-300">{t.calculator.privacy.decentralized}</span>
+                <div className="inline-flex flex-wrap md:flex-nowrap items-center justify-center gap-x-1 gap-y-1.5 md:gap-x-2.5 md:gap-y-0 px-2 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-cyan-500/5 via-blue-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-full backdrop-blur-sm max-w-full">
+                  <div className="flex items-center gap-0.5 md:gap-1.5 whitespace-nowrap">
+                    <Shield className="w-3 h-3 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
+                    <span className="text-[9px] md:text-sm text-cyan-300">{t.calculator.privacy.decentralized}</span>
                   </div>
-                  <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0"></div>
-                  <div className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
-                    <Lock className="w-3.5 h-3.5 md:w-4 md:h-4 text-purple-400 flex-shrink-0" />
-                    <span className="text-[11px] md:text-sm text-purple-300">{t.calculator.privacy.noPersonalInfo}</span>
+                  <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0 hidden md:block"></div>
+                  <div className="flex items-center gap-0.5 md:gap-1.5 whitespace-nowrap">
+                    <Lock className="w-3 h-3 md:w-4 md:h-4 text-purple-400 flex-shrink-0" />
+                    <span className="text-[9px] md:text-sm text-purple-300">{t.calculator.privacy.noPersonalInfo}</span>
                   </div>
-                  <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0"></div>
-                  <div className="flex items-center gap-1 md:gap-1.5 whitespace-nowrap">
-                    <Info className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400 flex-shrink-0" />
-                    <span className="text-[11px] md:text-sm text-blue-300">{t.calculator.privacy.onlyPublicData}</span>
+                  <div className="w-0.5 h-0.5 bg-cyan-400/50 rounded-full flex-shrink-0 hidden md:block"></div>
+                  <div className="flex items-center gap-0.5 md:gap-1.5 whitespace-nowrap">
+                    <Info className="w-3 h-3 md:w-4 md:h-4 text-blue-400 flex-shrink-0" />
+                    <span className="text-[9px] md:text-sm text-blue-300">{t.calculator.privacy.onlyPublicData}</span>
                   </div>
                 </div>
               </div>
