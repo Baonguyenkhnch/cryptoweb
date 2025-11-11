@@ -459,8 +459,7 @@ export default function App() {
       </div>
 
       {/* Top Left - Logo */}
-      <div className="absolute top-2.5 md:top-4 left-8 md:left-10
- z-20">
+      <div className="absolute top-2.5 md:top-4 left-4 md:left-6 z-20">
         <div className="relative group cursor-pointer">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative w-9 h-9 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
@@ -730,7 +729,7 @@ export default function App() {
         ) : (
           /* Results Section - Can scroll */
           <div className="space-y-6 md:space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pl-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pl-16 md:pl-20 pr-4">
               <Button
                 onClick={handleReset}
                 variant="outline"
