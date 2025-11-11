@@ -470,7 +470,7 @@ export const translations = {
         notification: "Nhận thông báo khi tính năng ra mắt",
       },
       buttons: {
-        cancel: "H��y",
+        cancel: "Hủy",
         submit: "Gửi Đề Xuất",
         submitting: "Đang Gửi...",
       },
