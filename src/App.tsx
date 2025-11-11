@@ -459,7 +459,8 @@ export default function App() {
       </div>
 
       {/* Top Left - Logo */}
-      <div className="absolute top-2.5 md:top-4 left-2.5 md:left-4 z-20">
+      <div className="absolute top-2.5 md:top-4 left-8 md:left-10
+ z-20">
         <div className="relative group cursor-pointer">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative w-9 h-9 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
@@ -517,7 +518,7 @@ export default function App() {
 
               {/* 3 Privacy Icons ngay dưới title - Responsive cho mobile */}
               <div className="flex items-center justify-center px-2 mb-0">
-                <div className="inline-flex flex-wrap md:flex-nowrap items-center justify-center gap-x-1 gap-y-1.5 md:gap-x-2.5 md:gap-y-0 px-2 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-cyan-500/5 via-blue-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-full backdrop-blur-sm max-w-full">
+                <div className="inline-flex flex-wrap md:flex-nowrap items-center justify-center gap-x-1.5 gap-y-1 md:gap-x-2.5 md:gap-y-0 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-cyan-500/5 via-blue-500/10 to-cyan-500/5 border border-cyan-500/20 rounded-full backdrop-blur-sm">
                   <div className="flex items-center gap-0.5 md:gap-1.5 whitespace-nowrap">
                     <Shield className="w-3 h-3 md:w-4 md:h-4 text-cyan-400 flex-shrink-0" />
                     <span className="text-[9px] md:text-sm text-cyan-300">{t.calculator.privacy.decentralized}</span>
