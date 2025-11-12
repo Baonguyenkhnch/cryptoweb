@@ -18,6 +18,7 @@ import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { LoadingProgress } from "./components/LoadingProgress";
 import { ErrorDialog } from "./components/ErrorDialog";
 import { QuotaWarningBanner } from "./components/QuotaWarningBanner";
+import { VerifyPage } from "./pages/Verify"; // ✅ Import VerifyPage
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
@@ -53,6 +54,17 @@ import { generateMockWalletData } from "./services/mock-data";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
+// Helper function to get rating from score
+const getRatingFromScore = (score: number): string => {
+  if (score >= 750) return "AAA";
+  if (score >= 700) return "AA";
+  if (score >= 650) return "A";
+  if (score >= 600) return "BBB";
+  if (score >= 550) return "BB";
+  if (score >= 500) return "B";
+  return "C";
+};
+
 export default function App() {
   const { t, language } = useLanguage();
   const [currentPage, setCurrentPage] =
@@ -84,6 +96,26 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState("");
   const [useDemoMode, setUseDemoMode] = useState(false); // Demo mode toggle
   const [showQuotaWarning, setShowQuotaWarning] = useState(false); // Quota warning banner
+  const [showVerifyPage, setShowVerifyPage] = useState(false); // ✅ Verify page state
+
+  // ✅ Check URL hash for verify page
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith("#/verify")) {
+        setShowVerifyPage(true);
+      } else {
+        setShowVerifyPage(false);
+      }
+    };
+
+    // Check on mount
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
 
   // check xem có login chưa khi vào trang
   useEffect(() => {
@@ -136,7 +168,7 @@ export default function App() {
     loadWalletDataForDashboard();
   }, [currentPage, currentUser, walletData]);
 
-  const handleLogin = (user: UserProfile) => {
+  const handleLogin = async (user: UserProfile) => {
     setCurrentUser(user);
 
     // Lưu vào localStorage - limit size to prevent memory issues
@@ -153,6 +185,73 @@ export default function App() {
       lastLogin: user.lastLogin
     };
     localStorage.setItem("currentUser", JSON.stringify(minimalUser));
+
+    // ✅ NEW: Check last_login and fetch appropriate data
+    try {
+      setIsLoading(true);
+
+      // Call getUserInfo API to check last_login
+      const { getUserInfo, analyzeWallet } = await import("./services/api-real");
+      const userInfoResult = await getUserInfo();
+
+      if (userInfoResult.success && userInfoResult.user) {
+        const lastLogin = userInfoResult.user.last_login;
+
+        console.log("👤 User Info:", userInfoResult.user);
+        console.log("🕐 Last Login:", lastLogin);
+
+        if (lastLogin === null) {
+          // First login - Fetch onchain data from credit-score API
+          console.log("🎉 First time login! Fetching onchain data...");
+
+          if (user.walletAddress) {
+            const onchainData = await analyzeWallet(user.walletAddress);
+            setWalletData(onchainData);
+            console.log("✅ Onchain data loaded:", onchainData);
+          }
+        } else {
+          // Returning user - Use data from user-info (already stored in DB)
+          console.log("👋 Welcome back! Using cached data...");
+
+          // Map user-info data to WalletAnalysis format
+          const cachedData = {
+            score: userInfoResult.user.credit_score || 0,
+            walletAge: userInfoResult.user.wallet_age || 0,
+            totalTransactions: userInfoResult.user.total_transactions || 0,
+            tokenDiversity: 0, // Not in user-info response
+            totalAssets: userInfoResult.user.total_assets || 0,
+            rating: getRatingFromScore(userInfoResult.user.credit_score || 0),
+            tokenBalances: [], // Will be loaded from separate API if needed
+            recentTransactions: [], // Will be loaded from separate API if needed
+            walletAddress: userInfoResult.user.wallet_address,
+          };
+
+          setWalletData(cachedData);
+          console.log("✅ Cached data loaded:", cachedData);
+        }
+      } else {
+        // Fallback: If getUserInfo fails, fetch onchain data
+        console.warn("⚠️ getUserInfo failed, falling back to onchain data");
+        if (user.walletAddress) {
+          const onchainData = await analyzeWallet(user.walletAddress);
+          setWalletData(onchainData);
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error in handleLogin:", error);
+      // On error, try to fetch onchain data as fallback
+      if (user.walletAddress) {
+        try {
+          const { analyzeWallet } = await import("./services/api-real");
+          const onchainData = await analyzeWallet(user.walletAddress);
+          setWalletData(onchainData);
+        } catch (fallbackError) {
+          console.error("❌ Fallback also failed:", fallbackError);
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
 
     // Chuyển đến Dashboard
     setCurrentPage("dashboard");
@@ -459,8 +558,7 @@ export default function App() {
       </div>
 
       {/* Top Left - Logo */}
-      <div className="absolute top-2.5 md:top-4 left-8 md:left-10
- z-20">
+      <div className="absolute top-2.5 md:top-4 left-4 md:left-6 z-20">
         <div className="relative group cursor-pointer">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative w-9 h-9 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
@@ -846,53 +944,72 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0f1419]">
-      {/* Navigation - Only show when logged in */}
-      {currentUser && (
-        <Navigation
-          currentPage={currentPage}
-          user={currentUser}
-          onNavigate={setCurrentPage}
-          onLogout={handleLogout}
+      {/* ✅ Verify Page - Show when URL is #/verify?token=xxx */}
+      {showVerifyPage && (
+        <VerifyPage
+          onVerifySuccess={(user) => {
+            handleLogin(user);
+            window.location.hash = ""; // Clear hash after success
+          }}
+          onBackToLogin={() => {
+            window.location.hash = ""; // Clear hash
+            setCurrentPage("login");
+          }}
         />
       )}
 
-      {/* Page Content */}
-      {currentPage === "login" && (
-        <Login
-          onRegisterSuccess={handleLogin}
-          onBackToCalculator={() => setCurrentPage("calculator")}
-        />
-      )}
-      {currentPage === "calculator" && renderCalculatorPage()}
-      {currentPage === "dashboard" && currentUser && (
-        <Dashboard
-          user={currentUser}
-          walletData={walletData}
-          onLogout={handleLogout}
-          onViewProfile={() => setCurrentPage("profile")}
-          onCalculateScore={() => setCurrentPage("calculator")}
-          onRecalculate={handleRecalculate}
-        />
-      )}
-      {currentPage === "profile" && currentUser && (
-        <ProfilePage
-          user={currentUser}
-          onUpdateProfile={setCurrentUser}
-          onBack={() => setCurrentPage("dashboard")}
-        />
-      )}
+      {/* Normal App - Hide when showing verify page */}
+      {!showVerifyPage && (
+        <>
+          {/* Navigation - Only show when logged in */}
+          {currentUser && (
+            <Navigation
+              currentPage={currentPage}
+              user={currentUser}
+              onNavigate={setCurrentPage}
+              onLogout={handleLogout}
+            />
+          )}
 
-      {/* Floating Feedback Button - Show on all pages */}
-      <FloatingFeedbackButton onClick={() => setShowFeedbackDialog(true)} />
+          {/* Page Content */}
+          {currentPage === "login" && (
+            <Login
+              onRegisterSuccess={handleLogin}
+              onBackToCalculator={() => setCurrentPage("calculator")}
+            />
+          )}
+          {currentPage === "calculator" && renderCalculatorPage()}
+          {currentPage === "dashboard" && currentUser && (
+            <Dashboard
+              user={currentUser}
+              walletData={walletData}
+              onLogout={handleLogout}
+              onViewProfile={() => setCurrentPage("profile")}
+              onCalculateScore={() => setCurrentPage("calculator")}
+              onRecalculate={handleRecalculate}
+            />
+          )}
+          {currentPage === "profile" && currentUser && (
+            <ProfilePage
+              user={currentUser}
+              onUpdateProfile={setCurrentUser}
+              onBack={() => setCurrentPage("dashboard")}
+            />
+          )}
 
-      {/* Feature Feedback Dialog */}
-      <FeatureFeedbackDialog
-        open={showFeedbackDialog}
-        onOpenChange={setShowFeedbackDialog}
-      />
+          {/* Floating Feedback Button - Show on all pages */}
+          <FloatingFeedbackButton onClick={() => setShowFeedbackDialog(true)} />
 
-      {/* Toast Notifications */}
-      <Toaster position="top-right" richColors />
+          {/* Feature Feedback Dialog */}
+          <FeatureFeedbackDialog
+            open={showFeedbackDialog}
+            onOpenChange={setShowFeedbackDialog}
+          />
+
+          {/* Toast Notifications */}
+          <Toaster position="top-right" richColors />
+        </>
+      )}
     </div>
   );
 }

@@ -78,9 +78,10 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
     setIsLoading(true);
 
     try {
-      const { sendMagicLink } = await import("../services/api-real");
+      // ✅ USE REGISTER API - Not magic link
+      const { registerUser } = await import("../services/api-real");
 
-      const result = await sendMagicLink(registerEmail, registerWallet);
+      const result = await registerUser(registerEmail, registerWallet);
 
       if (result.success) {
         setShowEmailSent(true);
@@ -91,7 +92,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
       }
     } catch (err) {
       setError(t.auth.errors.general);
-      console.error("Send magic link error:", err);
+      console.error("Register error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -100,27 +101,35 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
   const handleVerifyDemo = async () => {
     setIsLoading(true);
     try {
-      const { verifyMagicLink } = await import("../services/api-real");
+      // ✅ USE VERIFY REGISTRATION API - For email verification after register
+      const { verifyRegistration } = await import("../services/api-real");
 
-      const result = await verifyMagicLink(verificationToken);
+      const result = await verifyRegistration(verificationToken);
 
       if (result.success && result.user) {
-        // Lưu auth token
-        if (result.authToken) {
-          localStorage.setItem("authToken", result.authToken);
-          localStorage.setItem("currentUser", JSON.stringify(result.user));
-        }
+        // Create user profile from verification result
+        const userProfile: UserProfile = {
+          id: `user_${Date.now()}`,
+          email: result.user.email,
+          walletAddress: result.user.wallet_address,
+          name: result.user.email.split('@')[0],
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+        };
+
+        // Save to localStorage
+        localStorage.setItem("currentUser", JSON.stringify(userProfile));
 
         // Show success briefly then redirect
         timeoutRef.current = setTimeout(() => {
-          onRegisterSuccess?.(result.user);
+          onRegisterSuccess?.(userProfile);
         }, 1000);
       } else {
         setError(result.message || t.auth.errors.verifyFailed);
       }
     } catch (err) {
       setError(t.auth.errors.verifyError);
-      console.error("Verify error:", err);
+      console.error("Verify registration error:", err);
     } finally {
       setIsLoading(false);
     }

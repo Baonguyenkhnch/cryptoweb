@@ -118,12 +118,494 @@ export interface FeatureFeedback {
 const API_BASE_URL = "https://backend.migofin.com";
 
 // Enable debug mode để xem logs
-const DEBUG_MODE = false; // Tắt để tránh memory issues
+const DEBUG_MODE = true; // ✅ BẬT DEBUG để xem backend response
 
-// Helper function để log khi debug (chỉ log message, không log data)
-const debugLog = (message: string, data?: any) => {
+// Helper function for debug logging
+const debugLog = (...args: any[]) => {
     if (DEBUG_MODE) {
-        console.log(`[API Debug] ${message}`);
+        console.log(...args);
+    }
+};
+
+// =====================================================
+// AUTHENTICATION API ENDPOINTS
+// =====================================================
+
+/**
+ * Register new user - POST /api/register
+ * @param email - User email address
+ * @param walletAddress - User wallet address (0x...)
+ * @returns Success status and verification token
+ */
+export const registerUser = async (
+    email: string,
+    walletAddress: string
+): Promise<{
+    success: boolean;
+    message: string;
+    verificationToken?: string;
+}> => {
+    debugLog(`📝 Registering user: ${email} with wallet: ${walletAddress}`);
+
+    try {
+        // Validate inputs
+        if (!email || !email.includes("@")) {
+            return {
+                success: false,
+                message: "Email không hợp lệ",
+            };
+        }
+
+        if (!walletAddress || !isValidWalletAddress(walletAddress)) {
+            return {
+                success: false,
+                message: "Địa chỉ ví không hợp lệ (phải bắt đầu bằng 0x)",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/register`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email: email.toLowerCase().trim(),
+                wallet_address: walletAddress.trim(),
+                password: "DefaultPassword@123", // ✅ Backend yêu cầu password field (passwordless auth nhưng vẫn cần field này)
+            }),
+        });
+
+        const data = await response.json();
+
+        // ✅ FALLBACK: If 404, use demo mode
+        if (response.status === 404) {
+            console.warn("⚠️ Backend endpoint not found - Using DEMO MODE");
+
+            // Generate mock verification token
+            const mockToken = `demo_verify_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+            // Store email & wallet in localStorage for demo
+            localStorage.setItem("demo_pending_user", JSON.stringify({
+                email: email.toLowerCase().trim(),
+                wallet_address: walletAddress.trim(),
+                token: mockToken,
+                timestamp: Date.now(),
+            }));
+
+            return {
+                success: true,
+                message: "🎨 DEMO MODE: Email xác thực đã được 'gửi'. Click 'Demo: Xác thực ngay' để tiếp tục.",
+                verificationToken: mockToken,
+            };
+        }
+
+        if (!response.ok) {
+            debugLog(`❌ Register error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `HTTP ${response.status}`,
+            };
+        }
+
+        debugLog(`✅ Registration successful:`, data);
+
+        return {
+            success: true,
+            message: data.message || "Đăng ký thành công! Vui lòng kiểm tra email để xác thực.",
+            verificationToken: data.token || data.verificationToken,
+        };
+    } catch (error: any) {
+        debugLog(`❌ Register error:`, error.message);
+
+        // Network error - also use demo mode
+        console.warn("⚠️ Network error - Using DEMO MODE");
+        const mockToken = `demo_verify_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+        localStorage.setItem("demo_pending_user", JSON.stringify({
+            email: email.toLowerCase().trim(),
+            wallet_address: walletAddress.trim(),
+            token: mockToken,
+            timestamp: Date.now(),
+        }));
+
+        return {
+            success: true,
+            message: "🎨 DEMO MODE: Không thể kết nối backend. Click 'Demo: Xác thực ngay' để tiếp tục.",
+            verificationToken: mockToken,
+        };
+    }
+};
+
+/**
+ * Verify registration email - GET /api/verify-registration?token=xxx
+ * @param token - Verification token from email
+ */
+export const verifyRegistration = async (
+    token: string
+): Promise<{
+    success: boolean;
+    message: string;
+    user?: {
+        email: string;
+        wallet_address: string;
+    };
+}> => {
+    debugLog(`🔍 Verifying registration token: ${token}`);
+
+    try {
+        if (!token) {
+            return {
+                success: false,
+                message: "Token không hợp lệ",
+            };
+        }
+
+        // ✅ CHECK IF DEMO MODE TOKEN
+        if (token.startsWith("demo_verify_")) {
+            console.log("🎨 DEMO MODE: Verifying demo token");
+
+            // Get pending user from localStorage
+            const pendingUserStr = localStorage.getItem("demo_pending_user");
+
+            if (!pendingUserStr) {
+                return {
+                    success: false,
+                    message: "Token demo không tìm thấy. Vui lòng đăng ký lại.",
+                };
+            }
+
+            const pendingUser = JSON.parse(pendingUserStr);
+
+            // Check if token matches
+            if (pendingUser.token !== token) {
+                return {
+                    success: false,
+                    message: "Token demo không khớp.",
+                };
+            }
+
+            // Clean up
+            localStorage.removeItem("demo_pending_user");
+
+            return {
+                success: true,
+                message: "🎨 DEMO MODE: Xác thực thành công!",
+                user: {
+                    email: pendingUser.email,
+                    wallet_address: pendingUser.wallet_address,
+                },
+            };
+        }
+
+        // ✅ REAL API CALL
+        const url = `${API_BASE_URL}/api/verify-registration?token=${encodeURIComponent(token)}`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Verification error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || "Token không hợp lệ hoặc đã hết hạn",
+            };
+        }
+
+        debugLog(`✅ Verification successful:`, data);
+
+        return {
+            success: true,
+            message: data.message || "Xác thực email thành công!",
+            user: data.user || {
+                email: data.email,
+                wallet_address: data.wallet_address,
+            },
+        };
+    } catch (error: any) {
+        debugLog(`❌ Verification error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+/**
+ * Send Magic Link for passwordless login - POST /api/send-magic-link
+ * @param email - User email
+ */
+export const sendMagicLinkReal = async (
+    email: string
+): Promise<{
+    success: boolean;
+    message: string;
+}> => {
+    debugLog(`🔐 Sending magic link to: ${email}`);
+
+    try {
+        // Validate email
+        if (!email || !email.includes("@")) {
+            return {
+                success: false,
+                message: "Email không hợp lệ",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/send-magic-link`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email: email.toLowerCase().trim(),
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Magic link error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `HTTP ${response.status}`,
+            };
+        }
+
+        debugLog(`✅ Magic link sent:`, data);
+
+        return {
+            success: true,
+            message: data.message || "Magic link đã được gửi đến email của bạn!",
+        };
+    } catch (error: any) {
+        debugLog(`❌ Magic link error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+/**
+ * Verify Magic Link token - GET /api/verify?token=xxx
+ * @param token - Magic link token from email
+ */
+export const verifyMagicLink = async (
+    token: string
+): Promise<{
+    success: boolean;
+    message: string;
+    user?: {
+        id?: string;
+        email: string;
+        wallet_address?: string;
+        name?: string;
+    };
+    authToken?: string;
+}> => {
+    debugLog(`🔍 Verifying magic link token: ${token}`);
+
+    try {
+        if (!token) {
+            return {
+                success: false,
+                message: "Token không hợp lệ",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/verify?token=${encodeURIComponent(token)}`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Magic link verification error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || "Token không hợp lệ hoặc đã hết hạn",
+            };
+        }
+
+        debugLog(`✅ Magic link verified:`, data);
+
+        return {
+            success: true,
+            message: data.message || "Đăng nhập thành công!",
+            user: data.user || {
+                email: data.email,
+                wallet_address: data.wallet_address,
+                name: data.name,
+                id: data.id || data.user_id,
+            },
+            authToken: data.token || data.authToken || data.access_token,
+        };
+    } catch (error: any) {
+        debugLog(`❌ Magic link verification error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+/**
+ * Submit user feedback - POST /api/feedback
+ * @param feedback - User feedback data
+ */
+export const submitFeedback = async (feedback: {
+    email?: string;
+    category: string;
+    message: string;
+    rating?: number;
+}): Promise<{
+    success: boolean;
+    message: string;
+}> => {
+    debugLog(`📨 Submitting feedback:`, feedback);
+
+    try {
+        // Validate inputs
+        if (!feedback.message || feedback.message.trim().length < 10) {
+            return {
+                success: false,
+                message: "Vui lòng nhập ít nhất 10 ký tự",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/feedback`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email: feedback.email?.toLowerCase().trim() || "",
+                category: feedback.category,
+                message: feedback.message.trim(),
+                rating: feedback.rating || 0,
+                timestamp: new Date().toISOString(),
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Feedback error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `HTTP ${response.status}`,
+            };
+        }
+
+        debugLog(`✅ Feedback submitted:`, data);
+
+        return {
+            success: true,
+            message: data.message || "Cảm ơn bạn đã gửi feedback!",
+        };
+    } catch (error: any) {
+        debugLog(`❌ Feedback error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+/**
+ * Get User Info - GET /api/user-info
+ * Check user profile and last_login status
+ * @returns User info with last_login field
+ */
+export const getUserInfo = async (): Promise<{
+    success: boolean;
+    message: string;
+    user?: {
+        id: string;
+        email: string;
+        wallet_address: string;
+        name?: string;
+        last_login: string | null; // null = first login, date string = returning user
+        created_at?: string;
+        credit_score?: number;
+        wallet_age?: number;
+        total_transactions?: number;
+        total_assets?: number;
+        // ... other onchain data fields if last_login is not null
+    };
+}> => {
+    debugLog(`👤 Getting user info...`);
+
+    try {
+        // Get auth token from localStorage
+        const authToken = localStorage.getItem("authToken");
+        const currentUser = localStorage.getItem("currentUser");
+
+        if (!authToken || !currentUser) {
+            return {
+                success: false,
+                message: "Chưa đăng nhập",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/user-info`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${authToken}`,
+            },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Get user info error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || "Không thể lấy thông tin user",
+            };
+        }
+
+        debugLog(`✅ User info retrieved:`, data);
+
+        return {
+            success: true,
+            message: "Success",
+            user: {
+                id: data.id || data.user_id,
+                email: data.email,
+                wallet_address: data.wallet_address,
+                name: data.name,
+                last_login: data.last_login, // null or date string
+                created_at: data.created_at,
+                credit_score: data.credit_score,
+                wallet_age: data.wallet_age,
+                total_transactions: data.total_transactions,
+                total_assets: data.total_assets,
+            },
+        };
+    } catch (error: any) {
+        debugLog(`❌ Get user info error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
     }
 };
 
@@ -178,6 +660,16 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
                     // Nếu là 404, có thể wallet chưa được crawl
                     if (response.status === 404) {
                         throw new Error(`Wallet chưa được phân tích. Vui lòng thử lại sau vài phút.`);
+                    }
+
+                    // Nếu là 500, backend có lỗi internal
+                    if (response.status === 500) {
+                        throw new Error(`Backend đang gặp sự cố (500). Có thể do hết quota Moralis hoặc lỗi server. Vui lòng thử lại sau.`);
+                    }
+
+                    // Nếu là 401/403, có thể backend authentication issue
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error(`Backend authentication error (${response.status}). Có thể Moralis API key hết hạn.`);
                     }
 
                     throw new Error(`API Error: ${response.status} - ${errorText}`);
@@ -746,7 +1238,7 @@ export const subscribeToUpdates = async (
     return simulateApiCall(
         {
             success: true,
-            message: "Đăng ký thành công! Bạn sẽ nhận được email cập nhật đ��nh kỳ.",
+            message: "Đăng ký thành công! Bạn sẽ nhận được email cập nhật đnh kỳ.",
         },
         1500
     );
@@ -1004,214 +1496,6 @@ function generateMockWalletData(walletAddress: string): WalletAnalysis {
     };
 }
 
-// =====================================================
-// MAGIC LINK AUTHENTICATION
-// =====================================================
-
-export const sendMagicLink = async (
-    email: string,
-    walletAddress: string
-): Promise<{
-    success: boolean;
-    message: string;
-    verificationToken?: string;
-    expiresIn?: number;
-}> => {
-    debugLog(`🔐 Sending magic link to: ${email} for wallet: ${walletAddress || 'no wallet'}`);
-
-    try {
-        // Validate inputs
-        if (!email || !email.includes('@')) {
-            return {
-                success: false,
-                message: 'Email không hợp lệ'
-            };
-        }
-
-        // ✅ Wallet address is OPTIONAL - allow login without wallet
-        if (walletAddress && !isValidWalletAddress(walletAddress)) {
-            return {
-                success: false,
-                message: 'Địa chỉ ví không hợp lệ'
-            };
-        }
-
-        // ⚠️ MOCK API - Backend chưa implement endpoint này
-        // Khi backend sẵn sàng, uncomment phần bên dưới:
-        /*
-        const url = `${API_BASE_URL}/api/auth/send-magic-link`;
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, wallet: walletAddress }),
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        return data;
-        */
-
-        // MOCK RESPONSE - Tạm thời cho demo
-        debugLog(`✅ Mock: Magic link sent successfully`);
-        const mockToken = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-        // Store mock token in localStorage for verification
-        const magicLinks = JSON.parse(localStorage.getItem('magicLinks') || '{}');
-        magicLinks[mockToken] = {
-            email,
-            walletAddress,
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 phút
-            used: false
-        };
-        localStorage.setItem('magicLinks', JSON.stringify(magicLinks));
-
-        // Log magic link URL cho demo (production sẽ gửi email)
-        const verifyUrl = `${window.location.origin}/verify?token=${mockToken}`;
-        console.log(`\n🔗 MAGIC LINK (DEMO MODE):\n${verifyUrl}\n`);
-        console.log(`📧 Trong production, link này sẽ được gửi đến email: ${email}`);
-
-        return {
-            success: true,
-            message: 'Magic link đã được gửi đến email của bạn',
-            verificationToken: mockToken,
-            expiresIn: 900 // 15 phút
-        };
-
-    } catch (error: any) {
-        debugLog(`❌ Error sending magic link:`, error.message);
-        return {
-            success: false,
-            message: error.message || 'Không thể gửi magic link. Vui lòng thử lại.'
-        };
-    }
-};
-
-export const verifyMagicLink = async (
-    token: string
-): Promise<{
-    success: boolean;
-    message: string;
-    email?: string;
-    walletAddress?: string;
-    sessionToken?: string;
-    user?: {
-        id: string;
-        email: string;
-        walletAddress: string;
-        name?: string;
-        createdAt: string;
-        lastLogin: string;
-    };
-}> => {
-    debugLog(`🔐 Verifying magic link token: ${token}`);
-
-    try {
-        if (!token) {
-            return {
-                success: false,
-                message: 'Token không hợp lệ'
-            };
-        }
-
-        // ⚠️ MOCK API - Backend chưa implement endpoint này
-        // Khi backend sẵn sàng, uncomment phần bên dưới:
-        /*
-        const url = `${API_BASE_URL}/api/auth/verify?token=${token}`;
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        return data;
-        */
-
-        // MOCK RESPONSE - Tạm thời cho demo
-        const magicLinks = JSON.parse(localStorage.getItem('magicLinks') || '{}');
-        const linkData = magicLinks[token];
-
-        if (!linkData) {
-            return {
-                success: false,
-                message: 'Token không hợp lệ hoặc đã hết hạn'
-            };
-        }
-
-        // Check if used
-        if (linkData.used) {
-            return {
-                success: false,
-                message: 'Token đã được sử dụng'
-            };
-        }
-
-        // Check expiration
-        const expiresAt = new Date(linkData.expiresAt);
-        if (expiresAt < new Date()) {
-            return {
-                success: false,
-                message: 'Token đã hết hạn'
-            };
-        }
-
-        // Mark as used
-        linkData.used = true;
-        magicLinks[token] = linkData;
-        localStorage.setItem('magicLinks', JSON.stringify(magicLinks));
-
-        // Create session
-        const sessionToken = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const userId = `user_${linkData.walletAddress.slice(-8)}`;
-
-        const user = {
-            id: userId,
-            email: linkData.email,
-            walletAddress: linkData.walletAddress,
-            name: `User ${linkData.walletAddress.slice(0, 6)}`,
-            createdAt: linkData.createdAt,
-            lastLogin: new Date().toISOString()
-        };
-
-        // Store session
-        localStorage.setItem('authToken', sessionToken);
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('walletAddress', linkData.walletAddress);
-
-        debugLog(`✅ Mock: Magic link verified successfully`);
-        console.log(`✅ Logged in as:`, user);
-
-        return {
-            success: true,
-            message: 'Xác thực thành công',
-            email: linkData.email,
-            walletAddress: linkData.walletAddress,
-            sessionToken,
-            user
-        };
-
-    } catch (error: any) {
-        debugLog(`❌ Error verifying magic link:`, error.message);
-        return {
-            success: false,
-            message: error.message || 'Không thể xác thực token. Vui lòng thử lại.'
-        };
-    }
-};
-
 export default {
     login,
     register,
@@ -1228,7 +1512,9 @@ export default {
     unsubscribe,
     submitFeatureFeedback,
     sendWeeklyReport,
-    sendMagicLink,
+    registerUser,
+    verifyRegistration,
+    sendMagicLinkReal,
     verifyMagicLink,
     isValidWalletAddress,
     isValidEmail,
@@ -1236,3 +1522,10 @@ export default {
     registerWalletWithEmail,
     getWalletByEmail,
 };
+
+// =====================================================
+// BACKWARD COMPATIBILITY ALIASES
+// =====================================================
+// Export aliases for backward compatibility with old component imports
+export const sendMagicLink = sendMagicLinkReal;
+export const verifyToken = verifyMagicLink;
