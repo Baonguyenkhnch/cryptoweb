@@ -122,7 +122,7 @@ export function EmailSubscriptionDialog({
                 <Input
                   id="subscribe-email"
                   type="email"
-                  placeholder="your.email@example.com"
+                  // placeholder="your.email@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-slate-900/50 border-cyan-500/30 focus:border-cyan-400 text-white placeholder:text-gray-500"
