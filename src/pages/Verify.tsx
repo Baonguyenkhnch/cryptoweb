@@ -16,60 +16,60 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
     const [countdown, setCountdown] = useState(3);
     const [debugInfo, setDebugInfo] = useState<string>(""); // ✅ ADD DEBUG INFO
 
-    // ✅ ALERT ON COMPONENT MOUNT
-    useEffect(() => {
-        alert(`🔍 VerifyPage MOUNTED!\n\nURL: ${window.location.href}\nHash: ${window.location.hash}`);
-    }, []);
-
-    useEffect(() => {
-        // Parse token từ URL (support multiple formats)
+    // Helper to extract token from current URL in Hash Router or Query string
+    function parseTokenFromLocation(): { token: string | null; isRegistration: boolean } {
         let token: string | null = null;
-        let isRegistration = false; // ✅ Track if this is registration or login
+        let isRegistration = false;
 
-        // Format 1: #/verify?token=xxx OR #/verify-registration?token=xxx (hash routing with query)
-        const hash = window.location.hash;
-        if (hash.includes("?")) {
-            const hashParams = new URLSearchParams(hash.split("?")[1]);
-            // ✅ FIX: Try both lowercase and uppercase "Token"
-            token = hashParams.get("token") || hashParams.get("Token");
-            // ✅ Check if this is registration verification
-            isRegistration = hash.includes("/verify-registration");
-            console.log("🔍 Found token in hash:", token);
-            console.log("🔍 Is registration:", isRegistration);
-        }
-
-        // Format 2: ?token=xxx (regular query string)
-        if (!token) {
-            const urlParams = new URLSearchParams(window.location.search);
-            // ✅ FIX: Try both lowercase and uppercase "Token"
-            token = urlParams.get("token") || urlParams.get("Token");
-            console.log("🔍 Found token in query string:", token);
-        }
-
-        // Format 3: /verify?token=xxx OR /verify-registration?token=xxx (pathname without hash, redirect to hash)
-        if (!token && (window.location.pathname.includes("/verify") || window.location.pathname.includes("/verify-registration"))) {
-            const urlParams = new URLSearchParams(window.location.search);
-            // ✅ FIX: Try both lowercase and uppercase "Token"
-            token = urlParams.get("token") || urlParams.get("Token");
-            isRegistration = window.location.pathname.includes("/verify-registration");
-            if (token) {
-                console.log("🔍 Found token in pathname, redirecting to hash...");
-                // Redirect to hash-based URL
-                const verifyPath = isRegistration ? "/verify-registration" : "/verify";
-                window.location.hash = `#${verifyPath}?token=${token}`;
-                return;
+        // Prefer hash for HashRouter: "#/verify?token=xxx" or "#/verify-registration?token=xxx"
+        const hash = window.location.hash || "";
+        if (hash) {
+            // Example formats we support:
+            // - "#/verify?token=abc"
+            // - "#/verify-registration?token=abc"
+            // - "#/verify?Token=abc" (case variant)
+            const [, query = ""] = hash.split("?"); // safely get string after "?"
+            if (query) {
+                const hashParams = new URLSearchParams(query);
+                token = hashParams.get("token") || hashParams.get("Token");
+                isRegistration = hash.includes("/verify-registration");
             }
         }
 
-        // ✅ SET DEBUG INFO
-        setDebugInfo(`Token: ${token?.substring(0, 20)}...\nURL: ${window.location.href}\nType: ${isRegistration ? 'Registration' : 'Magic Link'}`);
+        // Fallback: traditional query string "?token=xxx"
+        if (!token && window.location.search) {
+            const urlParams = new URLSearchParams(window.location.search);
+            token = urlParams.get("token") || urlParams.get("Token");
+            // infer type from pathname when using non-hash route
+            isRegistration = window.location.pathname.includes("/verify-registration");
+        }
 
-        console.log("🔍 Final parsed token:", token);
-        console.log("🔍 Verification type:", isRegistration ? "Registration" : "Magic Link");
-        console.log("🔍 Full URL:", window.location.href);
-        console.log("🔍 Hash:", window.location.hash);
-        console.log("🔍 Search:", window.location.search);
-        console.log("🔍 Pathname:", window.location.pathname);
+        // Fallback: if token exists in query when path contains /verify, normalize to hash URL
+        if (!token && (window.location.pathname.includes("/verify") || window.location.pathname.includes("/verify-registration"))) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const qsToken = urlParams.get("token") || urlParams.get("Token");
+            if (qsToken) {
+                const verifyPath = window.location.pathname.includes("/verify-registration") ? "/verify-registration" : "/verify";
+                const normalizedHash = `#${verifyPath}?token=${qsToken}`;
+                if (window.location.hash !== normalizedHash) {
+                    window.location.hash = normalizedHash;
+                }
+                token = qsToken;
+                isRegistration = verifyPath.includes("registration");
+            }
+        }
+
+        return { token, isRegistration };
+    }
+
+    useEffect(() => {
+        // Parse token robustly across hash and search
+        const { token, isRegistration } = parseTokenFromLocation();
+
+        // ✅ SET DEBUG INFO
+        const tokenPreview = token ? `${token.substring(0, 20)}...` : "N/A";
+
+        setDebugInfo(`Token: ${tokenPreview}\nURL: ${window.location.href}\nType: ${isRegistration ? 'Registration' : 'Magic Link'}`);
 
         if (!token) {
             setStatus("error");
@@ -81,21 +81,10 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
         // Verify token
         const verify = async () => {
             try {
-                console.log("🔐 Verifying token:", token);
-                console.log("🔐 Using API:", isRegistration ? "/api/verify-registration" : "/api/verify");
-
-                // ✅ FORCE ALERT FOR DEBUGGING
-                alert(`🔍 DEBUG: Calling ${isRegistration ? 'REGISTRATION' : 'MAGIC LINK'} API with token: ${token?.substring(0, 30)}...`);
-
-                // ✅ CALL CORRECT API BASED ON URL PATH
+                // Call correct API based on URL path
                 const result = isRegistration
                     ? await verifyRegistration(token)
                     : await verifyMagicLink(token);
-
-                console.log("🔍 Verify API Response:", result); // ✅ ADD DETAILED LOGGING
-
-                // ✅ FORCE ALERT WITH RESULT
-                alert(`🔍 API Response: ${JSON.stringify(result).substring(0, 200)}`);
 
                 if (result.success && result.user) {
                     // Lưu auth token
@@ -119,24 +108,15 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     }, 1000);
                 } else {
                     setStatus("error");
-                    // ✅ SHOW DETAILED ERROR MESSAGE
                     const errorMsg = result.message || "Xác thực thất bại. Vui lòng thử lại.";
-                    console.error("❌ Verify failed:", errorMsg);
-                    console.error("❌ Full response:", result);
                     setMessage(errorMsg);
                     setDebugInfo(`❌ Error: ${errorMsg}\n\nAPI Response: ${JSON.stringify(result, null, 2)}`);
                 }
             } catch (error) {
-                console.error("❌ Verify error:", error);
-                // ✅ SHOW MORE DETAILS
                 const errorMsg = error instanceof Error ? error.message : String(error);
-                console.error("❌ Error details:", errorMsg);
                 setStatus("error");
                 setMessage(`Có lỗi xảy ra: ${errorMsg}`);
                 setDebugInfo(`❌ Exception: ${errorMsg}`);
-
-                // ✅ FORCE ALERT
-                alert(`❌ ERROR: ${errorMsg}`);
             }
         };
 
