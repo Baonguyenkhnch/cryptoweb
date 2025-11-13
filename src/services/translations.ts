@@ -17,9 +17,9 @@ export const translations = {
       subtitle: "Đánh giá độ tin cậy của ví blockchain",
       noData: "Không có dữ liệu",
       input: {
-        title: "Nhập Địa Chỉ Ví hoặc Email",
+        title: "Nhập Địa Chỉ Ví ",
         subtitle: "Kết nối ví của bạn để khám phá tiềm năng tín dụng",
-        label: "Địa Chỉ Ví hoặc Email",
+        label: "Địa Chỉ Ví Của Bạn :",
         emailSearching: "Đang tìm ví từ email...",
         emailNotFound: "Email chưa đăng ký hoặc chưa liên kết ví",
         emailFound: "Tìm thấy ví! Đang phân tích...",
@@ -544,9 +544,9 @@ export const translations = {
       subtitle: "Blockchain wallet reliability assessment",
       noData: "No data available",
       input: {
-        title: "Enter Wallet Address or Email",
+        title: "Enter Wallet Address ",
         subtitle: "Connect your wallet to discover credit potential",
-        label: "Wallet Address or Email",
+        label: "Your Wallet Address :",
         emailSearching: "Searching wallet from email...",
         emailNotFound: "Email not registered or not linked to wallet",
         emailFound: "Wallet found! Analyzing...",
