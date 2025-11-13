@@ -206,13 +206,13 @@ export const translations = {
         noEmail: "Không nhận được email? Kiểm tra hộp thư spam",
       },
       validationErrors: {
-        fillAll: "Vui lòng điền đầy đủ thông tin",
+        // fillAll: "Vui lòng điền đầy đủ thông tin",
         invalidEmail: "Email không hợp lệ",
         invalidWalletFormat: "Địa chỉ ví không hợp lệ",
         validEmail: "Vui lòng nhập email hợp lệ",
       },
       errors: {
-        fillAll: "Vui lòng điền đầy đủ thông tin",
+        // fillAll: "Vui lòng điền đầy đủ thông tin",
         passwordMismatch: "Mật khẩu không khớp",
         passwordLength: "Mật khẩu phải có ít nhất 6 ký tự",
         invalidWallet: "Địa chỉ ví không hợp lệ (phải là địa chỉ Ethereum)",
@@ -228,10 +228,10 @@ export const translations = {
         registerSuccess: "Đăng ký thành công! Đang chuyển hướng...",
       },
       placeholders: {
-        email: "email@cua-ban.com",
+        // email: "email@cua-ban.com",
         password: "••••••••",
         wallet: "0x742d35Cc6231e4a8F5b2FaC6E9B4F9D2E5A7B8C9D1",
-        walletShort: "0x742d35Cc...",
+        // walletShort: "0x742d35Cc...",
       },
       magicLink: {
         title: "Đăng Nhập Không Mật Khẩu",
@@ -739,13 +739,13 @@ export const translations = {
         noEmail: "Didn't receive email? Check spam folder",
       },
       validationErrors: {
-        fillAll: "Please fill in all information",
+        // fillAll: "Please fill in all information",
         invalidEmail: "Invalid email",
         invalidWalletFormat: "Invalid wallet address",
         validEmail: "Please enter a valid email",
       },
       errors: {
-        fillAll: "Please fill in all fields",
+        // fillAll: "Please fill in all fields",
         passwordMismatch: "Passwords do not match",
         passwordLength: "Password must be at least 6 characters",
         invalidWallet: "Invalid wallet address (must be Ethereum address)",
