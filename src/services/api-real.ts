@@ -783,15 +783,53 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     // Parse token balances
     const tokenBalances = mapTokenBalances(data.total_balances || data.token_balances || []);
 
-    // Tính tổng giá trị tài sản
-    const totalAssetsUsd = data.total_assets_usd || tokenBalances.reduce((sum, t) => sum + t.value, 0);
+    // ✅ FIX: Filter out tokens with invalid USD values & sort by value
+    const validTokens = tokenBalances
+        .filter(token => {
+            // Remove tokens with 0 value or unrealistic values
+            if (token.value <= 0) return false;
 
-    // Tính phần trăm cho mỗi token
+            // Remove obvious spam tokens (value > $10 billion is suspicious)
+            if (token.value > 10_000_000_000) {
+                console.warn(`⚠️ Filtering out suspicious token ${token.symbol} with value $${token.value.toLocaleString()}`);
+                return false;
+            }
+
+            return true;
+        })
+        .sort((a, b) => b.value - a.value); // Sort by value descending
+
+    // ✅ FIX: Recalculate total from valid tokens only
+    const validTotalAssets = validTokens.reduce((sum, t) => sum + t.value, 0);
+
+    // Use API total_assets_usd only if it's reasonable, otherwise use calculated
+    let totalAssetsUsd = data.total_assets_usd || 0;
+
+    // If API total seems wrong (e.g., smaller than largest token), use calculated total
+    const largestTokenValue = validTokens[0]?.value || 0;
+    if (totalAssetsUsd > 0 && totalAssetsUsd < largestTokenValue) {
+        console.warn(`⚠️ API total_assets_usd ($${totalAssetsUsd}) < largest token ($${largestTokenValue}). Using calculated total.`);
+        totalAssetsUsd = validTotalAssets;
+    }
+
+    // If API total is 0, use calculated
+    if (totalAssetsUsd === 0) {
+        totalAssetsUsd = validTotalAssets;
+    }
+
+    // ✅ FIX: Calculate percentage based on valid total
     if (totalAssetsUsd > 0) {
-        tokenBalances.forEach(token => {
+        validTokens.forEach(token => {
             token.percentage = (token.value / totalAssetsUsd) * 100;
         });
     }
+
+    console.log(`💰 Total Assets: $${totalAssetsUsd.toLocaleString()} (${validTokens.length} valid tokens)`);
+    console.log(`📊 Top 3 tokens:`, validTokens.slice(0, 3).map(t => ({
+        symbol: t.symbol,
+        value: `$${t.value.toLocaleString()}`,
+        percentage: `${t.percentage?.toFixed(1)}%`
+    })));
 
     // Parse transactions
     const recentTransactions = mapTransactions(
@@ -824,7 +862,7 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
         tokenDiversity: data.token_diversity || tokenBalances.length,
         totalAssets: totalAssetsUsd,
         rating: rating,
-        tokenBalances: tokenBalances,
+        tokenBalances: validTokens,
         recentTransactions: recentTransactions,
         // Extended fields
         walletAddress: data.wallet_address,
