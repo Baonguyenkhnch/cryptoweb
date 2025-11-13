@@ -19,6 +19,7 @@ import { LoadingProgress } from "./components/LoadingProgress";
 import { ErrorDialog } from "./components/ErrorDialog";
 import { QuotaWarningBanner } from "./components/QuotaWarningBanner";
 import { VerifyPage } from "./pages/Verify"; // ✅ Import VerifyPage
+import { CaptchaDialog } from "./components/CaptchaDialog"; // ✅ Import CaptchaDialog
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
@@ -96,6 +97,7 @@ export default function App() {
   const [useDemoMode, setUseDemoMode] = useState(false); // Demo mode toggle
   const [showQuotaWarning, setShowQuotaWarning] = useState(false); // Quota warning banner
   const [showVerifyPage, setShowVerifyPage] = useState(false); // ✅ Verify page state
+  const [showCaptchaCalculator, setShowCaptchaCalculator] = useState(false); // ✅ CAPTCHA for calculator
 
   // ✅ Check URL hash for verify page
   useEffect(() => {
@@ -272,6 +274,26 @@ export default function App() {
     setCurrentPage("calculator");
 
     console.log("✅ Đăng xuất thành công - về Calculator");
+  };
+
+  // ✅ Handle Calculate Click - Show CAPTCHA first
+  const handleCalculateClick = () => {
+    if (!walletAddress.trim()) return;
+
+    // Validate wallet address or email format first
+    const address = walletAddress.trim();
+    if (!isValidEmail(address) && !isValidWalletAddress(address)) {
+      alert("Vui lòng nhập địa chỉ ví hợp lệ (0x...) hoặc email đã đăng ký.");
+      return;
+    }
+
+    // Show CAPTCHA dialog
+    setShowCaptchaCalculator(true);
+  };
+
+  // ✅ Handle CAPTCHA verified - Continue with calculation
+  const handleCaptchaVerifiedCalculator = () => {
+    handleCalculateScore();
   };
 
   const handleCalculateScore = async () => {
@@ -558,8 +580,7 @@ export default function App() {
       </div>
 
       {/* Top Left - Logo */}
-      <div className="absolute top-2.5 md:top-4 left-8 md:left-10
- z-20">
+      <div className="absolute top-2.5 md:top-4 left-4 md:left-6 z-20">
         <div className="relative group cursor-pointer">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative w-9 h-9 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
@@ -723,7 +744,7 @@ export default function App() {
 
                     <div className="flex flex-col sm:flex-row gap-1.5 md:gap-2 relative">
                       <Button
-                        onClick={handleCalculateScore}
+                        onClick={handleCalculateClick}
                         disabled={
                           !walletAddress.trim() || isLoading
                         }
@@ -908,6 +929,13 @@ export default function App() {
         errorType={errorType}
         errorMessage={errorMessage}
         onTryDemoMode={handleTryDemoMode}
+      />
+
+      {/* CAPTCHA Dialog */}
+      <CaptchaDialog
+        open={showCaptchaCalculator}
+        onOpenChange={setShowCaptchaCalculator}
+        onVerified={handleCaptchaVerifiedCalculator}
       />
     </div>
   );

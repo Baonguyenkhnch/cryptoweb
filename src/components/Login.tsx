@@ -8,6 +8,7 @@ import { Shield, Mail, Wallet, ArrowRight, Copy, CheckCircle2, Sparkles, Clock }
 import { type UserProfile } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { CaptchaDialog } from "./CaptchaDialog";
 import { toast } from "sonner";
 import logoIcon from "../components/images/logonhap.jpg";
 
@@ -36,6 +37,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
   const [error, setError] = useState("");
   const [showEmailSent, setShowEmailSent] = useState(false);
   const [verificationToken, setVerificationToken] = useState("");
+  const [showCaptchaRegister, setShowCaptchaRegister] = useState(false);
 
   // ✨ Validation states - CHỈ HIỂN THỊ SAU KHI SUBMIT
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -56,11 +58,13 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidWallet = (wallet: string) => wallet.startsWith("0x") && wallet.length === 42;
 
-  const handleSendMagicLink = async (e: React.FormEvent) => {
+  // ✅ Handle Submit Click - Show CAPTCHA first
+  const handleSubmitClick = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setHasAttemptedSubmit(true);
 
+    // Validate fields
     if (!registerEmail || !registerWallet) {
       setError(t.auth.validationErrors.fillAll);
       return;
@@ -76,6 +80,17 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
       return;
     }
 
+    // Show CAPTCHA if validation passes
+    setShowCaptchaRegister(true);
+  };
+
+  // ✅ Handle CAPTCHA verified - Continue with registration
+  const handleCaptchaVerifiedRegister = () => {
+    handleSendMagicLink();
+  };
+
+  const handleSendMagicLink = async () => {
+    setError("");
     setIsLoading(true);
 
     try {
@@ -253,7 +268,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                     </Alert>
                   )}
 
-                  <form onSubmit={handleSendMagicLink} className="space-y-1.5">
+                  <form onSubmit={handleSubmitClick} className="space-y-1.5">
                     {/* Email */}
                     <div className="space-y-0.5">
                       <Label htmlFor="register-email" className="text-gray-300 flex items-center gap-1 text-[10px] md:text-xs">
@@ -453,6 +468,14 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
           {t.auth.decentralizedFooter}
         </div>
       </div>
+
+      {/* CAPTCHA Dialog */}
+      <CaptchaDialog
+        open={showCaptchaRegister}
+        onOpenChange={setShowCaptchaRegister}
+        onVerified={handleCaptchaVerifiedRegister}
+        title="Xác Minh Trước Khi Đăng Ký"
+      />
     </div>
   );
 }

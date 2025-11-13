@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Lightbulb, Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "../services/LanguageContext";
+import { CaptchaDialog } from "./CaptchaDialog";
 
 interface FeatureFeedbackDialogProps {
   open: boolean;
@@ -31,8 +32,10 @@ export function FeatureFeedbackDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [showCaptcha, setShowCaptcha] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmitClick = () => {
+    // Validate first
     if (!featureName.trim()) {
       setError(t.featureFeedback.errors.nameRequired);
       return;
@@ -41,7 +44,23 @@ export function FeatureFeedbackDialog({
       setError(t.featureFeedback.errors.descriptionRequired);
       return;
     }
+    if (!email.trim()) {
+      setError("Email là bắt buộc để nhận phản hồi");
+      return;
+    }
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Email không hợp lệ");
+      return;
+    }
 
+    // Show CAPTCHA if validation passes
+    setError("");
+    setShowCaptcha(true);
+  };
+
+  const handleCaptchaVerified = async () => {
     setError("");
     setIsLoading(true);
     try {
@@ -139,10 +158,10 @@ export function FeatureFeedbackDialog({
                   </p>
                 </div>
 
-                {/* Email (Optional) */}
+                {/* Email (Required) */}
                 <div className="space-y-2">
                   <Label htmlFor="feedback-email" className="text-gray-300 text-sm">
-                    {t.featureFeedback.emailLabel} <span className="text-gray-500 text-xs">{t.featureFeedback.emailOptional}</span>
+                    📧 Email Nhận Phản Hồi <span className="text-red-400">*</span>
                   </Label>
                   <Input
                     id="feedback-email"
@@ -153,7 +172,7 @@ export function FeatureFeedbackDialog({
                     className="bg-slate-900/50 border-purple-500/30 focus:border-purple-400 text-white placeholder:text-gray-500 h-10 text-sm"
                   />
                   <p className="text-xs text-gray-400">
-                    {t.featureFeedback.emailHint}
+                    Chúng tôi sẽ liên hệ với bạn khi tính năng đề xuất đã được triển khai
                   </p>
                 </div>
 
@@ -193,7 +212,7 @@ export function FeatureFeedbackDialog({
               </Button>
 
               <Button
-                onClick={handleSubmit}
+                onClick={handleSubmitClick}
                 disabled={!featureName.trim() || !description.trim() || isLoading}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/30 h-10 text-sm"
               >
@@ -237,6 +256,14 @@ export function FeatureFeedbackDialog({
           </div>
         )}
       </DialogContent>
+
+      {/* CAPTCHA Dialog */}
+      <CaptchaDialog
+        open={showCaptcha}
+        onOpenChange={setShowCaptcha}
+        onVerified={handleCaptchaVerified}
+        title="Xác Minh Trước Khi Gửi"
+      />
     </Dialog>
   );
 }
