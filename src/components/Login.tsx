@@ -8,6 +8,7 @@ import { Shield, Mail, Wallet, ArrowRight, Copy, CheckCircle2, Sparkles, Clock }
 import { type UserProfile } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { toast } from "sonner";
 import logoIcon from "../components/images/logonhap.jpg";
 
 // Helper function để tạo địa chỉ ví Ethereum ngẫu nhiên
@@ -88,7 +89,48 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
         setVerificationToken(result.verificationToken || "");
         setError("");
       } else {
-        setError(result.message || t.auth.errors.sendFailed);
+        // ✅ CHECK IF EMAIL ALREADY EXISTS (improved pattern matching)
+        const errorMsg = result.message?.toLowerCase() || "";
+        const isEmailExists = (
+          errorMsg.includes("đã được đăng ký") ||
+          errorMsg.includes("đã được lưu") ||
+          errorMsg.includes("already registered") ||
+          errorMsg.includes("already exists") ||
+          (errorMsg.includes("email") && (
+            errorMsg.includes("exist") ||
+            errorMsg.includes("được lưu") ||
+            errorMsg.includes("tồn tại")
+          ))
+        );
+
+        if (isEmailExists) {
+          // ✅ SUGGEST MAGIC LINK LOGIN
+          const useMagicLink = window.confirm(
+            `Email "${registerEmail}" đã được đăng ký.\n\n` +
+            `Bạn có muốn nhận Magic Link để đăng nhập không?\n\n` +
+            `(Click OK để gửi Magic Link đến email của bạn)`
+          );
+
+          if (useMagicLink) {
+            // ✅ AUTO SEND MAGIC LINK
+            const { sendMagicLinkReal } = await import("../services/api-real");
+            const magicResult = await sendMagicLinkReal(registerEmail);
+
+            if (magicResult.success) {
+              setShowEmailSent(true);
+              setError("");
+              toast.success("✅ Magic Link đã được gửi đến email của bạn!", {
+                description: "Vui lòng kiểm tra email và click vào link để đăng nhập."
+              });
+            } else {
+              setError(magicResult.message || "Không thể gửi Magic Link. Vui lòng thử lại.");
+            }
+          } else {
+            setError("Email đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.");
+          }
+        } else {
+          setError(result.message || t.auth.errors.sendFailed);
+        }
       }
     } catch (err) {
       setError(t.auth.errors.general);

@@ -22,6 +22,20 @@ interface ScoreResultProps {
   onSendReport?: () => void;
   isSubscribed?: boolean;
   isRecalculating?: boolean;
+  // ✅ NEW: Feature importance & recommendations from API
+  featureImportance?: {
+    groups?: {
+      transaction_activity?: number;
+      asset_value?: number;
+      wallet_age?: number;
+      token_diversity?: number;
+    };
+    top_factors?: Array<{
+      factor: string;
+      impact: string;
+    }>;
+  };
+  recommendations?: string[];
 }
 
 const getRating = (score: number): string => {
@@ -82,6 +96,9 @@ function ScoreResultComponent({
   onSendReport,
   isSubscribed = false,
   isRecalculating = false,
+  // ✅ NEW: Feature importance & recommendations from API
+  featureImportance,
+  recommendations,
 }: ScoreResultProps) {
   const { t } = useLanguage();
   const rating = useMemo(() => getRating(score), [score]);

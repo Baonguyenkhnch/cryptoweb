@@ -58,6 +58,43 @@ export interface WalletAnalysis {
     updatedAt?: string;
     walletTransactionsLast30d?: number;
     stablecoinInflow30d?: number;
+    // ✅ NEW: Feature importance & recommendations from API response
+    featureImportance?: {
+        groups?: {
+            transaction_activity?: number;
+            asset_value?: number;
+            wallet_age?: number;
+            token_diversity?: number;
+        };
+        top_factors?: Array<{
+            factor: string;
+            impact: string;
+        }>;
+    };
+    recommendations?: string[];
+    onchainMetrics?: {
+        wallet_age?: number;
+        transaction_count?: number;
+        total_assets?: number;
+        nft_holdings?: boolean;
+        dapp_connections?: number;
+        defi_loans_count?: number;
+        defi_total_borrowed_volume?: number;
+        defi_total_repaid_volume?: number;
+        defi_late_repayments_count?: number;
+        liquidation_events_count?: number;
+        avg_collateralization_ratio?: number;
+        stablecoin_inflow_30d?: number;
+    };
+    offchainMetrics?: {
+        income?: number;
+        credit_history?: number;
+        existing_debt?: number;
+        payment_history?: {
+            past_loans?: number;
+            late_payments?: number;
+        };
+    };
 }
 
 export interface CreditScoreData {
@@ -468,8 +505,8 @@ export const verifyMagicLink = async (
  */
 export const submitFeedback = async (feedback: {
     email?: string;
-    category: string;
-    message: string;
+    feature_name: string; // ✅ Changed from 'category' to match Swagger spec
+    description: string;  // ✅ Changed from 'message' to match Swagger spec
     rating?: number;
 }): Promise<{
     success: boolean;
@@ -479,7 +516,7 @@ export const submitFeedback = async (feedback: {
 
     try {
         // Validate inputs
-        if (!feedback.message || feedback.message.trim().length < 10) {
+        if (!feedback.description || feedback.description.trim().length < 10) {
             return {
                 success: false,
                 message: "Vui lòng nhập ít nhất 10 ký tự",
@@ -494,11 +531,9 @@ export const submitFeedback = async (feedback: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                feature_name: feedback.feature_name,
+                description: feedback.description.trim(),
                 email: feedback.email?.toLowerCase().trim() || "",
-                category: feedback.category,
-                message: feedback.message.trim(),
-                rating: feedback.rating || 0,
-                timestamp: new Date().toISOString(),
             }),
         });
 
@@ -612,8 +647,14 @@ export const getUserInfo = async (): Promise<{
 // =====================================================
 // THAY ĐỔI 2: HÀM ANALYZE WALLET - GỌI API THẬT
 // =====================================================
-export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalysis> => {
-    debugLog(`🔍 Analyzing wallet: ${walletAddress}`);
+export const analyzeWallet = async (
+    walletAddress: string,
+    options?: {
+        force_refresh?: boolean;
+        minimal?: boolean;
+    }
+): Promise<WalletAnalysis> => {
+    debugLog(`🔍 Analyzing wallet: ${walletAddress}`, options);
 
     try {
         // Validate wallet address format
@@ -621,8 +662,17 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
             throw new Error("Invalid wallet address format");
         }
 
-        // Build API URL
-        const url = `${API_BASE_URL}/api/credit-score/${walletAddress}`;
+        // Build API URL with query params
+        const queryParams = new URLSearchParams();
+        if (options?.force_refresh) {
+            queryParams.append('force_refresh', 'true');
+        }
+        if (options?.minimal) {
+            queryParams.append('minimal', 'true');
+        }
+
+        const queryString = queryParams.toString();
+        const url = `${API_BASE_URL}/api/credit-score/${walletAddress}${queryString ? `?${queryString}` : ''}`;
         debugLog(`📡 Calling API: ${url}`);
 
         // Call API với timeout 15 giây - Cân bằng giữa UX và backend processing
@@ -790,6 +840,11 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
         updatedAt: data.updated_at,
         walletTransactionsLast30d: data.wallet_transactions_last_30d,
         stablecoinInflow30d: data.stablecoin_inflow_30d,
+        // ✅ NEW: Feature importance & recommendations from API response
+        featureImportance: data.explanation?.feature_importance,
+        recommendations: data.recommendations || data.explanation?.recommendations,
+        onchainMetrics: data.onchain_metrics,
+        offchainMetrics: data.offchain_metrics,
     };
 
     debugLog(`✅ Mapped wallet analysis:`, walletAnalysis);

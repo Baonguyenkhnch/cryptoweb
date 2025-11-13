@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { CheckCircle2, Loader2, XCircle, ArrowRight } from "lucide-react";
-import { verifyMagicLink } from "../services/api-real";
+import { verifyMagicLink, verifyRegistration } from "../services/api-real";
 import type { UserProfile } from "../services/api-real";
 
 interface VerifyPageProps {
@@ -14,15 +14,67 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
     const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
     const [message, setMessage] = useState("");
     const [countdown, setCountdown] = useState(3);
+    const [debugInfo, setDebugInfo] = useState<string>(""); // ✅ ADD DEBUG INFO
+
+    // ✅ ALERT ON COMPONENT MOUNT
+    useEffect(() => {
+        alert(`🔍 VerifyPage MOUNTED!\n\nURL: ${window.location.href}\nHash: ${window.location.hash}`);
+    }, []);
 
     useEffect(() => {
-        // Parse token từ URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get("token");
+        // Parse token từ URL (support multiple formats)
+        let token: string | null = null;
+        let isRegistration = false; // ✅ Track if this is registration or login
+
+        // Format 1: #/verify?token=xxx OR #/verify-registration?token=xxx (hash routing with query)
+        const hash = window.location.hash;
+        if (hash.includes("?")) {
+            const hashParams = new URLSearchParams(hash.split("?")[1]);
+            // ✅ FIX: Try both lowercase and uppercase "Token"
+            token = hashParams.get("token") || hashParams.get("Token");
+            // ✅ Check if this is registration verification
+            isRegistration = hash.includes("/verify-registration");
+            console.log("🔍 Found token in hash:", token);
+            console.log("🔍 Is registration:", isRegistration);
+        }
+
+        // Format 2: ?token=xxx (regular query string)
+        if (!token) {
+            const urlParams = new URLSearchParams(window.location.search);
+            // ✅ FIX: Try both lowercase and uppercase "Token"
+            token = urlParams.get("token") || urlParams.get("Token");
+            console.log("🔍 Found token in query string:", token);
+        }
+
+        // Format 3: /verify?token=xxx OR /verify-registration?token=xxx (pathname without hash, redirect to hash)
+        if (!token && (window.location.pathname.includes("/verify") || window.location.pathname.includes("/verify-registration"))) {
+            const urlParams = new URLSearchParams(window.location.search);
+            // ✅ FIX: Try both lowercase and uppercase "Token"
+            token = urlParams.get("token") || urlParams.get("Token");
+            isRegistration = window.location.pathname.includes("/verify-registration");
+            if (token) {
+                console.log("🔍 Found token in pathname, redirecting to hash...");
+                // Redirect to hash-based URL
+                const verifyPath = isRegistration ? "/verify-registration" : "/verify";
+                window.location.hash = `#${verifyPath}?token=${token}`;
+                return;
+            }
+        }
+
+        // ✅ SET DEBUG INFO
+        setDebugInfo(`Token: ${token?.substring(0, 20)}...\nURL: ${window.location.href}\nType: ${isRegistration ? 'Registration' : 'Magic Link'}`);
+
+        console.log("🔍 Final parsed token:", token);
+        console.log("🔍 Verification type:", isRegistration ? "Registration" : "Magic Link");
+        console.log("🔍 Full URL:", window.location.href);
+        console.log("🔍 Hash:", window.location.hash);
+        console.log("🔍 Search:", window.location.search);
+        console.log("🔍 Pathname:", window.location.pathname);
 
         if (!token) {
             setStatus("error");
             setMessage("Token không hợp lệ hoặc đã hết hạn.");
+            setDebugInfo("❌ Token not found in URL");
             return;
         }
 
@@ -30,7 +82,20 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
         const verify = async () => {
             try {
                 console.log("🔐 Verifying token:", token);
-                const result = await verifyMagicLink(token);
+                console.log("🔐 Using API:", isRegistration ? "/api/verify-registration" : "/api/verify");
+
+                // ✅ FORCE ALERT FOR DEBUGGING
+                alert(`🔍 DEBUG: Calling ${isRegistration ? 'REGISTRATION' : 'MAGIC LINK'} API with token: ${token?.substring(0, 30)}...`);
+
+                // ✅ CALL CORRECT API BASED ON URL PATH
+                const result = isRegistration
+                    ? await verifyRegistration(token)
+                    : await verifyMagicLink(token);
+
+                console.log("🔍 Verify API Response:", result); // ✅ ADD DETAILED LOGGING
+
+                // ✅ FORCE ALERT WITH RESULT
+                alert(`🔍 API Response: ${JSON.stringify(result).substring(0, 200)}`);
 
                 if (result.success && result.user) {
                     // Lưu auth token
@@ -54,12 +119,24 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     }, 1000);
                 } else {
                     setStatus("error");
-                    setMessage(result.message || "Xác thực thất bại. Vui lòng thử lại.");
+                    // ✅ SHOW DETAILED ERROR MESSAGE
+                    const errorMsg = result.message || "Xác thực thất bại. Vui lòng thử lại.";
+                    console.error("❌ Verify failed:", errorMsg);
+                    console.error("❌ Full response:", result);
+                    setMessage(errorMsg);
+                    setDebugInfo(`❌ Error: ${errorMsg}\n\nAPI Response: ${JSON.stringify(result, null, 2)}`);
                 }
             } catch (error) {
-                console.error("Verify error:", error);
+                console.error("❌ Verify error:", error);
+                // ✅ SHOW MORE DETAILS
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                console.error("❌ Error details:", errorMsg);
                 setStatus("error");
-                setMessage("Có lỗi xảy ra khi xác thực. Vui lòng thử lại.");
+                setMessage(`Có lỗi xảy ra: ${errorMsg}`);
+                setDebugInfo(`❌ Exception: ${errorMsg}`);
+
+                // ✅ FORCE ALERT
+                alert(`❌ ERROR: ${errorMsg}`);
             }
         };
 
@@ -113,6 +190,15 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     {/* Error - Back to login */}
                     {status === "error" && (
                         <div className="flex flex-col gap-3">
+                            {/* ✅ SHOW DEBUG INFO */}
+                            {debugInfo && (
+                                <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 text-left">
+                                    <p className="text-xs text-red-300 font-mono whitespace-pre-wrap break-all">
+                                        {debugInfo}
+                                    </p>
+                                </div>
+                            )}
+
                             <Button
                                 onClick={onBackToLogin}
                                 className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white"
