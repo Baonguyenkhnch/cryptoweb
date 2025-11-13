@@ -18,7 +18,7 @@ import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { LoadingProgress } from "./components/LoadingProgress";
 import { ErrorDialog } from "./components/ErrorDialog";
 import { QuotaWarningBanner } from "./components/QuotaWarningBanner";
-import { VerifyPage } from "./pages/Verify"; // ✅ Import VerifyPage
+import { VerifyPage } from "./pages/Verify";
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
@@ -27,7 +27,6 @@ import {
   Wallet,
   TrendingUp,
   Shield,
-
   Star,
   Mail,
   Lock,
@@ -559,7 +558,8 @@ export default function App() {
       </div>
 
       {/* Top Left - Logo */}
-      <div className="absolute top-2.5 md:top-4 left-4 md:left-6 z-20">
+      <div className="absolute top-2.5 md:top-4 left-8 md:left-10
+ z-20">
         <div className="relative group cursor-pointer">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative w-9 h-9 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
