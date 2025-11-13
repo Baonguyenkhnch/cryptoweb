@@ -3,9 +3,6 @@
 // =====================================================
 // 
 // CÁCH SỬ DỤNG:
-// 1. Đổi tên file này thành api.ts (backup file cũ trước)
-// 2. Hoặc copy nội dung này vào file api.ts
-// 3. Test bằng test-api.html
 //
 // =====================================================
 

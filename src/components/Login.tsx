@@ -253,32 +253,10 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                     </Alert>
                   )}
 
-                  {/* Info Banner - Compact */}
-                  <div className="p-1.5 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 border border-purple-500/20 rounded-lg">
-                    <div className="text-[10px] text-purple-300 mb-0.5 leading-tight">
-                      {t.auth.benefits}
-                    </div>
-                    <ul className="space-y-0 text-[10px] md:text-xs text-gray-300 leading-tight">
-                      <li className="flex items-start gap-1">
-                        <span className="text-green-400">✓</span>
-                        <span>{t.auth.benefitNoPassword}</span>
-                      </li>
-                      <li className="flex items-start gap-1">
-                        <span className="text-green-400">✓</span>
-                        <span>{t.auth.benefit1}</span>
-                      </li>
-                      <li className="flex items-start gap-1">
-                        <span className="text-green-400">✓</span>
-                        <span>{t.auth.benefit3}</span>
-                      </li>
-                    </ul>
-                  </div>
-
                   <form onSubmit={handleSendMagicLink} className="space-y-1.5">
                     {/* Email */}
                     <div className="space-y-0.5">
                       <Label htmlFor="register-email" className="text-gray-300 flex items-center gap-1 text-[10px] md:text-xs">
-                        <Mail className="w-3 h-3 text-cyan-400" />
                         {t.auth.email}
                       </Label>
                       <Input
@@ -302,7 +280,6 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                     {/* Wallet */}
                     <div className="space-y-0.5">
                       <Label htmlFor="register-wallet" className="text-gray-300 flex items-center gap-1 text-[10px] md:text-xs">
-                        <Wallet className="w-3 h-3 text-teal-400" />
                         {t.auth.walletAddress}
                       </Label>
                       <div className="flex gap-1.5">
