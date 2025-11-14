@@ -153,8 +153,8 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
       setIsEditing(false);
       onUpdateProfile?.(updatedUser);
 
-      // Hide success message after 3s
-      setTimeout(() => setShowSuccess(false), 3000);
+      // Hide success message after 2s (shorter duration)
+      setTimeout(() => setShowSuccess(false), 2000);
     } catch (error) {
       setErrorMessage(t.profile.messages.updateError);
       setShowError(true);
@@ -228,14 +228,9 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
           </div>
         </div>
 
-        {/* Alerts */}
-        {showSuccess && (
-          <Alert className="mb-6 bg-green-500/10 border-green-500/30 text-green-400">
-            <Check className="w-4 h-4" />
-            <AlertDescription>{t.profile.success}</AlertDescription>
-          </Alert>
-        )}
+        {/* REMOVED: Large Alert notifications - Now using inline verification */}
 
+        {/* Error Alert - Keep as fallback for critical errors */}
         {showError && (
           <Alert className="mb-6 bg-red-500/10 border-red-500/30 text-red-400">
             <X className="w-4 h-4" />
@@ -433,33 +428,43 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
 
                     {/* Action Buttons */}
                     {isEditing && (
-                      <div className="flex gap-3 pt-4">
-                        <Button
-                          onClick={handleSave}
-                          disabled={isSaving}
-                          className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-                        >
-                          {isSaving ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                              {t.profile.saving}
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-4 h-4 mr-2" />
-                              {t.profile.save}
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          onClick={handleCancel}
-                          disabled={isSaving}
-                          variant="outline"
-                          className="flex-1 bg-slate-900/50 border-red-500/30 text-red-400 hover:bg-red-500/20"
-                        >
-                          <X className="w-4 h-4 mr-2" />
-                          {t.navigation.cancel || "Hủy"}
-                        </Button>
+                      <div className="space-y-3 pt-4">
+                        <div className="flex gap-3">
+                          <Button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
+                          >
+                            {isSaving ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                                {t.profile.saving}
+                              </>
+                            ) : (
+                              <>
+                                <Save className="w-4 h-4 mr-2" />
+                                {t.profile.save}
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={handleCancel}
+                            disabled={isSaving}
+                            variant="outline"
+                            className="flex-1 bg-slate-900/50 border-red-500/30 text-red-400 hover:bg-red-500/20"
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            {t.navigation.cancel || "Hủy"}
+                          </Button>
+                        </div>
+
+                        {/* Inline Success Message - Compact verification */}
+                        {showSuccess && (
+                          <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                            <Check className="w-4 h-4" />
+                            <span>✓ Đã lưu thành công</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </TabsContent>
