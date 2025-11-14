@@ -47,14 +47,18 @@ export function ResultsSummary({
 
   // Helper function to format assets consistently
   const formatAssets = (value: number): string => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(2)}M`;
-    } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(1)}k`;
-    } else {
-      return `$${value.toFixed(2)}`;
+    if (value >= 1_000_000) {
+      // triệu
+      return `$${(value / 1_000_000).toFixed(2)}M`;
     }
+    if (value >= 1_000) {
+      // nghìn
+      return `$${(value / 1_000).toFixed(1)}K`;
+    }
+    return `$${value}`;
   };
+
+
 
   // Get rating badge info
   const getRatingInfo = (score: number) => {
@@ -499,8 +503,8 @@ export function ResultsSummary({
                   <div
                     key={index}
                     className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isCurrentRating
-                        ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
-                        : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
+                      ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
+                      : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
                       }`}
                   >
                     <div className="flex items-center gap-3">

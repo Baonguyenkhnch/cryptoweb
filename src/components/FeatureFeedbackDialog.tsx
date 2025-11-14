@@ -172,7 +172,7 @@ export function FeatureFeedbackDialog({
                     className="bg-slate-900/50 border-purple-500/30 focus:border-purple-400 text-white placeholder:text-gray-500 h-10 text-sm"
                   />
                   <p className="text-xs text-gray-400">
-                    {/* Chúng tôi sẽ liên hệ với bạn khi tính năng đề xuất đã được triển khai */}
+                    Chúng tôi sẽ liên hệ với bạn khi tính năng đề xuất đã được triển khai
                   </p>
                 </div>
 

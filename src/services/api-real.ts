@@ -3,6 +3,9 @@
 // =====================================================
 // 
 // CÁCH SỬ DỤNG:
+// 1. Đổi tên file này thành api.ts (backup file cũ trước)
+// 2. Hoặc copy nội dung này vào file api.ts
+// 3. Test bằng test-api.html
 //
 // =====================================================
 
@@ -237,9 +240,52 @@ export const registerUser = async (
 
         if (!response.ok) {
             debugLog(`❌ Register error: ${response.status}`, data);
+
+            // ✅ Handle specific error cases
+            const errorMessage = data.message || data.error || "";
+
+            // Check if email already exists
+            if (response.status === 400 || response.status === 409 || response.status === 500) {
+                const lowerMsg = errorMessage.toLowerCase();
+
+                // Check for duplicate email patterns
+                if (
+                    lowerMsg.includes("email") && (
+                        lowerMsg.includes("already") ||
+                        lowerMsg.includes("exists") ||
+                        lowerMsg.includes("đã tồn tại") ||
+                        lowerMsg.includes("đã được đăng ký") ||
+                        lowerMsg.includes("trùng") ||
+                        lowerMsg.includes("duplicate")
+                    )
+                ) {
+                    return {
+                        success: false,
+                        message: "Tài khoản này đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.",
+                    };
+                }
+
+                // Check for duplicate wallet patterns
+                if (
+                    lowerMsg.includes("wallet") && (
+                        lowerMsg.includes("already") ||
+                        lowerMsg.includes("exists") ||
+                        lowerMsg.includes("đã tồn tại") ||
+                        lowerMsg.includes("đã được đăng ký") ||
+                        lowerMsg.includes("trùng") ||
+                        lowerMsg.includes("duplicate")
+                    )
+                ) {
+                    return {
+                        success: false,
+                        message: "Địa chỉ ví này đã được đăng ký. Vui lòng sử dụng ví khác.",
+                    };
+                }
+            }
+
             return {
                 success: false,
-                message: data.message || data.error || `HTTP ${response.status}`,
+                message: errorMessage || `Lỗi đăng ký (${response.status}). Vui lòng thử lại.`,
             };
         }
 

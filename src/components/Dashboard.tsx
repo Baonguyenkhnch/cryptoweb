@@ -5,6 +5,7 @@ import { Badge } from "./ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { ScoreResult } from "./ScoreResult";
 import { useLanguage } from "../services/LanguageContext";
+import { formatCurrency } from "../utils/format";
 import {
   Wallet,
   TrendingUp,
@@ -113,16 +114,7 @@ export function Dashboard({
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  // Helper function to format assets
-  const formatAssets = (value: number): string => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(2)}M`;
-    } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(1)}k`;
-    } else {
-      return `$${value.toFixed(2)}`;
-    }
-  };
+  // REMOVED: formatAssets function - now using formatCurrency from utils/format.ts
 
   // ============================================
   // LIFECYCLE & DATA LOADING
@@ -276,7 +268,7 @@ export function Dashboard({
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-4 text-center">
               <Wallet className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
-              <div className="text-2xl text-emerald-400 mb-1">{formatAssets(totalAssets)}</div>
+              <div className="text-2xl text-emerald-400 mb-1">{formatCurrency(totalAssets)}</div>
               <div className="text-gray-400 text-xs">{t.statsLabels.assets}</div>
             </CardContent>
           </Card>

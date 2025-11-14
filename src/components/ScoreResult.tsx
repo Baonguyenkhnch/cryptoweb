@@ -6,6 +6,7 @@ import { Crown, Trophy, Award, Star, TrendingUp, Wallet, Activity } from "lucide
 import type { TokenBalance, Transaction } from "../services/api-real";
 import { ActionButtons } from "./ActionButtons";
 import { useLanguage } from "../services/LanguageContext";
+import { formatCurrency as formatCurrencyUtil, formatLargeNumber } from "../utils/format";
 
 interface ScoreResultProps {
   score: number;
@@ -131,12 +132,7 @@ function ScoreResultComponent({
     }, []).reverse(), [recentTransactions]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+    return formatCurrencyUtil(value);
   };
 
   const formatDate = (dateString: string) => {
