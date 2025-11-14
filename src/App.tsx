@@ -625,8 +625,8 @@ export default function App() {
         className={`relative z-10 container mx-auto px-3 md:px-4 ${!showResults ? "h-full flex flex-col justify-center py-4 md:py-8" : "py-3 md:py-4"}`}
       >
         {!showResults ? (
-          /* Input Form - Center Focus */
-          <div className="max-w-[28rem] mx-auto w-full space-y-2.5 md:space-y-3 px-2">
+          /* Input Form - Center Focus - Subtle Responsive Scaling */
+          <div className="max-w-[28rem] md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto w-full space-y-2.5 md:space-y-3 px-2">
             {/* Title - Center */}
             <div className="text-center animate-in fade-in-0 duration-1000 pt-12 md:pt-0">
               <h1 className="text-[1.65rem] leading-[1.2] md:text-[2.75rem] mb-2.5 md:mb-3.5 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight pb-0.5 px-2 md:px-4 md:whitespace-nowrap">
@@ -814,8 +814,8 @@ export default function App() {
             </Card>
           </div>
         ) : (
-          /* Results Section - Can scroll */
-          <div className="space-y-6 md:space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
+          /* Results Section - Responsive Max Width for Large Screens */
+          <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pl-16 md:pl-20 pr-4">
               <Button
                 onClick={handleReset}

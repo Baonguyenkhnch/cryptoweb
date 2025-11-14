@@ -25,7 +25,7 @@ import { formatWalletAddress } from "../services/api-real";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
 import logoIcon from "../components/images/logonhap.jpg";
-import logoFull from "../components/images/logodash.jpg"
+import logoFull from "../components/images/logodash.jpg";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -204,19 +204,14 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
-                    onClick={() => handleNavigate("dashboard")}
-                    className="cursor-pointer text-gray-300 hover:text-blue-400 hover:bg-blue-500/10 focus:bg-blue-500/10 focus:text-blue-400"
+                    onClick={() => onNavigate("dashboard")}
+                    className="cursor-pointer text-gray-300 hover:text-teal-400 hover:bg-teal-500/10 focus:bg-teal-500/10 focus:text-teal-400"
                   >
                     <TrendingUp className="w-4 h-4 mr-2" />
                     My Dashboard
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem
-                    className="cursor-pointer text-gray-300 hover:text-teal-400 hover:bg-teal-500/10 focus:bg-teal-500/10 focus:text-teal-400"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Account Settings
-                  </DropdownMenuItem>
+                  {/* REMOVED: Account Settings - Not implemented */}
 
                   <DropdownMenuSeparator className="bg-slate-700/50" />
 
