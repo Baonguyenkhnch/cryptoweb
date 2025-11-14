@@ -76,8 +76,15 @@ export function EmailLoginDialog({
       const errorMsg = err instanceof Error ? err.message : t.emailLogin.errors.generalError;
       console.error("❌ Lỗi gửi magic link:", errorMsg);
 
+      // ✅ FIX: Check for email already exists
+      if (errorMsg.includes("already exists") ||
+        errorMsg.includes("đã tồn tại") ||
+        errorMsg.includes("already registered") ||
+        errorMsg.includes("500")) {
+        setError("📧 Email này đã được đăng ký. Vui lòng đăng nhập thay vì đăng ký mới.");
+      }
       // Nếu backend offline, hiển thị demo mode
-      if (errorMsg.includes('DEMO')) {
+      else if (errorMsg.includes('DEMO')) {
         setShowSuccess(true);
       } else {
         setError(errorMsg);

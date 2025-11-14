@@ -111,6 +111,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
           errorMsg.includes("đã được lưu") ||
           errorMsg.includes("already registered") ||
           errorMsg.includes("already exists") ||
+          errorMsg.includes("500") || // ✅ ADD: Catch HTTP 500 errors
           (errorMsg.includes("email") && (
             errorMsg.includes("exist") ||
             errorMsg.includes("được lưu") ||
@@ -119,32 +120,9 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
         );
 
         if (isEmailExists) {
-          // ✅ SUGGEST MAGIC LINK LOGIN
-          const useMagicLink = window.confirm(
-            `Email "${registerEmail}" đã được đăng ký.\n\n` +
-            `Bạn có muốn nhận Magic Link để đăng nhập không?\n\n` +
-            `(Click OK để gửi Magic Link đến email của bạn)`
-          );
-
-          if (useMagicLink) {
-            // ✅ AUTO SEND MAGIC LINK
-            const { sendMagicLinkReal } = await import("../services/api-real");
-            const magicResult = await sendMagicLinkReal(registerEmail);
-
-            if (magicResult.success) {
-              setShowEmailSent(true);
-              setError("");
-              toast.success("✅ Magic Link đã được gửi đến email của bạn!", {
-                description: "Vui lòng kiểm tra email và click vào link để đăng nhập."
-              });
-            } else {
-              setError(magicResult.message || "Không thể gửi Magic Link. Vui lòng thử lại.");
-            }
-          } else {
-            setError("Email đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.");
-          }
+          setError("📧 Email này đã được đăng ký. Vui lòng đăng nhập thay vì đăng ký mới.");
         } else {
-          setError(result.message || t.auth.errors.sendFailed);
+          setError(result.message || "Lỗi đăng ký. Vui lòng thử lại.");
         }
       }
     } catch (err) {

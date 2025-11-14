@@ -58,7 +58,19 @@ export function QuickRegisterDialog({
             }
         } catch (error) {
             console.error("Lỗi khi gửi magic link:", error);
-            setError("Có lỗi xảy ra. Vui lòng thử lại.");
+
+            // ✅ FIX: Check for specific error messages
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            // Check if email already exists
+            if (errorMessage.includes("already exists") ||
+                errorMessage.includes("đã tồn tại") ||
+                errorMessage.includes("already registered") ||
+                errorMessage.includes("500")) {
+                setError("📧 Email này đã được đăng ký. Vui lòng đăng nhập thay vì đăng ký mới.");
+            } else {
+                setError("Có lỗi xảy ra. Vui lòng thử lại.");
+            }
         } finally {
             setIsLoading(false);
         }
