@@ -46,6 +46,7 @@ import type { UserProfile } from "../services/api-real";
 import { updateUserProfile, formatWalletAddress } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 import { copyToClipboard } from "./ui/utils";
+import { EmailChangeDialog } from "./EmailChangeDialog"; // ✅ NEW
 
 // ============================================
 // TYPES
@@ -93,6 +94,10 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
   const [errorMessage, setErrorMessage] = useState("");
   const [copiedWallet, setCopiedWallet] = useState(false);
 
+  // ✅ NEW: Email change verification
+  const [showEmailChangeDialog, setShowEmailChangeDialog] = useState(false);
+  const [pendingEmailChange, setPendingEmailChange] = useState("");
+
   // ============================================
   // HANDLERS
   // ============================================
@@ -139,13 +144,24 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
       return;
     }
 
+    // ✅ CHECK: Email đã thay đổi? → Yêu cầu verification
+    const emailChanged = formData.email !== user.email;
+
+    if (emailChanged) {
+      console.log("📧 Email change detected! Opening verification dialog...");
+      setPendingEmailChange(formData.email);
+      setShowEmailChangeDialog(true);
+      return; // Stop here - Wait for verification
+    }
+
+    // ✅ NO EMAIL CHANGE: Save name only
     setIsSaving(true);
 
     try {
-      // Gọi API để update profile
+      // Gọi API để update profile (chỉ name vì email không đổi)
       const updatedUser = await updateUserProfile(user.id, {
         name: formData.name,
-        email: formData.email,
+        email: user.email, // Keep original email
       });
 
       // Success
@@ -159,6 +175,35 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
       setErrorMessage(t.profile.messages.updateError);
       setShowError(true);
       console.error("Update profile error:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ✅ NEW: Handle email verification success
+  const handleEmailVerified = async () => {
+    console.log("✅ Email verified! Updating profile with new email...");
+    setIsSaving(true);
+
+    try {
+      // Now update with the new verified email
+      const updatedUser = await updateUserProfile(user.id, {
+        name: formData.name,
+        email: pendingEmailChange,
+      });
+
+      // Success
+      setShowSuccess(true);
+      setIsEditing(false);
+      setPendingEmailChange("");
+      onUpdateProfile?.(updatedUser);
+
+      // Hide success message after 2s
+      setTimeout(() => setShowSuccess(false), 2000);
+    } catch (error) {
+      setErrorMessage(t.profile.messages.updateError);
+      setShowError(true);
+      console.error("Update profile with new email error:", error);
     } finally {
       setIsSaving(false);
     }
@@ -531,6 +576,15 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
             </Card>
           </div>
         </div>
+
+        {/* ✅ Email Change Verification Dialog */}
+        <EmailChangeDialog
+          open={showEmailChangeDialog}
+          onOpenChange={setShowEmailChangeDialog}
+          currentEmail={user.email}
+          newEmail={pendingEmailChange}
+          onVerifySuccess={handleEmailVerified}
+        />
       </div>
     </div>
   );
