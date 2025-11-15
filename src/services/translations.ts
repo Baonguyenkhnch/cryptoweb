@@ -13,13 +13,13 @@ export const translations = {
 
     // Calculator Page
     calculator: {
-      title: "Tính Điểm Ví Crypto",
+      title: "Tính Điểm Tín Dụng Crypto",
       subtitle: "Đánh giá độ tin cậy của ví blockchain",
       noData: "Không có dữ liệu",
       input: {
-        title: "Nhập Địa Chỉ Ví ",
+        title: "Nhập Địa Chỉ Ví hoặc Email",
         subtitle: "Kết nối ví của bạn để khám phá tiềm năng tín dụng",
-        label: "Địa Chỉ Ví Của Bạn : ",
+        label: "Địa Chỉ Ví hoặc Email",
         // placeholder: "0x742d... hoặc email@example.com",
         emailSearching: "Đang tìm ví từ email...",
         emailNotFound: "Email chưa đăng ký hoặc chưa liên kết ví",
@@ -143,6 +143,7 @@ export const translations = {
       },
       badges: {
         member: "AAA Member",
+        autoUpdate: "Tự động", // ✅ NEW: Auto-update badge for date fields
       },
     },
 
@@ -159,7 +160,7 @@ export const translations = {
       subtitle: "Đăng nhập để quản lý điểm tín dụng của bạn",
       registerTitle: "Đăng Ký Miễn Phí",
       registerSubtitle: "Chỉ mất 30 giây • Hoàn toàn phi tập trung",
-      passwordlessSubtitle: "Đăng nhập không cần mật khẩu - Dùng Email Magic Link ",
+      passwordlessSubtitle: "Đăng nhập không cần mật khẩu - Dùng Email Magic Link ✨",
       createAccount: "Tạo Tài Khoản",
       loginButton: "Đăng Nhập",
       registerButton: "Tạo Tài Khoản",
@@ -194,7 +195,7 @@ export const translations = {
         openEmail: "Mở hộp thư",
         findEmail: "Tìm email từ",
         clickButton: "Click vào nút",
-        autoRedirect: "Tự động chuyển đến Dashboard ",
+        autoRedirect: "Tự động chuyển đến Dashboard ✨",
         confirmButton: "\"Xác Nhận Email\"",
         demoMode: "🎨",
         demoLabel: "Demo Mode:",
@@ -329,7 +330,7 @@ export const translations = {
         title: "Đăng Ký Thành Công!",
         description: "Bạn sẽ nhận thông báo qua email:",
         walletSaved:
-          "Ví của bạn đã được lưu. Bạn sẽ được thông báo khi có thay đổi quan trọng.",
+          "Ví của bạn ã được lưu. Bạn sẽ được thông báo khi có thay đổi quan trọng.",
       },
       errors: {
         enterEmail: "Vui lòng nhập email hợp lệ",
@@ -378,10 +379,10 @@ export const translations = {
       tokenDiversity: "Đa Dạng Token",
       typesOfTokens: "Loại Token",
       totalAssets: "Tổng Tài Sản",
-      portfolioValue: "Giá Trị Danh Mục",
+      portfolioValue: "Tổng Tài Sản", // ✅ CHANGED: Was "Giá Trị Danh Mục"
       scoreTrend: "Xu Hướng Điểm",
       last30Days: "30 ngày qua",
-      tokenDistribution: "Phân Bổ Token",
+      tokenDistribution: "Phn Bổ Token",
       portfolioComposition: "Cấu Thành Danh Mục",
       activityTimeline: "Dòng Thời Gian Hoạt Động",
       recentTransactions: "Giao Dịch Gần Đây",
@@ -438,7 +439,7 @@ export const translations = {
         walletHistory: "Tuổi và lịch sử hoạt động của ví",
         transactionFreq: "Tần suất và khối lượng giao dịch",
         assetDiversity: "Đa dạng hóa tài sản token",
-        portfolioValue: "Tổng giá trị danh mục đầu tư",
+        portfolioValue: "Tổng giá trị tài sản", // ✅ CHANGED: Was "Tổng giá trị danh mục đầu tư"
       },
       weights: {
         walletHistory: "30%",
@@ -476,7 +477,7 @@ export const translations = {
         notification: "Nhận thông báo khi tính năng ra mắt",
       },
       buttons: {
-        cancel: "Hủy",
+        cancel: "Hy",
         submit: "Gửi Đề Xuất",
         submitting: "Đang Gửi...",
       },
@@ -550,9 +551,9 @@ export const translations = {
       subtitle: "Blockchain wallet reliability assessment",
       noData: "No data available",
       input: {
-        title: "Enter Wallet Address ",
+        title: "Enter Wallet Address or Email",
         subtitle: "Connect your wallet to discover credit potential",
-        label: "Wallet Address : ",
+        label: "Wallet Address or Email",
         // placeholder: "0x742d... or email@example.com",
         emailSearching: "Searching wallet from email...",
         emailNotFound: "Email not registered or not linked to wallet",
@@ -676,6 +677,7 @@ export const translations = {
       },
       badges: {
         member: "AAA Member",
+        autoUpdate: "Auto-update", // ✅ NEW: Auto-update badge for date fields
       },
     },
 
@@ -692,7 +694,7 @@ export const translations = {
       subtitle: "Login to manage your credit score",
       registerTitle: "Free Registration",
       registerSubtitle: "Takes only 30 seconds • Fully decentralized",
-      passwordlessSubtitle: "Passwordless Login - Using Email Magic Link ",
+      passwordlessSubtitle: "Passwordless Login - Using Email Magic Link ✨",
       createAccount: "Create Account",
       loginButton: "Login",
       registerButton: "Create Account",
@@ -910,7 +912,7 @@ export const translations = {
       tokenDiversity: "Token Diversity",
       typesOfTokens: "Token Types",
       totalAssets: "Total Assets",
-      portfolioValue: "Portfolio Value",
+      portfolioValue: "Total Assets", // ✅ CHANGED: Was "Portfolio Value"
       scoreTrend: "Score Trend",
       last30Days: "Last 30 days",
       tokenDistribution: "Token Distribution",

@@ -454,7 +454,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           <Calendar className="w-4 h-4 text-teal-400" />
                           {t.profile.fields.createdAt}
                         </Label>
-                        <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 text-gray-300">
+                        <div className="p-3 bg-slate-900/30 rounded-lg border border-slate-700/30 text-gray-400 cursor-not-allowed">
                           {formatDate(user.createdAt)}
                         </div>
                       </div>
@@ -465,7 +465,7 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
                           <Clock className="w-4 h-4 text-purple-400" />
                           {t.profile.fields.lastLogin}
                         </Label>
-                        <div className="p-3 bg-slate-900/50 rounded-lg border border-slate-700/50 text-gray-300">
+                        <div className="p-3 bg-slate-900/30 rounded-lg border border-slate-700/30 text-gray-400 cursor-not-allowed">
                           {formatDate(user.lastLogin)}
                         </div>
                       </div>
