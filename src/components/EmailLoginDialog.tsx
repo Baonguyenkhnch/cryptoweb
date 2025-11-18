@@ -269,32 +269,12 @@ export function EmailLoginDialog({
               </div>
             </div>
 
-            {/* DEMO: Simulate magic link click */}
-            <div className="space-y-2">
-              <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-yellow-400 mb-0.5">
-                  <span>⚡</span>
-                  <span>{t.emailLogin.success.demoMode}</span>
-                </div>
-                <p className="text-xs text-gray-400">
-                  {t.emailLogin.success.demoDescription}
-                </p>
-              </div>
-
-              <Button
-                onClick={handleMagicLinkClick}
-                className="w-full h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-500/30"
-              >
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{t.emailLogin.success.simulateClick}</span>
-                </div>
-              </Button>
-
+            {/* Close button only */}
+            <div className="pt-2">
               <Button
                 onClick={handleClose}
                 variant="outline"
-                className="w-full h-9 bg-slate-700/30 border-slate-600 text-gray-300 hover:bg-slate-700/50"
+                className="w-full h-10 bg-slate-700/30 border-slate-600 text-gray-300 hover:bg-slate-700/50"
               >
                 {t.emailLogin.success.close}
               </Button>
