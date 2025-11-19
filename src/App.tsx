@@ -242,7 +242,11 @@ export default function App() {
         const { getUserInfo } = await import("./services/api-real");
         const userInfoResult = await getUserInfo();
 
+        console.log("📊 getUserInfo result:", userInfoResult); // ✅ DEBUG
+
         if (userInfoResult.success && userInfoResult.user) {
+          console.log("✅ User data from DB:", userInfoResult.user); // ✅ DEBUG
+
           // Map user-info data to WalletAnalysis format
           const cachedData = {
             score: userInfoResult.user.credit_score || 0,
@@ -261,20 +265,27 @@ export default function App() {
 
           // ✅ SAVE TO WALLET CACHE for public Calculator
           // This allows Calculator to show same data after logout
-          const cacheKey = `wallet_cache_${userInfoResult.user.wallet_address.toLowerCase()}`;
-          const cacheData = {
-            data: cachedData,
-            timestamp: Date.now(),
-          };
+          const walletAddr = userInfoResult.user.wallet_address;
 
-          try {
-            localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-            console.log(`💾 Saved user data to wallet cache: ${cacheKey}`);
-          } catch (e) {
-            console.warn("⚠️ Failed to save wallet cache:", e);
+          if (walletAddr) {
+            const cacheKey = `wallet_cache_${walletAddr.toLowerCase()}`;
+            const cacheData = {
+              data: cachedData,
+              timestamp: Date.now(),
+            };
+
+            try {
+              localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+              console.log(`💾 Saved user data to wallet cache: ${cacheKey}`);
+              console.log(`💾 Cache data:`, cacheData); // ✅ DEBUG
+            } catch (e) {
+              console.warn("⚠️ Failed to save wallet cache:", e);
+            }
+          } else {
+            console.error("❌ No wallet_address in user data - cannot save cache!");
           }
         } else {
-          console.warn("⚠️ getUserInfo failed for returning user");
+          console.warn("⚠️ getUserInfo failed for returning user:", userInfoResult);
         }
       }
     } catch (error) {
