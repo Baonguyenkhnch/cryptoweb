@@ -185,14 +185,22 @@ export default function App() {
     };
     localStorage.setItem("currentUser", JSON.stringify(minimalUser));
 
-    // ✅ CHECK lastLogin từ user object (KHÔNG cần gọi getUserInfo nữa!)
+    // ✅ CHECK lastLogin - Backend sets lastLogin immediately, so we check if it's recent
     try {
       setIsLoading(true);
 
       console.log("👤 User Info:", user);
       console.log("🕐 Last Login:", user.lastLogin);
+      console.log("📍 Type of lastLogin:", typeof user.lastLogin);
 
-      if (user.lastLogin === null) {
+      // ✅ NEW LOGIC: Check if last_login was set within the last 2 minutes (first login)
+      const isFirstLogin = user.lastLogin &&
+        (Date.now() - new Date(user.lastLogin).getTime()) < 120000; // 2 minutes = 120000ms
+
+      console.log("🔍 Is First Login (within 2 min)?:", isFirstLogin);
+      console.log("⏰ Time since last login (ms):", user.lastLogin ? Date.now() - new Date(user.lastLogin).getTime() : 'N/A');
+
+      if (!user.lastLogin || isFirstLogin) {
         // ✅ BƯỚC 3: First login - Kích hoạt tính điểm onchain
         console.log("🎉 First time login! Triggering credit score calculation...");
 
@@ -204,6 +212,20 @@ export default function App() {
             const onchainData = await analyzeWallet(user.walletAddress);
             setWalletData(onchainData);
             console.log("✅ Onchain data loaded:", onchainData);
+
+            // ✅ SAVE TO WALLET CACHE for public Calculator
+            const cacheKey = `wallet_cache_${user.walletAddress.toLowerCase()}`;
+            const cacheData = {
+              data: onchainData,
+              timestamp: Date.now(),
+            };
+
+            try {
+              localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+              console.log(`💾 Saved onchain data to wallet cache: ${cacheKey}`);
+            } catch (e) {
+              console.warn("⚠️ Failed to save wallet cache:", e);
+            }
 
             alert(
               "🎉 Đăng ký thành công!\n\n" +
