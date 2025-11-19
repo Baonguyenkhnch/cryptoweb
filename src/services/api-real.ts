@@ -8,7 +8,6 @@
 // 3. Test bằng test-api.html
 //
 // =====================================================
-import axios from "axios";
 
 // Giữ nguyên các interfaces với các field mở rộng
 export interface TokenBalance {
@@ -17,6 +16,7 @@ export interface TokenBalance {
     value: number;
     percentage: number;
     token_address?: string;
+    name?: string;
     logo?: string;
     decimals?: number;
 }
@@ -343,10 +343,9 @@ export const verifyRegistration = async (
 ): Promise<{
     success: boolean;
     message: string;
-    user?: {
-        email: string;
-        wallet_address: string;
-    };
+    user?: UserProfile; // ← Changed to full UserProfile
+    sessionToken?: string; // ← ADD sessionToken
+    authToken?: string; // ← Alias for compatibility
 }> => {
     debugLog(`🔍 Verifying registration token: ${token}`);
 
@@ -385,12 +384,21 @@ export const verifyRegistration = async (
             // Clean up
             localStorage.removeItem("demo_pending_user");
 
+            // ✅ Return full UserProfile for DEMO
+            const mockSessionToken = `demo_session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
             return {
                 success: true,
                 message: "🎨 DEMO MODE: Xác thực thành công!",
+                sessionToken: mockSessionToken,
+                authToken: mockSessionToken,
                 user: {
+                    id: `demo_${Date.now()}`,
                     email: pendingUser.email,
-                    wallet_address: pendingUser.wallet_address,
+                    name: pendingUser.email.split("@")[0],
+                    walletAddress: pendingUser.wallet_address,
+                    createdAt: new Date().toISOString(),
+                    lastLogin: null, // ← First time login
                 },
             };
         }
@@ -416,12 +424,29 @@ export const verifyRegistration = async (
 
         debugLog(`✅ Verification successful:`, data);
 
+        // ✅ MAP BACKEND RESPONSE TO FRONTEND FORMAT
+        // Backend response: { success, message, email, wallet_address, sessionToken, user: { id, email, walletAddress, createdAt, lastLogin } }
+
         return {
             success: true,
             message: data.message || "Xác thực email thành công!",
-            user: data.user || {
+            sessionToken: data.sessionToken, // ← Save sessionToken
+            authToken: data.sessionToken, // ← Alias
+            user: data.user ? {
+                id: data.user.id,
+                email: data.user.email,
+                name: data.user.email?.split("@")[0] || "User",
+                walletAddress: data.user.walletAddress || data.wallet_address,
+                createdAt: data.user.createdAt,
+                lastLogin: data.user.lastLogin, // ← IMPORTANT: Can be null for first login
+            } : {
+                // Fallback if user object not provided
+                id: `user_${Date.now()}`,
                 email: data.email,
-                wallet_address: data.wallet_address,
+                name: data.email.split("@")[0],
+                walletAddress: data.wallet_address,
+                createdAt: new Date().toISOString(),
+                lastLogin: null,
             },
         };
     } catch (error: any) {
@@ -737,6 +762,31 @@ export const analyzeWallet = async (
         // ✅ AUTO-DETECT AUTH TOKEN
         const authToken = localStorage.getItem("authToken");
 
+        // ✅ CHECK WALLET CACHE (for public requests)
+        // If no authToken (public Calculator), check if we have cached data for this wallet
+        if (!authToken) {
+            const cacheKey = `wallet_cache_${walletAddress.toLowerCase()}`;
+            const cachedData = localStorage.getItem(cacheKey);
+
+            if (cachedData) {
+                try {
+                    const parsed = JSON.parse(cachedData);
+                    const cacheAge = Date.now() - (parsed.timestamp || 0);
+                    const cacheMaxAge = 24 * 60 * 60 * 1000; // 24 hours
+
+                    // If cache is fresh (< 24h), use it instead of calling API
+                    if (cacheAge < cacheMaxAge) {
+                        console.log(`✅ Using cached data for wallet ${walletAddress} (${Math.round(cacheAge / 1000 / 60)} minutes old)`);
+                        return parsed.data;
+                    } else {
+                        console.log(`⏰ Cache expired for wallet ${walletAddress} (${Math.round(cacheAge / 1000 / 60 / 60)} hours old)`);
+                    }
+                } catch (e) {
+                    console.warn("⚠️ Failed to parse wallet cache:", e);
+                }
+            }
+        }
+
         // Build headers
         const headers: HeadersInit = {
             'Accept': 'application/json',
@@ -749,16 +799,6 @@ export const analyzeWallet = async (
             debugLog(`🔐 Adding auth token to request`);
         } else {
             debugLog(`🌐 Public request (no auth token)`);
-        }
-
-        try {
-            const response = await axios.get(`${API_BASE_URL}/credit-score/${walletAddress}`, {
-                headers: headers
-            });
-            return response.data;
-        } catch (error: any) {
-            console.error("❌ API Error - No mock fallback:", error?.message);
-            throw error; // Dashboard hoặc Calculator sẽ handle và set score=0
         }
 
         // Call API với timeout 15 giây - Cân bằng giữa UX và backend processing
@@ -813,7 +853,24 @@ export const analyzeWallet = async (
                 debugLog(`✅ API Response:`, data);
 
                 // Success - break retry loop
-                return mapWalletData(data, walletAddress);
+                const walletAnalysis = mapWalletData(data, walletAddress);
+
+                // ✅ SAVE TO CACHE (both logged-in and public users)
+                // This allows public Calculator to use cached data after first successful fetch
+                const cacheKey = `wallet_cache_${walletAddress.toLowerCase()}`;
+                const cacheData = {
+                    data: walletAnalysis,
+                    timestamp: Date.now(),
+                };
+
+                try {
+                    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+                    console.log(`💾 Saved wallet data to cache: ${cacheKey}`);
+                } catch (e) {
+                    console.warn("⚠️ Failed to save wallet cache:", e);
+                }
+
+                return walletAnalysis;
 
             } catch (error: any) {
                 lastError = error;
@@ -1716,4 +1773,3 @@ export default {
 // Export aliases for backward compatibility with old component imports
 export const sendMagicLink = sendMagicLinkReal;
 export const verifyToken = verifyMagicLink;
-

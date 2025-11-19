@@ -87,12 +87,19 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     : await verifyMagicLink(token);
 
                 if (result.success && result.user) {
-                    // Lưu auth token
-                    if (result.authToken) {
-                        localStorage.setItem("authToken", result.authToken);
-                        localStorage.setItem("currentUser", JSON.stringify(result.user));
+                    // ✅ SAVE SESSION TOKEN
+                    const sessionToken = result.sessionToken || result.authToken;
+                    if (sessionToken) {
+                        localStorage.setItem("authToken", sessionToken);
+                        console.log("💾 Saved sessionToken:", sessionToken.substring(0, 20) + "...");
                     }
 
+                    // ✅ SAVE USER DATA
+                    localStorage.setItem("currentUser", JSON.stringify(result.user));
+                    console.log("👤 User data:", result.user);
+                    console.log("🕐 Last Login:", result.user.lastLogin);
+
+                    // ✅ SUCCESS - Let App.tsx handleLogin() do the rest
                     setStatus("success");
                     setMessage("Xác thực thành công! Đang chuyển đến Dashboard...");
 

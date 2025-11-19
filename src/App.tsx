@@ -23,7 +23,7 @@ import { CaptchaDialog } from "./components/CaptchaDialog"; // ✅ Import Captch
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
-import logoImage from "./components/images/logonhap.jpg";
+import logoImage from "../src/components/images/logonhap.jpg";
 import {
   Wallet,
   TrendingUp,
@@ -49,7 +49,6 @@ import {
   isValidEmail,
   isValidWalletAddress,
   getWalletByEmail,
-  getUserInfo,
 } from "./services/api-real";
 import { generateMockWalletData } from "./services/mock-data";
 
@@ -65,28 +64,6 @@ const getRatingFromScore = (score: number): string => {
   if (score >= 500) return "B";
   return "C";
 };
-
-const mapUserInfoToWalletAnalysis = (
-  userInfo: {
-    credit_score?: number;
-    wallet_age?: number;
-    total_transactions?: number;
-    total_assets?: number;
-    wallet_address?: string;
-    token_diversity?: number;
-  } | undefined,
-  fallbackAddress?: string,
-): WalletAnalysis => ({
-  score: userInfo?.credit_score ?? 0,
-  walletAge: userInfo?.wallet_age ?? 0,
-  totalTransactions: userInfo?.total_transactions ?? 0,
-  tokenDiversity: userInfo?.token_diversity ?? 0,
-  totalAssets: userInfo?.total_assets ?? 0,
-  rating: getRatingFromScore(userInfo?.credit_score ?? 0),
-  tokenBalances: [],
-  recentTransactions: [],
-  walletAddress: userInfo?.wallet_address ?? fallbackAddress,
-});
 
 export default function App() {
   const { t, language } = useLanguage();
@@ -164,62 +141,29 @@ export default function App() {
   useEffect(() => {
     const loadWalletDataForDashboard = async () => {
       if (
-        currentPage !== "dashboard" ||
-        !currentUser?.walletAddress ||
-        walletData
+        currentPage === "dashboard" &&
+        currentUser?.walletAddress &&
+        !walletData
       ) {
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        let lastLogin = currentUser.lastLogin;
-        let userInfoResult:
-          | Awaited<ReturnType<typeof getUserInfo>>
-          | null = null;
-
-        if (lastLogin === undefined) {
-          userInfoResult = await getUserInfo();
-          if (userInfoResult.success && userInfoResult.user) {
-            lastLogin = userInfoResult.user.last_login;
-          } else {
-            lastLogin = null;
-          }
-        }
-
-        if (lastLogin === null) {
-          const data = await analyzeWallet(currentUser.walletAddress);
+        // Loading wallet data for dashboard - removed console.log to prevent memory issues
+        setIsLoading(true);
+        try {
+          const data = await analyzeWallet(
+            currentUser.walletAddress,
+          );
           setWalletData(data);
-        } else {
-          if (!userInfoResult) {
-            userInfoResult = await getUserInfo();
-          }
+          setWalletAddress(currentUser.walletAddress);
 
-          if (userInfoResult.success && userInfoResult.user) {
-            setWalletData(
-              mapUserInfoToWalletAnalysis(
-                userInfoResult.user,
-                currentUser.walletAddress,
-              ),
-            );
-          } else {
-            const fallbackData = await analyzeWallet(
-              currentUser.walletAddress,
-            );
-            setWalletData(fallbackData);
-          }
+          // Kiểm tra subscription status
+          const status = await checkSubscriptionStatus(
+            currentUser.walletAddress,
+          );
+          setSubscriptionStatus(status);
+        } catch (error) {
+          console.error("Lỗi khi load wallet data:", error);
+        } finally {
+          setIsLoading(false);
         }
-
-        setWalletAddress(currentUser.walletAddress || "");
-
-        const status = await checkSubscriptionStatus(
-          currentUser.walletAddress,
-        );
-        setSubscriptionStatus(status);
-      } catch (error) {
-        console.error("Lỗi khi load wallet data:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -244,117 +188,80 @@ export default function App() {
     };
     localStorage.setItem("currentUser", JSON.stringify(minimalUser));
 
-    // ✅ Check lastLogin và gọi API phù hợp
+    // ✅ NEW: Check last_login and fetch appropriate data
     try {
       setIsLoading(true);
 
-      // Prefill dashboard with the last calculator result while waiting for API
-      try {
-        const cachedWalletData = localStorage.getItem("lastWalletData");
-        if (cachedWalletData) {
-          const parsedData: WalletAnalysis = JSON.parse(cachedWalletData);
-          if (
-            parsedData?.walletAddress &&
-            user.walletAddress &&
-            parsedData.walletAddress.toLowerCase() ===
-            user.walletAddress.toLowerCase()
-          ) {
-            setWalletData(parsedData);
-          }
-        }
-      } catch (cacheError) {
-        console.warn("⚠️ Unable to restore cached wallet data:", cacheError);
-      }
-
+      // Call getUserInfo API to check last_login
       const { getUserInfo, analyzeWallet } = await import("./services/api-real");
+      const userInfoResult = await getUserInfo();
 
-      // ✅ Check lastLogin từ user object ban đầu
-      let lastLogin = user.lastLogin;
+      if (userInfoResult.success && userInfoResult.user) {
+        const lastLogin = userInfoResult.user.last_login;
 
-      // Nếu lastLogin không có trong user object (undefined), gọi getUserInfo để check
-      if (lastLogin === undefined) {
-        console.log("🔍 lastLogin không có trong user object, gọi getUserInfo để check...");
-        const userInfoResult = await getUserInfo();
+        console.log("👤 User Info:", userInfoResult.user);
+        console.log("🕐 Last Login:", lastLogin);
 
-        if (userInfoResult.success && userInfoResult.user) {
-          lastLogin = userInfoResult.user.last_login;
-          console.log("👤 User Info:", userInfoResult.user);
-          console.log("🕐 Last Login từ API:", lastLogin);
-        } else {
-          console.warn("⚠️ getUserInfo failed, giả định là first login (null)");
-          lastLogin = null;
-        }
-      } else {
-        console.log("🕐 Last Login từ user object:", lastLogin);
-      }
+        if (lastLogin === null) {
+          // First login - Fetch onchain data from credit-score API
+          console.log("🎉 First time login! Fetching onchain data...");
 
-      // ✅ Quyết định gọi API nào dựa trên lastLogin
-      // Nếu lastLogin === null → First login → Gọi /credit-score/{wallet}
-      // Nếu lastLogin !== null → Returning user → Gọi user-info
-      if (lastLogin === null) {
-        // First login (lastLogin = null) → Gọi /credit-score/{wallet}
-        console.log("🎉 First time login! Gọi API /credit-score/{wallet}...");
-
-        if (user.walletAddress) {
-          try {
-            const onchainData = await analyzeWallet(user.walletAddress);
-            setWalletData(onchainData);
-            console.log("✅ Onchain data loaded từ /credit-score/{wallet}:", onchainData);
-          } catch (apiError: any) {
-            // ❌ API failed - Show error and set empty data
-            console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
-
-            alert(
-              "⚠️ Không thể tải dữ liệu blockchain cho ví của bạn.\n\n" +
-              "Nguyên nhân: " + (apiError.message || "Lỗi kết nối") + "\n\n" +
-              "Bạn vẫn có thể truy cập Dashboard, nhưng điểm tín dụng sẽ hiển thị là 0.\n" +
-              "Vui lòng thử lại sau hoặc liên hệ support."
-            );
-
-            // Set empty wallet data with score = 0
-            setWalletData({
-              score: 0,
-              walletAge: 0,
-              totalTransactions: 0,
-              tokenDiversity: 0,
-              totalAssets: 0,
-              rating: "N/A",
-              tokenBalances: [],
-              recentTransactions: [],
-              walletAddress: user.walletAddress,
-            });
-          }
-        }
-      } else {
-        // Returning user (lastLogin != null) → Gọi user-info
-        console.log("👋 Welcome back! Gọi API user-info...");
-
-        try {
-          const userInfoResult = await getUserInfo();
-
-          if (userInfoResult.success && userInfoResult.user) {
-            const cachedData = mapUserInfoToWalletAnalysis(
-              userInfoResult.user,
-              user.walletAddress,
-            );
-
-            setWalletData(cachedData);
-            console.log("✅ User data loaded từ user-info:", cachedData);
-          } else {
-            throw new Error(userInfoResult.message || "Không thể lấy thông tin user");
-          }
-        } catch (apiError: any) {
-          console.error("🚫 Failed to fetch user-info:", apiError.message);
-          // Fallback: Try to fetch onchain data
           if (user.walletAddress) {
-            console.log("⚠️ Fallback: Gọi /credit-score/{wallet}...");
             try {
               const onchainData = await analyzeWallet(user.walletAddress);
               setWalletData(onchainData);
-            } catch (fallbackError) {
-              console.error("❌ Fallback also failed:", fallbackError);
+              console.log("✅ Onchain data loaded:", onchainData);
+            } catch (apiError: any) {
+              // ❌ API failed - Show error and set empty data
+              console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
+
+              alert(
+                "⚠️ Không thể tải dữ liệu blockchain cho ví của bạn.\n\n" +
+                "Nguyên nhân: " + (apiError.message || "Lỗi kết nối") + "\n\n" +
+                "Bạn vẫn có thể truy cập Dashboard, nhưng điểm tín dụng sẽ hiển thị là 0.\n" +
+                "Vui lòng thử lại sau hoặc liên hệ support."
+              );
+
+              // Set empty wallet data with score = 0
+              setWalletData({
+                score: 0,
+                walletAge: 0,
+                totalTransactions: 0,
+                tokenDiversity: 0,
+                totalAssets: 0,
+                rating: "N/A",
+                tokenBalances: [],
+                recentTransactions: [],
+                walletAddress: user.walletAddress,
+              });
             }
           }
+        } else {
+          // Returning user - Use data from user-info (already stored in DB)
+          console.log("👋 Welcome back! Using cached data...");
+
+          // Map user-info data to WalletAnalysis format
+          const cachedData = {
+            score: userInfoResult.user.credit_score || 0,
+            walletAge: userInfoResult.user.wallet_age || 0,
+            totalTransactions: userInfoResult.user.total_transactions || 0,
+            tokenDiversity: 0, // Not in user-info response
+            totalAssets: userInfoResult.user.total_assets || 0,
+            rating: getRatingFromScore(userInfoResult.user.credit_score || 0),
+            tokenBalances: [], // Will be loaded from separate API if needed
+            recentTransactions: [], // Will be loaded from separate API if needed
+            walletAddress: userInfoResult.user.wallet_address,
+          };
+
+          setWalletData(cachedData);
+          console.log("✅ Cached data loaded:", cachedData);
+        }
+      } else {
+        // Fallback: If getUserInfo fails, fetch onchain data
+        console.warn("⚠️ getUserInfo failed, falling back to onchain data");
+        if (user.walletAddress) {
+          const onchainData = await analyzeWallet(user.walletAddress);
+          setWalletData(onchainData);
         }
       }
     } catch (error) {
@@ -387,7 +294,6 @@ export default function App() {
     setWalletData(null);
     setWalletAddress("");
     setShowResults(false);
-    localStorage.removeItem("lastWalletData");
 
     // Về trang Calculator (KHÔNG về trang login)
     setCurrentPage("calculator");
@@ -450,7 +356,6 @@ export default function App() {
       // Gọi API phân tích ví
       const data = await analyzeWallet(actualWalletAddress);
       setWalletData(data);
-      localStorage.setItem("lastWalletData", JSON.stringify(data));
       setWalletAddress(actualWalletAddress); // Cập nhật lại với wallet address thực
       setShowResults(true);
 
@@ -545,7 +450,6 @@ export default function App() {
     setShowFeedbackDialog(false);
     setSubscriptionStatus(null);
     setUseDemoMode(false); // Reset demo mode
-    localStorage.removeItem("lastWalletData");
   };
 
   // Handler for Demo Mode when quota error occurs
@@ -805,7 +709,7 @@ export default function App() {
                       <Input
                         id="wallet"
                         type={showWalletAddress ? "text" : "password"}
-                        placeholder={t.calculator.input.label}
+                        placeholder={t.calculator.input.placeholder}
                         inputMode="none"
                         autoComplete="new-password"
                         value={walletAddress}
@@ -1133,4 +1037,3 @@ export default function App() {
     </div>
   );
 }
-
