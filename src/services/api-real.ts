@@ -113,7 +113,7 @@ export interface UserProfile {
     name?: string;
     avatar?: string;
     createdAt: string;
-    lastLogin: string;
+    lastLogin: string | null;
 }
 
 export interface LoginCredentials {
@@ -343,9 +343,9 @@ export const verifyRegistration = async (
 ): Promise<{
     success: boolean;
     message: string;
-    user?: UserProfile; // ← Changed to full UserProfile
-    sessionToken?: string; // ← ADD sessionToken
-    authToken?: string; // ← Alias for compatibility
+    user?: UserProfile;
+    sessionToken?: string;
+    authToken?: string;
 }> => {
     debugLog(`🔍 Verifying registration token: ${token}`);
 
@@ -430,15 +430,15 @@ export const verifyRegistration = async (
         return {
             success: true,
             message: data.message || "Xác thực email thành công!",
-            sessionToken: data.sessionToken, // ← Save sessionToken
-            authToken: data.sessionToken, // ← Alias
+            sessionToken: data.sessionToken,
+            authToken: data.sessionToken,
             user: data.user ? {
                 id: data.user.id,
                 email: data.user.email,
                 name: data.user.email?.split("@")[0] || "User",
                 walletAddress: data.user.walletAddress || data.wallet_address,
                 createdAt: data.user.createdAt,
-                lastLogin: data.user.lastLogin, // ← IMPORTANT: Can be null for first login
+                lastLogin: data.user.lastLogin,
             } : {
                 // Fallback if user object not provided
                 id: `user_${Date.now()}`,
@@ -589,8 +589,8 @@ export const verifyMagicLink = async (
  */
 export const submitFeedback = async (feedback: {
     email?: string;
-    feature_name: string; // ✅ Changed from 'category' to match Swagger spec
-    description: string;  // ✅ Changed from 'message' to match Swagger spec
+    feature_name: string;
+    description: string;
     rating?: number;
 }): Promise<{
     success: boolean;
@@ -659,13 +659,12 @@ export const getUserInfo = async (): Promise<{
         email: string;
         wallet_address: string;
         name?: string;
-        last_login: string | null; // null = first login, date string = returning user
+        last_login: string | null;
         created_at?: string;
         credit_score?: number;
         wallet_age?: number;
         total_transactions?: number;
         total_assets?: number;
-        // ... other onchain data fields if last_login is not null
     };
 }> => {
     debugLog(`👤 Getting user info...`);
@@ -711,7 +710,7 @@ export const getUserInfo = async (): Promise<{
                 email: data.email,
                 wallet_address: data.wallet_address,
                 name: data.name,
-                last_login: data.last_login, // null or date string
+                last_login: data.last_login,
                 created_at: data.created_at,
                 credit_score: data.credit_score,
                 wallet_age: data.wallet_age,
@@ -810,12 +809,12 @@ export const analyzeWallet = async (
                 debugLog(`🔄 Attempt ${attempt}/${maxRetries}`);
 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout - Backend cần thời gian crawl blockchain
+                const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
                 const startTime = Date.now();
                 const response = await fetch(url, {
                     method: 'GET',
-                    headers: headers, // ✅ Use headers object with optional auth token
+                    headers: headers,
                     signal: controller.signal,
                 });
 
@@ -830,17 +829,14 @@ export const analyzeWallet = async (
                     const errorText = await response.text();
                     debugLog(`❌ API Error: ${errorText}`);
 
-                    // Nếu là 404, có thể wallet chưa được crawl
                     if (response.status === 404) {
                         throw new Error(`Wallet chưa được phân tích. Vui lòng thử lại sau vài phút.`);
                     }
 
-                    // Nếu là 500, backend có lỗi internal
                     if (response.status === 500) {
                         throw new Error(`Backend đang gặp sự cố (500). Có thể do hết quota Moralis hoặc lỗi server. Vui lòng thử lại sau.`);
                     }
 
-                    // Nếu là 401/403, có thể backend authentication issue
                     if (response.status === 401 || response.status === 403) {
                         throw new Error(`Backend authentication error (${response.status}). Có thể Moralis API key hết hạn.`);
                     }
@@ -856,7 +852,6 @@ export const analyzeWallet = async (
                 const walletAnalysis = mapWalletData(data, walletAddress);
 
                 // ✅ SAVE TO CACHE (both logged-in and public users)
-                // This allows public Calculator to use cached data after first successful fetch
                 const cacheKey = `wallet_cache_${walletAddress.toLowerCase()}`;
                 const cacheData = {
                     data: walletAnalysis,
@@ -902,7 +897,7 @@ export const analyzeWallet = async (
         if (authToken) {
             // ❌ LOGGED IN USER: DO NOT use mock data - Throw error instead
             console.error('🚫 API Error for logged-in user - Not using mock data:', error.message);
-            throw error; // Re-throw error to let caller handle it
+            throw error;
         }
 
         // ✅ PUBLIC USER (Calculator): Can fallback to mock data for demo
@@ -926,21 +921,14 @@ export const analyzeWallet = async (
 
 // Helper function để map wallet data
 function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
-    // =====================================================
-    // THAY ĐỔI 3: MAP RESPONSE TỪ API SANG INTERFACE
-    // =====================================================
-    // Map từ format API thực tế
-
     // Parse token balances
     const tokenBalances = mapTokenBalances(data.total_balances || data.token_balances || []);
 
     // ✅ FIX: Filter out tokens with invalid USD values & sort by value
     const validTokens = tokenBalances
         .filter(token => {
-            // Remove tokens with 0 value or unrealistic values
             if (token.value <= 0) return false;
 
-            // Remove obvious spam tokens (value > $10 billion is suspicious)
             if (token.value > 10_000_000_000) {
                 console.warn(`⚠️ Filtering out suspicious token ${token.symbol} with value $${token.value.toLocaleString()}`);
                 return false;
@@ -948,22 +936,19 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
 
             return true;
         })
-        .sort((a, b) => b.value - a.value); // Sort by value descending
+        .sort((a, b) => b.value - a.value);
 
     // ✅ FIX: Recalculate total from valid tokens only
     const validTotalAssets = validTokens.reduce((sum, t) => sum + t.value, 0);
 
-    // Use API total_assets_usd only if it's reasonable, otherwise use calculated
     let totalAssetsUsd = data.total_assets_usd || 0;
 
-    // If API total seems wrong (e.g., smaller than largest token), use calculated total
     const largestTokenValue = validTokens[0]?.value || 0;
     if (totalAssetsUsd > 0 && totalAssetsUsd < largestTokenValue) {
         console.warn(`⚠️ API total_assets_usd ($${totalAssetsUsd}) < largest token ($${largestTokenValue}). Using calculated total.`);
         totalAssetsUsd = validTotalAssets;
     }
 
-    // If API total is 0, use calculated
     if (totalAssetsUsd === 0) {
         totalAssetsUsd = validTotalAssets;
     }
@@ -976,11 +961,6 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     }
 
     console.log(`💰 Total Assets: $${totalAssetsUsd.toLocaleString()} (${validTokens.length} valid tokens)`);
-    console.log(`📊 Top 3 tokens:`, validTokens.slice(0, 3).map(t => ({
-        symbol: t.symbol,
-        value: `$${t.value.toLocaleString()}`,
-        percentage: `${t.percentage?.toFixed(1)}%`
-    })));
 
     // Parse transactions
     const recentTransactions = mapTransactions(
@@ -990,7 +970,6 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
 
     // Tính wallet age từ dữ liệu thực
     const walletAge = data.wallet_age_days || (() => {
-        // Nếu không có wallet_age_days, tính từ transaction đầu tiên
         const oldestTx = data.transaction_history?.[data.transaction_history.length - 1];
         if (oldestTx?.block_timestamp) {
             const ageInMs = Date.now() - new Date(oldestTx.block_timestamp).getTime();
@@ -1015,7 +994,6 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
         rating: rating,
         tokenBalances: validTokens,
         recentTransactions: recentTransactions,
-        // Extended fields
         walletAddress: data.wallet_address,
         chain: data.chain,
         employmentStatus: data.employment_status,
@@ -1029,7 +1007,6 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
         updatedAt: data.updated_at,
         walletTransactionsLast30d: data.wallet_transactions_last_30d,
         stablecoinInflow30d: data.stablecoin_inflow_30d,
-        // ✅ NEW: Feature importance & recommendations from API response
         featureImportance: data.explanation?.feature_importance,
         recommendations: data.recommendations || data.explanation?.recommendations,
         onchainMetrics: data.onchain_metrics,
@@ -1045,7 +1022,6 @@ function mapTokenBalances(apiData: any[]): TokenBalance[] {
     if (!Array.isArray(apiData)) return [];
 
     return apiData.map((token: any) => {
-        // Parse balance từ wei format
         const rawBalance = token.balance || "0";
         const decimals = token.decimals || 18;
         const balance = parseFloat(rawBalance) / Math.pow(10, decimals);
@@ -1054,7 +1030,7 @@ function mapTokenBalances(apiData: any[]): TokenBalance[] {
             symbol: token.symbol || token.token_symbol || '',
             balance: balance,
             value: parseFloat(token.balance_usd || token.value || 0),
-            percentage: 0, // Will be calculated after
+            percentage: 0,
             token_address: token.token_address || token.address,
             name: token.name || token.token_name,
             logo: token.logo || token.token_logo,
@@ -1068,7 +1044,6 @@ function mapTransactions(apiData: any[], walletAddress?: string): Transaction[] 
     if (!Array.isArray(apiData)) return [];
 
     return apiData.slice(0, 10).map((tx: any, index: number) => {
-        // Xác định type từ category hoặc from/to address
         let type: "send" | "receive" = "send";
         const category = tx.category || "";
 
@@ -1078,27 +1053,21 @@ function mapTransactions(apiData: any[], walletAddress?: string): Transaction[] 
             type = "receive";
         }
 
-        // Lấy token symbol và amount từ transfers
         let token = "ETH";
         let amount = 0;
         let value = 0;
 
-        // Ưu tiên ERC20 transfers
         if (tx.erc20_transfers && tx.erc20_transfers.length > 0) {
             const transfer = tx.erc20_transfers[0];
             token = transfer.token_symbol || "Unknown";
             amount = parseFloat(transfer.value_formatted || 0);
             value = parseFloat(transfer.value || 0) / Math.pow(10, transfer.token_decimals || 18);
-        }
-        // Nếu không có ERC20, check native transfers
-        else if (tx.native_transfers && tx.native_transfers.length > 0) {
+        } else if (tx.native_transfers && tx.native_transfers.length > 0) {
             const transfer = tx.native_transfers[0];
             token = transfer.token_symbol || "ETH";
             amount = parseFloat(transfer.value_formatted || 0);
             value = parseFloat(transfer.value || 0) / Math.pow(10, 18);
-        }
-        // Nếu không có transfers, check value field
-        else if (tx.value) {
+        } else if (tx.value) {
             amount = parseFloat(tx.value) / Math.pow(10, 18);
             value = amount;
         }
@@ -1120,158 +1089,7 @@ function mapTransactions(apiData: any[], walletAddress?: string): Transaction[] 
 }
 
 // =====================================================
-// CÁC HÀM KHÁC - GIỮ NGUYÊN MOCK DATA
-// =====================================================
-// (Các hàm login, register, logout vẫn dùng mock data)
-
-// =====================================================
-// MAGIC LINK AUTHENTICATION - REAL API
-// =====================================================
-
-const BACKEND_AUTH_API = 'https://backend.migofin.com/api/auth';
-
-export interface MagicLinkResponse {
-    success: boolean;
-    message: string;
-    verificationToken?: string;
-}
-
-export interface VerifyResponse {
-    success: boolean;
-    message?: string;
-    email?: string;
-    wallet?: string;
-    sessionToken?: string;
-    user?: UserProfile;
-    authToken?: string;
-}
-
-/**
- * Gửi Magic Link đến email
- * Backend sẽ:
- * 1. Generate token ngẫu nhiên
- * 2. Lưu vào DB (email, wallet, token, expire time)
- * 3. Gửi email chứa link: https://yourapp.com/#/verify?token=xxx
- */
-// DEPRECATED - Dùng sendMagicLink version mới ở cuối file
-export async function sendMagicLinkOLD(
-    email: string,
-    walletAddress: string
-): Promise<MagicLinkResponse> {
-    try {
-        debugLog('🚀 Gửi Magic Link');
-
-        const response = await fetch(`${BACKEND_AUTH_API}/send-magic-link`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                email: email.trim(),
-                wallet: walletAddress.trim(),
-            }),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('✅ Magic Link đã gửi:', data);
-
-        return {
-            success: true,
-            message: data.message || 'Email đã được gửi!',
-            verificationToken: data.verificationToken || data.token,
-        };
-    } catch (error) {
-        console.error('❌ Lỗi gửi Magic Link:', error);
-
-        // Return mock response for demo purposes
-        return {
-            success: true,
-            message: '📧 [DEMO] Email xác nhận đã được gửi! Nhấn nút "Demo Verify" để tiếp tục.',
-            verificationToken: `demo_${Date.now()}_${Math.random().toString(36)}`,
-        };
-    }
-}
-
-/**
- * Verify Magic Link Token
- * Backend sẽ:
- * 1. Kiểm tra token có hợp lệ & chưa expire
- * 2. Trả về user info + session token
- */
-// DEPRECATED - Dùng verifyMagicLink version mới ở cuối file
-export async function verifyMagicLinkOLD(token: string): Promise<VerifyResponse> {
-    try {
-        console.log('🔍 Verify Magic Link:', token);
-
-        const response = await fetch(`${BACKEND_AUTH_API}/verify?token=${encodeURIComponent(token)}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('✅ Xác thực thành công:', data);
-
-        return {
-            success: true,
-            email: data.email,
-            wallet: data.wallet || data.walletAddress,
-            sessionToken: data.sessionToken || data.token,
-            authToken: data.sessionToken || data.token,
-            user: data.user || {
-                id: data.userId || `user_${Date.now()}`,
-                email: data.email,
-                walletAddress: data.wallet || data.walletAddress,
-                name: data.email.split('@')[0],
-                createdAt: new Date().toISOString(),
-                lastLogin: new Date().toISOString(),
-            },
-        };
-    } catch (error) {
-        console.error('❌ Lỗi verify token:', error);
-
-        // Return mock response for demo purposes
-        if (token.startsWith('demo_')) {
-            const mockEmail = `demo${Date.now()}@example.com`;
-            const mockWallet = `0x${Math.random().toString(16).slice(2, 42).padEnd(40, '0')}`;
-
-            return {
-                success: true,
-                email: mockEmail,
-                wallet: mockWallet,
-                sessionToken: `session_${Date.now()}`,
-                authToken: `session_${Date.now()}`,
-                user: {
-                    id: `user_${Date.now()}`,
-                    email: mockEmail,
-                    walletAddress: mockWallet,
-                    name: mockEmail.split('@')[0],
-                    createdAt: new Date().toISOString(),
-                    lastLogin: new Date().toISOString(),
-                },
-            };
-        }
-
-        return {
-            success: false,
-            message: error instanceof Error ? error.message : 'Xác thực thất bại',
-        };
-    }
-}
-
-// =====================================================
-// MOCK DATA HÀM CŨ - GIỮ NGUYÊN
+// MOCK DATA & HELPERS
 // =====================================================
 
 const MOCK_DELAY = 1500;
@@ -1334,11 +1152,6 @@ export const calculateCreditScore = async (walletAddress: string): Promise<Credi
     };
 };
 
-// =====================================================
-// SCORE HISTORY API - Backend CÓ endpoint này! ✅
-// Endpoint: GET /api/credit-score/{wallet}/history?days=30
-// =====================================================
-
 export const getScoreHistory = async (
     walletAddress: string,
     days: number = 30
@@ -1346,17 +1159,15 @@ export const getScoreHistory = async (
     debugLog(`📊 Getting score history for: ${walletAddress} (${days} days)`);
 
     try {
-        // Validate wallet address
         if (!isValidWalletAddress(walletAddress)) {
             throw new Error("Invalid wallet address format");
         }
 
-        // Build API URL
         const url = `${API_BASE_URL}/api/credit-score/${walletAddress}/history?days=${days}`;
         debugLog(`📡 Calling Score History API: ${url}`);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout - Test nhanh
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
 
         const startTime = Date.now();
         const response = await fetch(url, {
@@ -1382,8 +1193,6 @@ export const getScoreHistory = async (
         const data = await response.json();
         debugLog(`✅ Score History data received:`, data);
 
-        // Map response to expected format
-        // Backend có thể trả về array trực tiếp hoặc object với field history
         let historyArray = [];
 
         if (Array.isArray(data)) {
@@ -1397,7 +1206,6 @@ export const getScoreHistory = async (
             return generateMockScoreHistory(days);
         }
 
-        // Map to standard format
         const mappedHistory = historyArray.map((item: any) => ({
             date: item.date || item.timestamp || item.created_at,
             score: item.score || item.credit_score || item.final_score || 0,
@@ -1418,12 +1226,10 @@ export const getScoreHistory = async (
             debugLog(`❌ Error getting score history:`, error.message);
         }
 
-        // Fallback to mock data
         return generateMockScoreHistory(days);
     }
 };
 
-// Helper function to generate mock score history (fallback)
 function generateMockScoreHistory(days: number): Array<{ date: string; score: number }> {
     debugLog(`⚠️ Generating mock score history for ${days} days`);
     const history = [];
@@ -1482,7 +1288,7 @@ export const subscribeToUpdates = async (
     return simulateApiCall(
         {
             success: true,
-            message: "Đăng ký thành công! Bạn sẽ nhận được email cập nhật đnh kỳ.",
+            message: "Đăng ký thành công! Bạn sẽ nhận được email cập nhật định kỳ.",
         },
         1500
     );
@@ -1610,7 +1416,6 @@ export const formatWalletAddress = (address: string): string => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-// Mock database để lưu email-wallet mapping
 const mockUserDatabase: Record<string, string> = {
     "test@gmail.com": "0x742d35Cc6231e4a8F5b2FaC6E9B4F9D2E5A7B8C9D1",
     "demo@example.com": "0x1234567890abcdef1234567890abcdef12345678",
@@ -1619,7 +1424,6 @@ const mockUserDatabase: Record<string, string> = {
     "bob@defi.io": "0x1111222233334444555566667777888899990000",
 };
 
-// Đăng ký email + wallet (Quick Register)
 export const registerWalletWithEmail = async (data: {
     email: string;
     password: string;
@@ -1644,7 +1448,7 @@ export const registerWalletWithEmail = async (data: {
     if (mockUserDatabase[data.email.toLowerCase()]) {
         return {
             success: false,
-            message: "Email này đã ược đăng ký. Vui lòng đăng nhập hoặc dùng email khác.",
+            message: "Email này đã được đăng ký. Vui lòng đăng nhập hoặc dùng email khác.",
         };
     }
 
@@ -1654,7 +1458,6 @@ export const registerWalletWithEmail = async (data: {
     return { success: true };
 };
 
-// Lấy wallet address từ email
 export const getWalletByEmail = async (email: string): Promise<{
     success: boolean;
     walletAddress?: string;
@@ -1677,16 +1480,12 @@ export const getWalletByEmail = async (email: string): Promise<{
     }
 };
 
-// =====================================================
-// FALLBACK FUNCTION - Generate Mock Data When Backend is Offline
-// =====================================================
 function generateMockWalletData(walletAddress: string): WalletAnalysis {
     console.log("🎨 Generating mock data for wallet:", walletAddress);
 
     const hash = walletAddress.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const score = 550 + (hash % 300);
 
-    // Token balances
     const tokens = ["ETH", "USDT", "USDC", "DAI", "WBTC", "LINK", "UNI", "AAVE"];
     const tokenBalances: TokenBalance[] = tokens.slice(0, 5 + (hash % 4)).map((token, idx) => {
         const baseValue = 5000 / (idx + 1);
@@ -1704,7 +1503,6 @@ function generateMockWalletData(walletAddress: string): WalletAnalysis {
         token.percentage = (token.value / totalValue) * 100;
     });
 
-    // Recent transactions
     const recentTransactions: Transaction[] = [];
     for (let i = 0; i < 10; i++) {
         const date = new Date();
@@ -1767,9 +1565,5 @@ export default {
     getWalletByEmail,
 };
 
-// =====================================================
-// BACKWARD COMPATIBILITY ALIASES
-// =====================================================
-// Export aliases for backward compatibility with old component imports
 export const sendMagicLink = sendMagicLinkReal;
 export const verifyToken = verifyMagicLink;

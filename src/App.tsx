@@ -173,11 +173,8 @@ export default function App() {
   const handleLogin = async (user: UserProfile) => {
     setCurrentUser(user);
 
-    // Lưu vào localStorage - limit size to prevent memory issues
-    const mockToken = `mock_jwt_${Date.now()}`;
-    localStorage.setItem("authToken", mockToken);
-
-    // Store minimal user data
+    // ✅ KHÔNG tạo mockToken nữa - Verify.tsx đã save sessionToken thật rồi!
+    // Chỉ cần save minimal user data
     const minimalUser = {
       id: user.id,
       email: user.email,
@@ -188,58 +185,64 @@ export default function App() {
     };
     localStorage.setItem("currentUser", JSON.stringify(minimalUser));
 
-    // ✅ NEW: Check last_login and fetch appropriate data
+    // ✅ CHECK lastLogin từ user object (KHÔNG cần gọi getUserInfo nữa!)
     try {
       setIsLoading(true);
 
-      // Call getUserInfo API to check last_login
-      const { getUserInfo, analyzeWallet } = await import("./services/api-real");
-      const userInfoResult = await getUserInfo();
+      console.log("👤 User Info:", user);
+      console.log("🕐 Last Login:", user.lastLogin);
 
-      if (userInfoResult.success && userInfoResult.user) {
-        const lastLogin = userInfoResult.user.last_login;
+      if (user.lastLogin === null) {
+        // ✅ BƯỚC 3: First login - Kích hoạt tính điểm onchain
+        console.log("🎉 First time login! Triggering credit score calculation...");
 
-        console.log("👤 User Info:", userInfoResult.user);
-        console.log("🕐 Last Login:", lastLogin);
+        if (user.walletAddress) {
+          try {
+            const { analyzeWallet } = await import("./services/api-real");
 
-        if (lastLogin === null) {
-          // First login - Fetch onchain data from credit-score API
-          console.log("🎉 First time login! Fetching onchain data...");
+            // ✅ GỌI API TÍNH ĐIỂM (Backend sẽ crawl blockchain)
+            const onchainData = await analyzeWallet(user.walletAddress);
+            setWalletData(onchainData);
+            console.log("✅ Onchain data loaded:", onchainData);
 
-          if (user.walletAddress) {
-            try {
-              const onchainData = await analyzeWallet(user.walletAddress);
-              setWalletData(onchainData);
-              console.log("✅ Onchain data loaded:", onchainData);
-            } catch (apiError: any) {
-              // ❌ API failed - Show error and set empty data
-              console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
+            alert(
+              "🎉 Đăng ký thành công!\n\n" +
+              "Điểm tín dụng của bạn: " + onchainData.score + "\n" +
+              "Đang chuyển đến Dashboard..."
+            );
+          } catch (apiError: any) {
+            // ❌ API failed - Show error and set empty data
+            console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
 
-              alert(
-                "⚠️ Không thể tải dữ liệu blockchain cho ví của bạn.\n\n" +
-                "Nguyên nhân: " + (apiError.message || "Lỗi kết nối") + "\n\n" +
-                "Bạn vẫn có thể truy cập Dashboard, nhưng điểm tín dụng sẽ hiển thị là 0.\n" +
-                "Vui lòng thử lại sau hoặc liên hệ support."
-              );
+            alert(
+              "⚠️ Không thể tải dữ liệu blockchain cho ví của bạn.\n\n" +
+              "Nguyên nhân: " + (apiError.message || "Lỗi kết nối") + "\n\n" +
+              "Bạn vẫn có thể truy cập Dashboard, nhưng điểm tín dụng sẽ hiển thị là 0.\n" +
+              "Vui lòng thử lại sau hoặc liên hệ support."
+            );
 
-              // Set empty wallet data with score = 0
-              setWalletData({
-                score: 0,
-                walletAge: 0,
-                totalTransactions: 0,
-                tokenDiversity: 0,
-                totalAssets: 0,
-                rating: "N/A",
-                tokenBalances: [],
-                recentTransactions: [],
-                walletAddress: user.walletAddress,
-              });
-            }
+            // Set empty wallet data with score = 0
+            setWalletData({
+              score: 0,
+              walletAge: 0,
+              totalTransactions: 0,
+              tokenDiversity: 0,
+              totalAssets: 0,
+              rating: "N/A",
+              tokenBalances: [],
+              recentTransactions: [],
+              walletAddress: user.walletAddress,
+            });
           }
-        } else {
-          // Returning user - Use data from user-info (already stored in DB)
-          console.log("👋 Welcome back! Using cached data...");
+        }
+      } else {
+        // ✅ BƯỚC 4: Returning user - Fetch data from backend DB
+        console.log("👋 Welcome back! Fetching cached data from DB...");
 
+        const { getUserInfo } = await import("./services/api-real");
+        const userInfoResult = await getUserInfo();
+
+        if (userInfoResult.success && userInfoResult.user) {
           // Map user-info data to WalletAnalysis format
           const cachedData = {
             score: userInfoResult.user.credit_score || 0,
@@ -255,13 +258,23 @@ export default function App() {
 
           setWalletData(cachedData);
           console.log("✅ Cached data loaded:", cachedData);
-        }
-      } else {
-        // Fallback: If getUserInfo fails, fetch onchain data
-        console.warn("⚠️ getUserInfo failed, falling back to onchain data");
-        if (user.walletAddress) {
-          const onchainData = await analyzeWallet(user.walletAddress);
-          setWalletData(onchainData);
+
+          // ✅ SAVE TO WALLET CACHE for public Calculator
+          // This allows Calculator to show same data after logout
+          const cacheKey = `wallet_cache_${userInfoResult.user.wallet_address.toLowerCase()}`;
+          const cacheData = {
+            data: cachedData,
+            timestamp: Date.now(),
+          };
+
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+            console.log(`💾 Saved user data to wallet cache: ${cacheKey}`);
+          } catch (e) {
+            console.warn("⚠️ Failed to save wallet cache:", e);
+          }
+        } else {
+          console.warn("⚠️ getUserInfo failed for returning user");
         }
       }
     } catch (error) {
