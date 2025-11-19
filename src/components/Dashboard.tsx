@@ -150,14 +150,14 @@ export function Dashboard({
   };
 
   // Tính toán score change
-  const currentScore = walletData?.score || MOCK_STATS.currentScore;
-  const walletAge = walletData?.walletAge || MOCK_STATS.walletAge;
-  const totalTransactions = walletData?.totalTransactions || MOCK_STATS.totalTransactions;
-  const tokenDiversity = walletData?.tokenDiversity || MOCK_STATS.tokenDiversity;
-  const totalAssets = walletData?.totalAssets || MOCK_STATS.totalAssets;
-  const rating = walletData?.rating || MOCK_STATS.rating;
-  const tokenBalances = walletData?.tokenBalances || MOCK_WALLET_DATA.tokenBalances;
-  const recentTransactions = walletData?.recentTransactions || MOCK_WALLET_DATA.recentTransactions;
+  const currentScore = walletData?.score ?? MOCK_STATS.currentScore;
+  const walletAge = walletData?.walletAge ?? MOCK_STATS.walletAge;
+  const totalTransactions = walletData?.totalTransactions ?? MOCK_STATS.totalTransactions;
+  const tokenDiversity = walletData?.tokenDiversity ?? MOCK_STATS.tokenDiversity;
+  const totalAssets = walletData?.totalAssets ?? MOCK_STATS.totalAssets;
+  const rating = walletData?.rating ?? MOCK_STATS.rating;
+  const tokenBalances = walletData?.tokenBalances ?? MOCK_WALLET_DATA.tokenBalances;
+  const recentTransactions = walletData?.recentTransactions ?? MOCK_WALLET_DATA.recentTransactions;
 
   const scoreChange = MOCK_STATS.currentScore - MOCK_STATS.previousScore;
   const scoreChangePercent = ((scoreChange / MOCK_STATS.previousScore) * 100).toFixed(1);
@@ -376,3 +376,4 @@ export function Dashboard({
     </div>
   );
 }
+

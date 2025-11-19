@@ -8,6 +8,7 @@
 // 3. Test bằng test-api.html
 //
 // =====================================================
+import axios from "axios";
 
 // Giữ nguyên các interfaces với các field mở rộng
 export interface TokenBalance {
@@ -16,7 +17,6 @@ export interface TokenBalance {
     value: number;
     percentage: number;
     token_address?: string;
-    name?: string;
     logo?: string;
     decimals?: number;
 }
@@ -749,6 +749,16 @@ export const analyzeWallet = async (
             debugLog(`🔐 Adding auth token to request`);
         } else {
             debugLog(`🌐 Public request (no auth token)`);
+        }
+
+        try {
+            const response = await axios.get(`${API_BASE_URL}/credit-score/${walletAddress}`, {
+                headers: headers
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error("❌ API Error - No mock fallback:", error?.message);
+            throw error; // Dashboard hoặc Calculator sẽ handle và set score=0
         }
 
         // Call API với timeout 15 giây - Cân bằng giữa UX và backend processing
@@ -1706,3 +1716,4 @@ export default {
 // Export aliases for backward compatibility with old component imports
 export const sendMagicLink = sendMagicLinkReal;
 export const verifyToken = verifyMagicLink;
+
