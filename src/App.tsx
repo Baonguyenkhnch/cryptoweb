@@ -207,9 +207,34 @@ export default function App() {
           console.log("🎉 First time login! Fetching onchain data...");
 
           if (user.walletAddress) {
-            const onchainData = await analyzeWallet(user.walletAddress);
-            setWalletData(onchainData);
-            console.log("✅ Onchain data loaded:", onchainData);
+            try {
+              const onchainData = await analyzeWallet(user.walletAddress);
+              setWalletData(onchainData);
+              console.log("✅ Onchain data loaded:", onchainData);
+            } catch (apiError: any) {
+              // ❌ API failed - Show error and set empty data
+              console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
+
+              alert(
+                "⚠️ Không thể tải dữ liệu blockchain cho ví của bạn.\n\n" +
+                "Nguyên nhân: " + (apiError.message || "Lỗi kết nối") + "\n\n" +
+                "Bạn vẫn có thể truy cập Dashboard, nhưng điểm tín dụng sẽ hiển thị là 0.\n" +
+                "Vui lòng thử lại sau hoặc liên hệ support."
+              );
+
+              // Set empty wallet data with score = 0
+              setWalletData({
+                score: 0,
+                walletAge: 0,
+                totalTransactions: 0,
+                tokenDiversity: 0,
+                totalAssets: 0,
+                rating: "N/A",
+                tokenBalances: [],
+                recentTransactions: [],
+                walletAddress: user.walletAddress,
+              });
+            }
           }
         } else {
           // Returning user - Use data from user-info (already stored in DB)
@@ -580,8 +605,7 @@ export default function App() {
       </div>
 
       {/* Top Left - Logo */}
-      <div className="absolute top-2.5 md:top-4 left-8 md:left-10
- z-20">
+      <div className="absolute top-2.5 md:top-4 left-4 md:left-6 z-20">
         <div className="relative group cursor-pointer">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative w-9 h-9 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">

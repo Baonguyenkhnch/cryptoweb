@@ -244,9 +244,17 @@ export const registerUser = async (
             // ✅ Handle specific error cases
             const errorMessage = data.message || data.error || "";
 
-            // Check if email already exists
+            // Check if email already exists (most common duplicate error is 500)
             if (response.status === 400 || response.status === 409 || response.status === 500) {
                 const lowerMsg = errorMessage.toLowerCase();
+
+                // ✅ PRIORITY: If 500 error without clear message, assume duplicate email (most common case)
+                if (response.status === 500 && !errorMessage) {
+                    return {
+                        success: false,
+                        message: "Email này đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.",
+                    };
+                }
 
                 // Check for duplicate email patterns
                 if (
@@ -261,7 +269,7 @@ export const registerUser = async (
                 ) {
                     return {
                         success: false,
-                        message: "Tài khoản này đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.",
+                        message: "Email này đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.",
                     };
                 }
 
@@ -279,6 +287,14 @@ export const registerUser = async (
                     return {
                         success: false,
                         message: "Địa chỉ ví này đã được đăng ký. Vui lòng sử dụng ví khác.",
+                    };
+                }
+
+                // ✅ General 500 fallback for register endpoint
+                if (response.status === 500) {
+                    return {
+                        success: false,
+                        message: "Email này đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.",
                     };
                 }
             }
@@ -718,6 +734,23 @@ export const analyzeWallet = async (
         const url = `${API_BASE_URL}/api/credit-score/${walletAddress}${queryString ? `?${queryString}` : ''}`;
         debugLog(`📡 Calling API: ${url}`);
 
+        // ✅ AUTO-DETECT AUTH TOKEN
+        const authToken = localStorage.getItem("authToken");
+
+        // Build headers
+        const headers: HeadersInit = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        };
+
+        // Add Authorization header if user is logged in
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+            debugLog(`🔐 Adding auth token to request`);
+        } else {
+            debugLog(`🌐 Public request (no auth token)`);
+        }
+
         // Call API với timeout 15 giây - Cân bằng giữa UX và backend processing
         const maxRetries = 1; // Không retry để tránh đợi quá lâu
         let lastError;
@@ -732,10 +765,7 @@ export const analyzeWallet = async (
                 const startTime = Date.now();
                 const response = await fetch(url, {
                     method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
+                    headers: headers, // ✅ Use headers object with optional auth token
                     signal: controller.signal,
                 });
 
@@ -799,6 +829,18 @@ export const analyzeWallet = async (
     } catch (error: any) {
         debugLog(`❌ Error analyzing wallet:`, error);
 
+        // ✅ CHECK IF USER IS LOGGED IN
+        const authToken = localStorage.getItem("authToken");
+
+        if (authToken) {
+            // ❌ LOGGED IN USER: DO NOT use mock data - Throw error instead
+            console.error('🚫 API Error for logged-in user - Not using mock data:', error.message);
+            throw error; // Re-throw error to let caller handle it
+        }
+
+        // ✅ PUBLIC USER (Calculator): Can fallback to mock data for demo
+        console.warn('⚠️ Public API Error - Fallback to mock data for demo:', error.message);
+
         // Handle different error types
         if (error.name === 'AbortError') {
             console.warn('⏱️ Backend timeout - Fallback to mock data');
@@ -811,7 +853,6 @@ export const analyzeWallet = async (
         }
 
         // Any other error - fallback to mock data
-        console.warn('⚠️ API Error - Fallback to mock data:', error.message);
         return generateMockWalletData(walletAddress);
     }
 };
@@ -1536,7 +1577,7 @@ export const registerWalletWithEmail = async (data: {
     if (mockUserDatabase[data.email.toLowerCase()]) {
         return {
             success: false,
-            message: "Email này đã được đăng ký. Vui lòng đăng nhập hoặc dùng email khác.",
+            message: "Email này đã ược đăng ký. Vui lòng đăng nhập hoặc dùng email khác.",
         };
     }
 
