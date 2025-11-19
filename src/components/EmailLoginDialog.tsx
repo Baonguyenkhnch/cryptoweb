@@ -81,7 +81,7 @@ export function EmailLoginDialog({
         errorMsg.includes("đã tồn tại") ||
         errorMsg.includes("already registered") ||
         errorMsg.includes("500")) {
-        setError("📧 Email này đã được đăng ký. Vui lòng đăng nhập thay vì đăng ký mới.");
+        setError("📧 Email này chưa được đăng ký. Vui lòng đăng ký thay vì đăng nhập.");
       }
       // Nếu backend offline, hiển thị demo mode
       else if (errorMsg.includes('DEMO')) {

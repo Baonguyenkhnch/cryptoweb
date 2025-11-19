@@ -23,7 +23,7 @@ import { CaptchaDialog } from "./components/CaptchaDialog"; // ✅ Import Captch
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
-import logoImage from "../src/components/images/logonhap.jpg";
+import logoImage from "./components/images/logonhap.jpg";
 import {
   Wallet,
   TrendingUp,
@@ -210,7 +210,7 @@ export default function App() {
           }
         }
 
-        setWalletAddress(currentUser.walletAddress);
+        setWalletAddress(currentUser.walletAddress || "");
 
         const status = await checkSubscriptionStatus(
           currentUser.walletAddress,
@@ -247,6 +247,24 @@ export default function App() {
     // ✅ Check lastLogin và gọi API phù hợp
     try {
       setIsLoading(true);
+
+      // Prefill dashboard with the last calculator result while waiting for API
+      try {
+        const cachedWalletData = localStorage.getItem("lastWalletData");
+        if (cachedWalletData) {
+          const parsedData: WalletAnalysis = JSON.parse(cachedWalletData);
+          if (
+            parsedData?.walletAddress &&
+            user.walletAddress &&
+            parsedData.walletAddress.toLowerCase() ===
+            user.walletAddress.toLowerCase()
+          ) {
+            setWalletData(parsedData);
+          }
+        }
+      } catch (cacheError) {
+        console.warn("⚠️ Unable to restore cached wallet data:", cacheError);
+      }
 
       const { getUserInfo, analyzeWallet } = await import("./services/api-real");
 
@@ -369,6 +387,7 @@ export default function App() {
     setWalletData(null);
     setWalletAddress("");
     setShowResults(false);
+    localStorage.removeItem("lastWalletData");
 
     // Về trang Calculator (KHÔNG về trang login)
     setCurrentPage("calculator");
@@ -431,6 +450,7 @@ export default function App() {
       // Gọi API phân tích ví
       const data = await analyzeWallet(actualWalletAddress);
       setWalletData(data);
+      localStorage.setItem("lastWalletData", JSON.stringify(data));
       setWalletAddress(actualWalletAddress); // Cập nhật lại với wallet address thực
       setShowResults(true);
 
@@ -525,6 +545,7 @@ export default function App() {
     setShowFeedbackDialog(false);
     setSubscriptionStatus(null);
     setUseDemoMode(false); // Reset demo mode
+    localStorage.removeItem("lastWalletData");
   };
 
   // Handler for Demo Mode when quota error occurs
@@ -784,7 +805,7 @@ export default function App() {
                       <Input
                         id="wallet"
                         type={showWalletAddress ? "text" : "password"}
-                        placeholder={t.calculator.input.placeholder}
+                        placeholder={t.calculator.input.label}
                         inputMode="none"
                         autoComplete="new-password"
                         value={walletAddress}
