@@ -381,7 +381,28 @@ export default function App() {
             console.error("❌ No wallet_address in user data - cannot save cache!");
           }
         } else {
-          console.warn("⚠️ getUserInfo failed for returning user:", userInfoResult);
+          // ✅ FIX: Show alert when getUserInfo failed for returning user
+          console.error("❌ getUserInfo failed for returning user:", userInfoResult);
+
+          const errorMsg = userInfoResult.message || "Không thể tải dữ liệu từ database";
+
+          alert(
+            `⚠️ Không thể tải dữ liệu tài khoản của bạn!\n\n` +
+            `Lý do: ${errorMsg}\n\n` +
+            `Vui lòng:\n` +
+            `1. Kiểm tra kết nối mạng\n` +
+            `2. Thử đăng nhập lại sau 1-2 phút\n` +
+            `3. Liên hệ admin@migofin.com nếu vẫn lỗi`
+          );
+
+          // ✅ FIX: Redirect to Calculator and clear auth
+          setIsLoading(false);
+          setCurrentPage("calculator");
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("currentUser");
+          setCurrentUser(null);
+
+          return; // ← EXIT early
         }
       }
     } catch (error) {

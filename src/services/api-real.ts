@@ -682,6 +682,10 @@ export const getUserInfo = async (): Promise<{
         }
 
         const url = `${API_BASE_URL}/api/user-info`;
+
+        debugLog(`📡 Calling getUserInfo API: ${url}`);
+        debugLog(`🔐 Auth token (first 20 chars): ${authToken.substring(0, 20)}...`);
+
         const response = await fetch(url, {
             method: "GET",
             headers: {
@@ -690,13 +694,17 @@ export const getUserInfo = async (): Promise<{
             },
         });
 
+        debugLog(`📊 Response status: ${response.status} ${response.statusText}`);
+
         const data = await response.json();
+
+        debugLog(`📦 Response data:`, data);
 
         if (!response.ok) {
             debugLog(`❌ Get user info error: ${response.status}`, data);
             return {
                 success: false,
-                message: data.message || data.error || "Không thể lấy thông tin user",
+                message: data.message || data.error || `API error ${response.status}: ${response.statusText}`,
             };
         }
 
