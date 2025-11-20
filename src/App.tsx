@@ -240,7 +240,7 @@ export default function App() {
   const handleLogin = async (user: UserProfile) => {
     setCurrentUser(user);
 
-    // ✅ KHÔNG to mockToken nữa - Verify.tsx đã save sessionToken thật rồi!
+    // ✅ KHÔNG tạo mockToken nữa - Verify.tsx đã save sessionToken thật rồi!
     // Chỉ cần save minimal user data
     const minimalUser = {
       id: user.id,
@@ -273,49 +273,12 @@ export default function App() {
 
         if (user.walletAddress) {
           try {
-            // 🧪 TEST: Uncomment dòng dưới để test error handling
-            // throw new Error("Moralis API error: Rate limit exceeded - quota consumed");
-
             const { analyzeWallet } = await import("./services/api-real");
 
             // ✅ GỌI API TÍNH ĐIỂM (Backend sẽ crawl blockchain)
             const onchainData = await analyzeWallet(user.walletAddress);
-
-            // ✅ FIX: Validate data before using - Skip if score = 0 (invalid cache)
-            if (!onchainData || onchainData.score === 0) {
-              console.warn("⚠️ Received invalid data (score = 0), retrying without cache...");
-
-              // Clear cache and retry
-              const cacheKey = `wallet_cache_${user.walletAddress.toLowerCase()}`;
-              localStorage.removeItem(cacheKey);
-
-              // Retry with force_refresh
-              const freshData = await analyzeWallet(user.walletAddress, { force_refresh: true });
-
-              // ✅ FIX: Don't throw error - Allow score = 0 but warn user
-              if (!freshData || freshData.score === 0) {
-                console.warn("⚠️ API still returns score = 0 after retry. This may be correct for a new wallet.");
-
-                // Show warning but allow user to continue
-                alert(
-                  `⚠️ Cảnh báo: Điểm tín dụng = 0\n\n` +
-                  `Nguyên nhân có thể:\n` +
-                  `1. Ví mới chưa có giao dịch\n` +
-                  `2. Backend đang tính toán dữ liệu\n` +
-                  `3. Lỗi kết nối với blockchain\n\n` +
-                  `Bạn vẫn có thể vào Dashboard và thử lại sau.`
-                );
-
-                // Set data with score = 0 (allow user to see dashboard)
-                setWalletData(freshData || onchainData);
-              } else {
-                setWalletData(freshData);
-                console.log("✅ Fresh data loaded after retry:", freshData);
-              }
-            } else {
-              setWalletData(onchainData);
-              console.log("✅ Onchain data loaded:", onchainData);
-            }
+            setWalletData(onchainData);
+            console.log("✅ Onchain data loaded:", onchainData);
 
             // ✅ SAVE TO WALLET CACHE for public Calculator
             const cacheKey = `wallet_cache_${user.walletAddress.toLowerCase()}`;
@@ -331,38 +294,30 @@ export default function App() {
               console.warn("⚠️ Failed to save wallet cache:", e);
             }
 
-            // ✅ SUCCESS - Show success message
+            // ✅ REMOVED ALERT - Direct to dashboard without interruption
             console.log("✅ First login complete, credit score:", onchainData.score);
           } catch (apiError: any) {
-            // ❌ API FAILED - Show clear error message
+            // ❌ API failed - Show error and set empty data
             console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
 
-            // ✅ FIX: Show alert to user so they know what happened
-            const errorMsg = apiError.message || "Lỗi kết nối";
-            const isQuotaError = errorMsg.includes('quota') || errorMsg.includes('rate limit') ||
-              errorMsg.includes('401') || errorMsg.includes('500');
-
-            alert(
-              `⚠️ Không thể tải dữ liệu blockchain cho ví này!\n\n` +
-              `Lý do: ${errorMsg}\n\n` +
-              (isQuotaError
-                ? `Backend đang hết quota Moralis. Vui lòng:\n` +
-                `1. Thử lại sau 1-2 giờ\n` +
-                `2. Hoặc liên hệ admin@migofin.com`
-                : `Vui lòng kiểm tra kết nối mạng và thử lại sau.`)
+            // ✅ REMOVED ALERT - Just log warning and continue
+            console.warn(
+              "⚠️ Cannot load blockchain data - setting score to 0\n" +
+              "Reason:", apiError.message || "Connection error"
             );
 
-            // ✅ FIX: DON'T set empty data - User can retry later
-            // Instead, redirect back to Calculator page
-            setIsLoading(false);
-            setCurrentPage("calculator");
-
-            // Clear auth to allow retry
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("currentUser");
-            setCurrentUser(null);
-
-            return; // ← EXIT early without setting empty data
+            // Set empty wallet data with score = 0
+            setWalletData({
+              score: 0,
+              walletAge: 0,
+              totalTransactions: 0,
+              tokenDiversity: 0,
+              totalAssets: 0,
+              rating: "N/A",
+              tokenBalances: [],
+              recentTransactions: [],
+              walletAddress: user.walletAddress,
+            });
           }
         }
       } else {
@@ -415,28 +370,7 @@ export default function App() {
             console.error("❌ No wallet_address in user data - cannot save cache!");
           }
         } else {
-          // ✅ FIX: Show alert when getUserInfo failed for returning user
-          console.error("❌ getUserInfo failed for returning user:", userInfoResult);
-
-          const errorMsg = userInfoResult.message || "Không thể tải dữ liệu từ database";
-
-          alert(
-            `⚠️ Không thể tải dữ liệu tài khoản của bạn!\n\n` +
-            `Lý do: ${errorMsg}\n\n` +
-            `Vui lòng:\n` +
-            `1. Kiểm tra kết nối mạng\n` +
-            `2. Thử đăng nhập lại sau 1-2 phút\n` +
-            `3. Liên hệ admin@migofin.com nếu vẫn lỗi`
-          );
-
-          // ✅ FIX: Redirect to Calculator and clear auth
-          setIsLoading(false);
-          setCurrentPage("calculator");
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("currentUser");
-          setCurrentUser(null);
-
-          return; // ← EXIT early
+          console.warn("⚠️ getUserInfo failed for returning user:", userInfoResult);
         }
       }
     } catch (error) {
