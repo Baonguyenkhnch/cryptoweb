@@ -292,12 +292,26 @@ export default function App() {
               // Retry with force_refresh
               const freshData = await analyzeWallet(user.walletAddress, { force_refresh: true });
 
+              // ✅ FIX: Don't throw error - Allow score = 0 but warn user
               if (!freshData || freshData.score === 0) {
-                throw new Error("API trả về dữ liệu không hợp lệ (score = 0)");
-              }
+                console.warn("⚠️ API still returns score = 0 after retry. This may be correct for a new wallet.");
 
-              setWalletData(freshData);
-              console.log("✅ Fresh data loaded after retry:", freshData);
+                // Show warning but allow user to continue
+                alert(
+                  `⚠️ Cảnh báo: Điểm tín dụng = 0\n\n` +
+                  `Nguyên nhân có thể:\n` +
+                  `1. Ví mới chưa có giao dịch\n` +
+                  `2. Backend đang tính toán dữ liệu\n` +
+                  `3. Lỗi kết nối với blockchain\n\n` +
+                  `Bạn vẫn có thể vào Dashboard và thử lại sau.`
+                );
+
+                // Set data with score = 0 (allow user to see dashboard)
+                setWalletData(freshData || onchainData);
+              } else {
+                setWalletData(freshData);
+                console.log("✅ Fresh data loaded after retry:", freshData);
+              }
             } else {
               setWalletData(onchainData);
               console.log("✅ Onchain data loaded:", onchainData);
