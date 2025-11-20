@@ -294,20 +294,16 @@ export default function App() {
               console.warn("⚠️ Failed to save wallet cache:", e);
             }
 
-            alert(
-              "🎉 Đăng ký thành công!\n\n" +
-              "Điểm tín dụng của bạn: " + onchainData.score + "\n" +
-              "Đang chuyển đến Dashboard..."
-            );
+            // ✅ REMOVED ALERT - Direct to dashboard without interruption
+            console.log("✅ First login complete, credit score:", onchainData.score);
           } catch (apiError: any) {
             // ❌ API failed - Show error and set empty data
             console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
 
-            alert(
-              "⚠️ Không thể tải dữ liệu blockchain cho ví của bạn.\n\n" +
-              "Nguyên nhân: " + (apiError.message || "Lỗi kết nối") + "\n\n" +
-              "Bạn vẫn có thể truy cập Dashboard, nhưng điểm tín dụng sẽ hiển thị là 0.\n" +
-              "Vui lòng thử lại sau hoặc liên hệ support."
+            // ✅ REMOVED ALERT - Just log warning and continue
+            console.warn(
+              "⚠️ Cannot load blockchain data - setting score to 0\n" +
+              "Reason:", apiError.message || "Connection error"
             );
 
             // Set empty wallet data with score = 0

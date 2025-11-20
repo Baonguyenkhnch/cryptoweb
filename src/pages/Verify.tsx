@@ -117,24 +117,18 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     setStatus("success");
                     setMessage("Xác thực thành công! Đang chuyển đến Dashboard...");
 
-                    // Countdown và redirect
-                    let count = 3;
-                    const timer = setInterval(() => {
-                        count--;
-                        setCountdown(count);
-                        if (count <= 0) {
-                            clearInterval(timer);
+                    // ✅ IMMEDIATE REDIRECT - No countdown needed
+                    console.log("🚀 Redirecting to Dashboard immediately...");
+                    const finalToken = localStorage.getItem("authToken");
+                    const finalUser = localStorage.getItem("currentUser");
+                    console.log("🚀 Final check before redirect:");
+                    console.log("  - authToken:", finalToken ? finalToken.substring(0, 20) + "..." : "❌ NULL");
+                    console.log("  - currentUser:", finalUser ? "exists" : "❌ NULL");
 
-                            // ✅ FINAL CHECK before redirect
-                            const finalToken = localStorage.getItem("authToken");
-                            const finalUser = localStorage.getItem("currentUser");
-                            console.log("🚀 Final check before redirect:");
-                            console.log("  - authToken:", finalToken ? finalToken.substring(0, 20) + "..." : "❌ NULL");
-                            console.log("  - currentUser:", finalUser ? "exists" : "❌ NULL");
-
-                            onVerifySuccess(result.user!);
-                        }
-                    }, 1000);
+                    // Redirect immediately after a brief moment to show success state
+                    setTimeout(() => {
+                        onVerifySuccess(result.user!);
+                    }, 500); // Just 500ms to show success animation
                 } else {
                     setStatus("error");
                     const errorMsg = result.message || "Xác thực thất bại. Vui lòng thử lại.";
