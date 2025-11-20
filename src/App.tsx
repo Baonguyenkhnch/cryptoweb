@@ -240,7 +240,7 @@ export default function App() {
   const handleLogin = async (user: UserProfile) => {
     setCurrentUser(user);
 
-    // ✅ KHÔNG tạo mockToken nữa - Verify.tsx đã save sessionToken thật rồi!
+    // ✅ KHÔNG to mockToken nữa - Verify.tsx đã save sessionToken thật rồi!
     // Chỉ cần save minimal user data
     const minimalUser = {
       id: user.id,
@@ -273,6 +273,9 @@ export default function App() {
 
         if (user.walletAddress) {
           try {
+            // 🧪 TEST: Uncomment dòng dưới để test error handling
+            // throw new Error("Moralis API error: Rate limit exceeded - quota consumed");
+
             const { analyzeWallet } = await import("./services/api-real");
 
             // ✅ GỌI API TÍNH ĐIỂM (Backend sẽ crawl blockchain)
@@ -294,30 +297,38 @@ export default function App() {
               console.warn("⚠️ Failed to save wallet cache:", e);
             }
 
-            // ✅ REMOVED ALERT - Direct to dashboard without interruption
+            // ✅ SUCCESS - Show success message
             console.log("✅ First login complete, credit score:", onchainData.score);
           } catch (apiError: any) {
-            // ❌ API failed - Show error and set empty data
+            // ❌ API FAILED - Show clear error message
             console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
 
-            // ✅ REMOVED ALERT - Just log warning and continue
-            console.warn(
-              "⚠️ Cannot load blockchain data - setting score to 0\n" +
-              "Reason:", apiError.message || "Connection error"
+            // ✅ FIX: Show alert to user so they know what happened
+            const errorMsg = apiError.message || "Lỗi kết nối";
+            const isQuotaError = errorMsg.includes('quota') || errorMsg.includes('rate limit') ||
+              errorMsg.includes('401') || errorMsg.includes('500');
+
+            alert(
+              `⚠️ Không thể tải dữ liệu blockchain cho ví này!\n\n` +
+              `Lý do: ${errorMsg}\n\n` +
+              (isQuotaError
+                ? `Backend đang hết quota Moralis. Vui lòng:\n` +
+                `1. Thử lại sau 1-2 giờ\n` +
+                `2. Hoặc liên hệ admin@migofin.com`
+                : `Vui lòng kiểm tra kết nối mạng và thử lại sau.`)
             );
 
-            // Set empty wallet data with score = 0
-            setWalletData({
-              score: 0,
-              walletAge: 0,
-              totalTransactions: 0,
-              tokenDiversity: 0,
-              totalAssets: 0,
-              rating: "N/A",
-              tokenBalances: [],
-              recentTransactions: [],
-              walletAddress: user.walletAddress,
-            });
+            // ✅ FIX: DON'T set empty data - User can retry later
+            // Instead, redirect back to Calculator page
+            setIsLoading(false);
+            setCurrentPage("calculator");
+
+            // Clear auth to allow retry
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("currentUser");
+            setCurrentUser(null);
+
+            return; // ← EXIT early without setting empty data
           }
         }
       } else {
