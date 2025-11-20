@@ -170,14 +170,23 @@ export function Dashboard({
   };
 
   // Tính toán score change
-  const currentScore = walletData?.score || MOCK_STATS.currentScore;
-  const walletAge = walletData?.walletAge || MOCK_STATS.walletAge;
-  const totalTransactions = walletData?.totalTransactions || MOCK_STATS.totalTransactions;
-  const tokenDiversity = walletData?.tokenDiversity || MOCK_STATS.tokenDiversity;
-  const totalAssets = walletData?.totalAssets || MOCK_STATS.totalAssets;
-  const rating = walletData?.rating || MOCK_STATS.rating;
-  const tokenBalances = walletData?.tokenBalances || MOCK_WALLET_DATA.tokenBalances;
-  const recentTransactions = walletData?.recentTransactions || MOCK_WALLET_DATA.recentTransactions;
+  // ✅ FIX: Only fallback to MOCK if walletData is null, not if score is 0
+  const currentScore = walletData !== null ? (walletData.score ?? MOCK_STATS.currentScore) : MOCK_STATS.currentScore;
+  const walletAge = walletData !== null ? (walletData.walletAge ?? MOCK_STATS.walletAge) : MOCK_STATS.walletAge;
+  const totalTransactions = walletData !== null ? (walletData.totalTransactions ?? MOCK_STATS.totalTransactions) : MOCK_STATS.totalTransactions;
+  const tokenDiversity = walletData !== null ? (walletData.tokenDiversity ?? MOCK_STATS.tokenDiversity) : MOCK_STATS.tokenDiversity;
+  const totalAssets = walletData !== null ? (walletData.totalAssets ?? MOCK_STATS.totalAssets) : MOCK_STATS.totalAssets;
+  const rating = walletData !== null ? (walletData.rating ?? MOCK_STATS.rating) : MOCK_STATS.rating;
+  const tokenBalances = walletData !== null ? (walletData.tokenBalances ?? MOCK_WALLET_DATA.tokenBalances) : MOCK_WALLET_DATA.tokenBalances;
+  const recentTransactions = walletData !== null ? (walletData.recentTransactions ?? MOCK_WALLET_DATA.recentTransactions) : MOCK_WALLET_DATA.recentTransactions;
+
+  // ✅ DEBUG: Log để check giá trị truyền vào ScoreResult
+  console.log("🎯 Dashboard - Data passed to ScoreResult:");
+  console.log("  - walletData:", walletData);
+  console.log("  - currentScore:", currentScore);
+  console.log("  - walletAge:", walletAge);
+  console.log("  - totalTransactions:", totalTransactions);
+  console.log("  - totalAssets:", totalAssets);
 
   const scoreChange = MOCK_STATS.currentScore - MOCK_STATS.previousScore;
   const scoreChangePercent = ((scoreChange / MOCK_STATS.previousScore) * 100).toFixed(1);

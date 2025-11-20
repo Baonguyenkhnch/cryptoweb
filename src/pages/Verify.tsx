@@ -92,12 +92,26 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     if (sessionToken) {
                         localStorage.setItem("authToken", sessionToken);
                         console.log("💾 Saved sessionToken:", sessionToken.substring(0, 20) + "...");
+
+                        // ✅ VERIFY IT WAS SAVED
+                        const verifyToken = localStorage.getItem("authToken");
+                        console.log("✅ Verified authToken in localStorage:", verifyToken ? verifyToken.substring(0, 20) + "..." : "❌ NOT FOUND!");
+                    } else {
+                        console.error("❌ No sessionToken or authToken in API response!");
                     }
 
                     // ✅ SAVE USER DATA
                     localStorage.setItem("currentUser", JSON.stringify(result.user));
                     console.log("👤 User data:", result.user);
                     console.log("🕐 Last Login:", result.user.lastLogin);
+
+                    // ✅ VERIFY USER WAS SAVED
+                    const verifyUser = localStorage.getItem("currentUser");
+                    console.log("✅ Verified currentUser in localStorage:", verifyUser ? "exists" : "❌ NOT FOUND!");
+
+                    // ✅ CLEAR URL HASH to prevent re-verification on F5
+                    console.log("🧹 Clearing URL hash to prevent re-verify on reload");
+                    window.location.hash = "#/dashboard";
 
                     // ✅ SUCCESS - Let App.tsx handleLogin() do the rest
                     setStatus("success");
@@ -110,6 +124,14 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                         setCountdown(count);
                         if (count <= 0) {
                             clearInterval(timer);
+
+                            // ✅ FINAL CHECK before redirect
+                            const finalToken = localStorage.getItem("authToken");
+                            const finalUser = localStorage.getItem("currentUser");
+                            console.log("🚀 Final check before redirect:");
+                            console.log("  - authToken:", finalToken ? finalToken.substring(0, 20) + "..." : "❌ NULL");
+                            console.log("  - currentUser:", finalUser ? "exists" : "❌ NULL");
+
                             onVerifySuccess(result.user!);
                         }
                     }, 1000);

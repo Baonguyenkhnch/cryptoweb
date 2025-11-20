@@ -103,6 +103,18 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
+
+      // ✅ IMPORTANT: Don't show verify page if user is already logged in
+      const token = localStorage.getItem("authToken");
+      const savedUser = localStorage.getItem("currentUser");
+
+      if (token && savedUser) {
+        // User is already authenticated, don't show verify page even if hash contains /verify
+        console.log("🔒 User already authenticated, skipping verify page");
+        setShowVerifyPage(false);
+        return;
+      }
+
       // ✅ SUPPORT BOTH /verify AND /verify-registration
       if (hash.startsWith("#/verify-registration") || hash.startsWith("#/verify")) {
         setShowVerifyPage(true);
@@ -124,16 +136,23 @@ export default function App() {
     const token = localStorage.getItem("authToken");
     const savedUser = localStorage.getItem("currentUser");
 
+    console.log("🔍 Checking auth on mount:");
+    console.log("  - authToken:", token ? token.substring(0, 20) + "..." : "null");
+    console.log("  - currentUser:", savedUser ? "exists" : "null");
+
     if (token && savedUser) {
       try {
         const user = JSON.parse(savedUser);
         setCurrentUser(user);
         setCurrentPage("dashboard");
+        console.log("✅ Auth restored from localStorage, redirecting to dashboard");
       } catch (error) {
-        console.error("Lỗi khi c user:", error);
+        console.error("❌ Lỗi khi parse user:", error);
         localStorage.removeItem("authToken");
         localStorage.removeItem("currentUser");
       }
+    } else {
+      console.log("⚠️ No auth found in localStorage");
     }
   }, []);
 
@@ -142,15 +161,63 @@ export default function App() {
     const loadWalletDataForDashboard = async () => {
       if (
         currentPage === "dashboard" &&
-        currentUser?.walletAddress &&
-        !walletData
+        currentUser?.walletAddress
+        // ✅ REMOVED: !walletData check - Always load fresh data when entering dashboard
       ) {
-        // Loading wallet data for dashboard - removed console.log to prevent memory issues
+        // Loading wallet data for dashboard
+        console.log("🔄 Loading wallet data for Dashboard...");
+        console.log("📍 Current walletData:", walletData);
+
         setIsLoading(true);
         try {
+          // ✅ CHECK CACHE FIRST - Same logic as Calculator
+          const cacheKey = `wallet_cache_${currentUser.walletAddress.toLowerCase()}`;
+          const cachedDataStr = localStorage.getItem(cacheKey);
+
+          if (cachedDataStr) {
+            try {
+              const cachedData = JSON.parse(cachedDataStr);
+              const cacheAge = Date.now() - cachedData.timestamp;
+              const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+
+              if (cacheAge < CACHE_EXPIRY) {
+                console.log(`💾 Dashboard: Using cached data (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
+                setWalletData(cachedData.data);
+                setWalletAddress(currentUser.walletAddress);
+
+                // Still check subscription status
+                const status = await checkSubscriptionStatus(currentUser.walletAddress);
+                setSubscriptionStatus(status);
+
+                setIsLoading(false);
+                return; // ← EXIT early, don't call API
+              } else {
+                console.log(`⏰ Dashboard: Cache expired, fetching fresh data...`);
+              }
+            } catch (e) {
+              console.warn("⚠️ Dashboard: Failed to parse cache:", e);
+            }
+          }
+
+          // ✅ NO CACHE or EXPIRED - Call API
+          console.log("🌐 Dashboard: Fetching fresh data from API...");
           const data = await analyzeWallet(
             currentUser.walletAddress,
           );
+          console.log("✅ Wallet data loaded:", data);
+
+          // ✅ SAVE TO CACHE
+          const cacheData = {
+            data: data,
+            timestamp: Date.now(),
+          };
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+            console.log(`💾 Dashboard: Saved fresh data to cache`);
+          } catch (e) {
+            console.warn("⚠️ Dashboard: Failed to save cache:", e);
+          }
+
           setWalletData(data);
           setWalletAddress(currentUser.walletAddress);
 
@@ -160,7 +227,7 @@ export default function App() {
           );
           setSubscriptionStatus(status);
         } catch (error) {
-          console.error("Lỗi khi load wallet data:", error);
+          console.error("❌ Lỗi khi load wallet data:", error);
         } finally {
           setIsLoading(false);
         }
@@ -168,7 +235,7 @@ export default function App() {
     };
 
     loadWalletDataForDashboard();
-  }, [currentPage, currentUser, walletData]);
+  }, [currentPage, currentUser]); // ✅ REMOVED: walletData dependency to allow reload
 
   const handleLogin = async (user: UserProfile) => {
     setCurrentUser(user);
@@ -399,10 +466,54 @@ export default function App() {
         return;
       }
 
-      // Gọi API phân tích ví
+      // ✅ CHECK CACHE FIRST - Before calling API
+      const cacheKey = `wallet_cache_${actualWalletAddress.toLowerCase()}`;
+      const cachedDataStr = localStorage.getItem(cacheKey);
+
+      if (cachedDataStr) {
+        try {
+          const cachedData = JSON.parse(cachedDataStr);
+          const cacheAge = Date.now() - cachedData.timestamp;
+          const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+
+          if (cacheAge < CACHE_EXPIRY) {
+            console.log(`💾 Using cached data for ${actualWalletAddress} (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
+            setWalletData(cachedData.data);
+            setWalletAddress(actualWalletAddress);
+            setShowResults(true);
+
+            // Still check subscription status
+            const status = await checkSubscriptionStatus(actualWalletAddress);
+            setSubscriptionStatus(status);
+
+            setIsLoading(false);
+            return; // ← EXIT early, don't call API
+          } else {
+            console.log(`⏰ Cache expired for ${actualWalletAddress}, fetching fresh data...`);
+          }
+        } catch (e) {
+          console.warn("⚠️ Failed to parse cache:", e);
+        }
+      }
+
+      // ✅ NO CACHE or EXPIRED - Call API
+      console.log(`🌐 Fetching fresh data from API for ${actualWalletAddress}...`);
       const data = await analyzeWallet(actualWalletAddress);
+
+      // ✅ SAVE TO CACHE
+      const cacheData = {
+        data: data,
+        timestamp: Date.now(),
+      };
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+        console.log(`💾 Saved fresh data to cache: ${cacheKey}`);
+      } catch (e) {
+        console.warn("⚠️ Failed to save cache:", e);
+      }
+
       setWalletData(data);
-      setWalletAddress(actualWalletAddress); // Cập nhật lại với wallet address thực
+      setWalletAddress(actualWalletAddress);
       setShowResults(true);
 
       // Kiểm tra subscription status
