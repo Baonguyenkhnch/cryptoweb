@@ -280,8 +280,28 @@ export default function App() {
 
             // ✅ GỌI API TÍNH ĐIỂM (Backend sẽ crawl blockchain)
             const onchainData = await analyzeWallet(user.walletAddress);
-            setWalletData(onchainData);
-            console.log("✅ Onchain data loaded:", onchainData);
+
+            // ✅ FIX: Validate data before using - Skip if score = 0 (invalid cache)
+            if (!onchainData || onchainData.score === 0) {
+              console.warn("⚠️ Received invalid data (score = 0), retrying without cache...");
+
+              // Clear cache and retry
+              const cacheKey = `wallet_cache_${user.walletAddress.toLowerCase()}`;
+              localStorage.removeItem(cacheKey);
+
+              // Retry with force_refresh
+              const freshData = await analyzeWallet(user.walletAddress, { force_refresh: true });
+
+              if (!freshData || freshData.score === 0) {
+                throw new Error("API trả về dữ liệu không hợp lệ (score = 0)");
+              }
+
+              setWalletData(freshData);
+              console.log("✅ Fresh data loaded after retry:", freshData);
+            } else {
+              setWalletData(onchainData);
+              console.log("✅ Onchain data loaded:", onchainData);
+            }
 
             // ✅ SAVE TO WALLET CACHE for public Calculator
             const cacheKey = `wallet_cache_${user.walletAddress.toLowerCase()}`;
