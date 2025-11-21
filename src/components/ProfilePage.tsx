@@ -43,6 +43,7 @@ import {
   Home
 } from "lucide-react";
 import type { UserProfile } from "../services/api-real";
+import type { WalletAnalysis } from "../services/api-real"; // ✅ NEW: Import WalletAnalysis type
 import { updateUserProfile, formatWalletAddress } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 import { copyToClipboard } from "./ui/utils";
@@ -54,6 +55,7 @@ import { EmailChangeDialog } from "./EmailChangeDialog"; // ✅ NEW
 
 interface ProfilePageProps {
   user: UserProfile;
+  walletData?: WalletAnalysis | null; // ✅ NEW: Add walletData prop
   onUpdateProfile?: (updatedUser: UserProfile) => void;
   onBack?: () => void;
 }
@@ -74,7 +76,7 @@ const MOCK_PROFILE_STATS = {
 // MAIN COMPONENT
 // ============================================
 
-export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps) {
+export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: ProfilePageProps) {
   // Language context
   const { t, language } = useLanguage();
 
@@ -358,11 +360,15 @@ export function ProfilePage({ user, onUpdateProfile, onBack }: ProfilePageProps)
               <CardContent className="space-y-3">
                 <div className="p-3 bg-slate-900/50 rounded-lg border border-cyan-500/20">
                   <div className="text-gray-400 text-xs mb-1">{t.profile.stats.averageScore}</div>
-                  <div className="text-2xl text-cyan-400">{MOCK_PROFILE_STATS.averageScore}</div>
+                  <div className="text-2xl text-cyan-400">
+                    {walletData ? walletData.score : "---"}
+                  </div>
                 </div>
                 <div className="p-3 bg-slate-900/50 rounded-lg border border-blue-500/20">
                   <div className="text-gray-400 text-xs mb-1">{t.profile.stats.highestScore}</div>
-                  <div className="text-2xl text-emerald-400">{MOCK_PROFILE_STATS.highestScore}</div>
+                  <div className="text-2xl text-emerald-400">
+                    {walletData ? walletData.score : "---"}
+                  </div>
                 </div>
               </CardContent>
             </Card>
