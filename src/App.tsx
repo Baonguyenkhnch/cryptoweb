@@ -240,17 +240,47 @@ export default function App() {
   const handleLogin = async (user: UserProfile) => {
     setCurrentUser(user);
 
-    // ✅ KHÔNG tạo mockToken nữa - Verify.tsx đã save sessionToken thật rồi!
-    // Chỉ cần save minimal user data
-    const minimalUser = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      walletAddress: user.walletAddress,
-      createdAt: user.createdAt,
-      lastLogin: user.lastLogin
-    };
-    localStorage.setItem("currentUser", JSON.stringify(minimalUser));
+    // ✅ FIX: Check if user is already authenticated from Verify.tsx
+    // If authToken already exists in localStorage, it means Verify.tsx already saved everything
+    // We should NOT overwrite it!
+    const existingToken = localStorage.getItem("authToken");
+    const existingUser = localStorage.getItem("currentUser");
+
+    if (existingToken && existingUser) {
+      console.log("🔒 User already authenticated from Verify.tsx - skipping localStorage overwrite");
+      console.log("  - authToken exists:", existingToken.substring(0, 20) + "...");
+      console.log("  - currentUser exists:", existingUser.substring(0, 50) + "...");
+
+      // Parse existing user to use it (don't overwrite with potentially incomplete data)
+      try {
+        const savedUser = JSON.parse(existingUser);
+        setCurrentUser(savedUser); // Use the saved user data instead
+        console.log("✅ Using saved user data from Verify.tsx");
+      } catch (e) {
+        console.warn("⚠️ Failed to parse existing user, using new user data");
+      }
+    } else {
+      // ✅ NEW LOGIN (not from Verify.tsx) - Save to localStorage
+      console.log("🆕 New login - saving to localStorage");
+
+      // Save minimal user data
+      const minimalUser = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        walletAddress: user.walletAddress,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin
+      };
+      localStorage.setItem("currentUser", JSON.stringify(minimalUser));
+
+      // ✅ ALSO SAVE authToken if not from Verify.tsx (for backward compatibility with old flows)
+      if (!existingToken) {
+        const mockToken = `mock_jwt_${Date.now()}_${Math.random().toString(36)}`;
+        localStorage.setItem("authToken", mockToken);
+        console.log("💾 Saved mockToken for backward compatibility");
+      }
+    }
 
     // ✅ CHECK lastLogin - Backend sets lastLogin immediately, so we check if it's recent
     try {
@@ -273,12 +303,49 @@ export default function App() {
 
         if (user.walletAddress) {
           try {
+            // 🧪 TEST: Uncomment dòng dưới để test error handling
+            // throw new Error("Moralis API error: Rate limit exceeded - quota consumed");
+
             const { analyzeWallet } = await import("./services/api-real");
 
             // ✅ GỌI API TÍNH ĐIỂM (Backend sẽ crawl blockchain)
             const onchainData = await analyzeWallet(user.walletAddress);
-            setWalletData(onchainData);
-            console.log("✅ Onchain data loaded:", onchainData);
+
+            // ✅ FIX: Validate data before using - Skip if score = 0 (invalid cache)
+            if (!onchainData || onchainData.score === 0) {
+              console.warn("⚠️ Received invalid data (score = 0), retrying without cache...");
+
+              // Clear cache and retry
+              const cacheKey = `wallet_cache_${user.walletAddress.toLowerCase()}`;
+              localStorage.removeItem(cacheKey);
+
+              // Retry with force_refresh
+              const freshData = await analyzeWallet(user.walletAddress, { force_refresh: true });
+
+              // ✅ FIX: Don't throw error - Allow score = 0 but warn user
+              if (!freshData || freshData.score === 0) {
+                console.warn("⚠️ API still returns score = 0 after retry. This may be correct for a new wallet.");
+
+                // Show warning but allow user to continue
+                alert(
+                  `⚠️ Cảnh báo: Điểm tín dụng = 0\n\n` +
+                  `Nguyên nhân có thể:\n` +
+                  `1. Ví mới chưa có giao dịch\n` +
+                  `2. Backend đang tính toán dữ liệu\n` +
+                  `3. Lỗi kết nối với blockchain\n\n` +
+                  `Bạn vẫn có thể vào Dashboard và thử lại sau.`
+                );
+
+                // Set data with score = 0 (allow user to see dashboard)
+                setWalletData(freshData || onchainData);
+              } else {
+                setWalletData(freshData);
+                console.log("✅ Fresh data loaded after retry:", freshData);
+              }
+            } else {
+              setWalletData(onchainData);
+              console.log("✅ Onchain data loaded:", onchainData);
+            }
 
             // ✅ SAVE TO WALLET CACHE for public Calculator
             const cacheKey = `wallet_cache_${user.walletAddress.toLowerCase()}`;
@@ -294,30 +361,38 @@ export default function App() {
               console.warn("⚠️ Failed to save wallet cache:", e);
             }
 
-            // ✅ REMOVED ALERT - Direct to dashboard without interruption
+            // ✅ SUCCESS - Show success message
             console.log("✅ First login complete, credit score:", onchainData.score);
           } catch (apiError: any) {
-            // ❌ API failed - Show error and set empty data
+            // ❌ API FAILED - Show clear error message
             console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
 
-            // ✅ REMOVED ALERT - Just log warning and continue
-            console.warn(
-              "⚠️ Cannot load blockchain data - setting score to 0\n" +
-              "Reason:", apiError.message || "Connection error"
+            // ✅ FIX: Show alert to user so they know what happened
+            const errorMsg = apiError.message || "Lỗi kết nối";
+            const isQuotaError = errorMsg.includes('quota') || errorMsg.includes('rate limit') ||
+              errorMsg.includes('401') || errorMsg.includes('500');
+
+            alert(
+              `⚠️ Không thể tải dữ liệu blockchain cho ví này!\n\n` +
+              `Lý do: ${errorMsg}\n\n` +
+              (isQuotaError
+                ? `Backend đang hết quota Moralis. Vui lòng:\n` +
+                `1. Thử lại sau 1-2 giờ\n` +
+                `2. Hoặc liên hệ admin@migofin.com`
+                : `Vui lòng kiểm tra kết nối mạng và thử lại sau.`)
             );
 
-            // Set empty wallet data with score = 0
-            setWalletData({
-              score: 0,
-              walletAge: 0,
-              totalTransactions: 0,
-              tokenDiversity: 0,
-              totalAssets: 0,
-              rating: "N/A",
-              tokenBalances: [],
-              recentTransactions: [],
-              walletAddress: user.walletAddress,
-            });
+            // ✅ FIX: DON'T set empty data - User can retry later
+            // Instead, redirect back to Calculator page
+            setIsLoading(false);
+            setCurrentPage("calculator");
+
+            // Clear auth to allow retry
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("currentUser");
+            setCurrentUser(null);
+
+            return; // ← EXIT early without setting empty data
           }
         }
       } else {
@@ -370,7 +445,28 @@ export default function App() {
             console.error("❌ No wallet_address in user data - cannot save cache!");
           }
         } else {
-          console.warn("⚠️ getUserInfo failed for returning user:", userInfoResult);
+          // ✅ FIX: Show alert when getUserInfo failed for returning user
+          console.error("❌ getUserInfo failed for returning user:", userInfoResult);
+
+          const errorMsg = userInfoResult.message || "Không thể tải dữ liệu từ database";
+
+          alert(
+            `⚠️ Không thể tải dữ liệu tài khoản của bạn!\n\n` +
+            `Lý do: ${errorMsg}\n\n` +
+            `Vui lòng:\n` +
+            `1. Kiểm tra kết nối mạng\n` +
+            `2. Thử đăng nhập lại sau 1-2 phút\n` +
+            `3. Liên hệ admin@migofin.com nếu vẫn lỗi`
+          );
+
+          // ✅ FIX: Redirect to Calculator and clear auth
+          setIsLoading(false);
+          setCurrentPage("calculator");
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("currentUser");
+          setCurrentUser(null);
+
+          return; // ← EXIT early
         }
       }
     } catch (error) {

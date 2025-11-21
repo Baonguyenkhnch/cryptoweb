@@ -171,8 +171,8 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     {/* Message */}
                     <div className="text-center">
                         <p className={`text-sm ${status === "success" ? "text-green-300" :
-                            status === "error" ? "text-red-300" :
-                                "text-gray-300"
+                                status === "error" ? "text-red-300" :
+                                    "text-gray-300"
                             }`}>
                             {message}
                         </p>
@@ -211,7 +211,7 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                             </Button>
 
                             <p className="text-xs text-gray-400 text-center">
-                                Link xác thực có thể đã hết hạn (10 phút). Vui lòng yêu cầu gửi lại email.
+                                Link xác thực có thể đã hết hạn (15 phút). Vui lòng yêu cầu gửi lại email.
                             </p>
                         </div>
                     )}
