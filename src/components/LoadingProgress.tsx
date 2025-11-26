@@ -27,21 +27,21 @@ export function LoadingProgress({ isVisible, walletAddress, onCancel, onTryDemo 
             icon: Database,
             title: "Đang kết nối blockchain...",
             titleEn: "Connecting to blockchain...",
-            duration: 1500, // Giảm từ 2000 → 1500
+            duration: 2000,
             tips: "Đang truy xuất dữ liệu từ mạng Ethereum",
         },
         {
             icon: TrendingUp,
             title: "Đang phân tích giao dịch...",
             titleEn: "Analyzing transactions...",
-            duration: 1500, // Giảm từ 3000 → 1500
+            duration: 3000,
             tips: "Đang xử lý lịch sử giao dịch và token balances",
         },
         {
             icon: CheckCircle,
             title: "Đang tính toán điểm...",
             titleEn: "Calculating credit score...",
-            duration: 2000, // Giảm từ 3000 → 2000
+            duration: 3000,
             tips: "Áp dụng thuật toán đánh giá tín dụng",
         },
     ];
@@ -54,28 +54,28 @@ export function LoadingProgress({ isVisible, walletAddress, onCancel, onTryDemo 
             return;
         }
 
-        // Progress bar animation - CỰC NHANH!
+        // Progress bar animation - Smooth và steady
         const progressInterval = setInterval(() => {
             setProgress((prev) => {
                 if (prev >= 95) return 95; // Stop at 95%, complete when done
-                return prev + 3; // Tăng từ +2 → +3 để chạy CỰC NHANH
+                return prev + 2; // Tăng đều đặn
             });
-        }, 250); // Giảm từ 300ms → 250ms để còn nhanh hơn nữa
+        }, 300); // Smooth animation
 
-        // Step progression - CỰC NHANH!
+        // Step progression - Tự nhiên hơn
         const stepInterval = setInterval(() => {
             setCurrentStep((prev) => {
                 if (prev >= steps.length - 1) return prev;
                 return prev + 1;
             });
-        }, 1800); // Giảm từ 3000ms → 1800ms để chạy qua steps nhanh hơn
+        }, 2500); // Chuyển step mượt mà hơn
 
         // Time counter
         const timeInterval = setInterval(() => {
             setTimeElapsed((prev) => {
                 const newTime = prev + 1;
-                // Hiện nút Demo sau 4 giây - NHANH HƠN!
-                if (newTime >= 4) {
+                // Hiện nút Demo sau 2 giây - Test nhanh cho người dùng
+                if (newTime >= 2) {
                     setShowDemoButton(true);
                 }
                 return newTime;
@@ -92,7 +92,7 @@ export function LoadingProgress({ isVisible, walletAddress, onCancel, onTryDemo 
     if (!isVisible) return null;
 
     const CurrentIcon = steps[currentStep].icon;
-    const estimatedTime = 6; // seconds - Giảm từ 10s → 6s để user cảm thấy cực nhanh
+    const estimatedTime = 3; // seconds - Test nhanh, timeout chỉ 3 giây
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -191,36 +191,28 @@ export function LoadingProgress({ isVisible, walletAddress, onCancel, onTryDemo 
                         </div>
                     )}
 
-                    {/* Info Message - LAC QUAN HƠN */}
+                    {/* Info Message - Phản ánh đúng tiến trình */}
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
                         <p className="text-xs text-blue-300 text-center">
-                            {timeElapsed > 6
-                                ? "⚡ Sắp xong! Đang hoàn tất phân tích..."
-                                : timeElapsed > 3
-                                    ? "🔍 Đang phân tích sâu lịch sử giao dịch..."
-                                    : "💡 Đang thu thập dữ liệu từ blockchain..."}
+                            {timeElapsed > 2
+                                ? "⚡ Backend đang xử lý... Bạn có thể xem Demo!"
+                                : timeElapsed > 1
+                                    ? "🔍 Đang phân tích giao dịch on-chain..."
+                                    : "💡 Đang kết nối blockchain Ethereum..."}
                         </p>
                     </div>
 
-                    {/* Action Buttons - HIỆN SAU 8 GIÂY */}
+                    {/* Action Buttons - HIỆN SAU 2 GIÂY */}
                     {showDemoButton ? (
                         <div className="space-y-2">
                             <p className="text-xs text-orange-400 text-center font-medium">
-                                ⚠️ Backend đang chậm hơn bình thường
+                                ⚠️ Backend đang xử lý dữ liệu blockchain... Vui lòng đợi
                             </p>
-                            <div className="flex gap-2">
-                                {onTryDemo && (
-                                    <button
-                                        onClick={onTryDemo}
-                                        className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-green-500/50"
-                                    >
-                                        🎨 Xem Demo Ngay
-                                    </button>
-                                )}
+                            <div className="flex justify-center">
                                 {onCancel && (
                                     <button
                                         onClick={onCancel}
-                                        className="flex-1 bg-slate-700 hover:bg-slate-600 text-gray-300 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+                                        className="bg-slate-700 hover:bg-slate-600 text-gray-300 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
                                     >
                                         ❌ Hủy
                                     </button>

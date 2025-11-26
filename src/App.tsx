@@ -710,44 +710,7 @@ export default function App() {
     setUseDemoMode(false); // Reset demo mode
   };
 
-  // Handler for Demo Mode when quota error occurs
-  const handleTryDemoMode = async () => {
-    if (!walletAddress.trim()) {
-      console.warn('⚠️ No wallet address for demo mode');
-      return;
-    }
-
-    console.log(
-      '%c🎨 DEMO MODE ACTIVATED',
-      'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;'
-    );
-    console.log('%c📊 Using mock data for demo purposes', 'color: #34d399;');
-
-    // Close error dialog
-    setShowErrorDialog(false);
-    setIsLoading(true);
-    setUseDemoMode(true);
-
-    try {
-      // Generate mock data for demo
-      const mockData = generateMockWalletData(walletAddress);
-
-      // Simulate loading delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      setWalletData(mockData);
-      setShowResults(true);
-
-      console.log(
-        '%c✅ Demo data loaded successfully',
-        'background: #10b981; color: white; padding: 4px 8px; border-radius: 4px;'
-      );
-    } catch (error) {
-      console.error('Error in demo mode:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // ✅ REMOVED: handleTryDemoMode - No demo mode, app uses real data only
 
   const handleSubscribeClick = () => {
     if (subscriptionStatus?.verified) {
@@ -1202,7 +1165,6 @@ export default function App() {
           setLoadingMessage("");
           setLoadingStep(0);
         }}
-        onTryDemo={handleTryDemoMode}
       />
 
       {/* Error Dialog */}
@@ -1211,7 +1173,6 @@ export default function App() {
         onOpenChange={setShowErrorDialog}
         errorType={errorType}
         errorMessage={errorMessage}
-        onTryDemoMode={handleTryDemoMode}
       />
 
       {/* CAPTCHA Dialog */}
