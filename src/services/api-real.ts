@@ -530,8 +530,11 @@ export const verifyMagicLink = async (
         email: string;
         wallet_address?: string;
         name?: string;
+        createdAt?: string;
+        lastLogin?: string | null;
     };
     authToken?: string;
+    sessionToken?: string;
 }> => {
     debugLog(`🔍 Verifying magic link token: ${token}`);
 
@@ -563,16 +566,29 @@ export const verifyMagicLink = async (
 
         debugLog(`✅ Magic link verified:`, data);
 
+        // ✅ FIX: Also check data.sessionToken like verifyRegistration()
+        const sessionToken = data.sessionToken || data.token || data.authToken || data.access_token;
+
         return {
             success: true,
             message: data.message || "Đăng nhập thành công!",
-            user: data.user || {
+            user: data.user ? {
+                id: data.user.id || data.user.user_id,
+                email: data.user.email,
+                wallet_address: data.user.walletAddress || data.user.wallet_address || data.wallet_address,
+                name: data.user.name || data.user.email?.split("@")[0] || "User",
+                createdAt: data.user.createdAt || data.user.created_at,
+                lastLogin: data.user.lastLogin || data.user.last_login,
+            } : {
+                id: data.id || data.user_id || `user_${Date.now()}`,
                 email: data.email,
                 wallet_address: data.wallet_address,
-                name: data.name,
-                id: data.id || data.user_id,
+                name: data.name || data.email?.split("@")[0] || "User",
+                createdAt: data.created_at || new Date().toISOString(),
+                lastLogin: data.last_login || null,
             },
-            authToken: data.token || data.authToken || data.access_token,
+            sessionToken: sessionToken,
+            authToken: sessionToken, // Same value for backward compatibility
         };
     } catch (error: any) {
         debugLog(`❌ Magic link verification error:`, error.message);
@@ -674,7 +690,12 @@ export const getUserInfo = async (): Promise<{
         const authToken = localStorage.getItem("authToken");
         const currentUser = localStorage.getItem("currentUser");
 
+        console.log("🔍 getUserInfo() - Checking localStorage:");
+        console.log("  - authToken:", authToken ? `${authToken.substring(0, 30)}... (length: ${authToken.length})` : "❌ NULL");
+        console.log("  - currentUser:", currentUser ? "✅ EXISTS" : "❌ NULL");
+
         if (!authToken || !currentUser) {
+            console.error("❌ getUserInfo() - Missing auth data in localStorage!");
             return {
                 success: false,
                 message: "Chưa đăng nhập",
@@ -684,7 +705,7 @@ export const getUserInfo = async (): Promise<{
         const url = `${API_BASE_URL}/api/user-info`;
 
         debugLog(`📡 Calling getUserInfo API: ${url}`);
-        debugLog(`🔐 Auth token (first 20 chars): ${authToken.substring(0, 20)}...`);
+        console.log(`🔐 Sending Authorization header: Bearer ${authToken.substring(0, 30)}...`);
 
         const response = await fetch(url, {
             method: "GET",
@@ -694,14 +715,19 @@ export const getUserInfo = async (): Promise<{
             },
         });
 
-        debugLog(`📊 Response status: ${response.status} ${response.statusText}`);
+        console.log(`📊 getUserInfo() Response status: ${response.status} ${response.statusText}`);
 
         const data = await response.json();
 
-        debugLog(`📦 Response data:`, data);
+        console.log(`📦 getUserInfo() Response data:`, data);
 
         if (!response.ok) {
-            debugLog(`❌ Get user info error: ${response.status}`, data);
+            console.error(`❌ getUserInfo() error: ${response.status}`, data);
+            console.error("🔍 Possible causes:");
+            console.error("  1. authToken không hợp lệ hoặc đã hết hạn");
+            console.error("  2. Backend không nhận diện authToken (check backend logs)");
+            console.error("  3. Backend API /api/user-info có vấn đề");
+
             return {
                 success: false,
                 message: data.message || data.error || `API error ${response.status}: ${response.statusText}`,
@@ -727,7 +753,9 @@ export const getUserInfo = async (): Promise<{
             },
         };
     } catch (error: any) {
-        debugLog(`❌ Get user info error:`, error.message);
+        console.error(`❌ getUserInfo() exception:`, error.message);
+        console.error("🔍 Error details:", error);
+
         return {
             success: false,
             message: error.message || "Lỗi kết nối đến server",

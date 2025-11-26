@@ -98,12 +98,22 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                         console.log("✅ Verified authToken in localStorage:", verifyToken ? verifyToken.substring(0, 20) + "..." : "❌ NOT FOUND!");
                     } else {
                         console.error("❌ No sessionToken or authToken in API response!");
+                        console.error("📦 API Response:", result);
                     }
 
-                    // ✅ SAVE USER DATA
-                    localStorage.setItem("currentUser", JSON.stringify(result.user));
-                    console.log("👤 User data:", result.user);
-                    console.log("🕐 Last Login:", result.user.lastLogin);
+                    // ✅ SAVE USER DATA (map to UserProfile format)
+                    const userProfile: UserProfile = {
+                        id: result.user.id || `user_${Date.now()}`,
+                        email: result.user.email,
+                        walletAddress: result.user.wallet_address || result.user.walletAddress || '',
+                        name: result.user.name,
+                        createdAt: result.user.createdAt || new Date().toISOString(),
+                        lastLogin: result.user.lastLogin || null,
+                    };
+
+                    localStorage.setItem("currentUser", JSON.stringify(userProfile));
+                    console.log("👤 User data:", userProfile);
+                    console.log("🕐 Last Login:", userProfile.lastLogin);
 
                     // ✅ VERIFY USER WAS SAVED
                     const verifyUser = localStorage.getItem("currentUser");
@@ -127,7 +137,7 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
 
                     // Redirect immediately after a brief moment to show success state
                     setTimeout(() => {
-                        onVerifySuccess(result.user!);
+                        onVerifySuccess(userProfile);
                     }, 500); // Just 500ms to show success animation
                 } else {
                     setStatus("error");

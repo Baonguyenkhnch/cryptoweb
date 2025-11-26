@@ -297,7 +297,16 @@ export default function App() {
       console.log("🔍 Is First Login (within 2 min)?:", isFirstLogin);
       console.log("⏰ Time since last login (ms):", user.lastLogin ? Date.now() - new Date(user.lastLogin).getTime() : 'N/A');
 
-      if (!user.lastLogin || isFirstLogin) {
+      // ✅ FIX: If lastLogin is null, skip getUserInfo() and go directly to Dashboard
+      // This fixes the 401 error from getUserInfo() when logging in via magic link
+      if (!user.lastLogin) {
+        console.log("🎉 First time login detected (lastLogin = null)! Skipping getUserInfo() - going directly to Dashboard.");
+        setIsLoading(false);
+        setCurrentPage("dashboard");
+        return;
+      }
+
+      if (isFirstLogin) {
         // ✅ BƯỚC 3: First login - Kích hoạt tính điểm onchain
         console.log("🎉 First time login! Triggering credit score calculation...");
 
