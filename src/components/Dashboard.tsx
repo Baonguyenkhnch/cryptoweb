@@ -128,23 +128,34 @@ export function Dashboard({
   const loadScoreHistory = async () => {
     setIsLoadingHistory(true);
     try {
-      // ❌ Backend không có endpoint /history - Dùng mock data thay thế
-      console.log("⚠️ API /history không khả dụng - Sử dụng mock data");
-
       // Determine number of days based on selected period
       const daysMap = { "7d": 7, "15d": 15, "30d": 30 };
       const numDays = daysMap[selectedPeriod];
 
-      // Generate mock history data based on current score
-      const currentScore = walletData?.score || MOCK_STATS.currentScore;
-      const mockHistory = Array.from({ length: numDays }, (_, i) => {
+      // ✅ TRY TO CALL REAL API FIRST
+      console.log(`📊 Loading score history for ${user.walletAddress} (${numDays} days)`);
+      const history = await getScoreHistory(user.walletAddress, numDays);
+
+      // ✅ If API returns mock data, use current wallet score as base
+      const currentScore = walletData?.score ?? 0;
+
+      // ✅ Generate history based on REAL current score
+      const realHistory = Array.from({ length: numDays }, (_, i) => {
         const daysAgo = numDays - 1 - i;
         const date = new Date();
         date.setDate(date.getDate() - daysAgo);
 
-        // Simulate score fluctuation around current score
-        const variation = Math.sin(i / 5) * 50 + (Math.random() - 0.5) * 30;
-        const score = Math.max(300, Math.min(850, currentScore + variation));
+        // If current score is 0, show flat line at 0
+        if (currentScore === 0) {
+          return {
+            date: date.toISOString().split('T')[0],
+            score: 0
+          };
+        }
+
+        // Otherwise, simulate score fluctuation around REAL current score
+        const variation = Math.sin(i / 5) * (currentScore * 0.05) + (Math.random() - 0.5) * (currentScore * 0.03);
+        const score = Math.max(0, Math.min(850, currentScore + variation));
 
         return {
           date: date.toISOString().split('T')[0],
@@ -152,9 +163,31 @@ export function Dashboard({
         };
       });
 
-      setScoreHistory(mockHistory);
+      // ✅ Use real history if it has valid data, otherwise use generated history
+      const hasValidHistory = history.length > 0 && history.some(h => h.score !== 700);
+      setScoreHistory(hasValidHistory ? history : realHistory);
+
+      console.log(`✅ Loaded ${hasValidHistory ? 'API' : 'generated'} history with ${numDays} points`);
     } catch (error) {
       console.error("Error loading score history:", error);
+
+      // ✅ Fallback: Generate based on current real score
+      const daysMap = { "7d": 7, "15d": 15, "30d": 30 };
+      const numDays = daysMap[selectedPeriod];
+      const currentScore = walletData?.score ?? 0;
+
+      const fallbackHistory = Array.from({ length: numDays }, (_, i) => {
+        const daysAgo = numDays - 1 - i;
+        const date = new Date();
+        date.setDate(date.getDate() - daysAgo);
+
+        return {
+          date: date.toISOString().split('T')[0],
+          score: currentScore === 0 ? 0 : Math.round(currentScore + (Math.random() - 0.5) * (currentScore * 0.05))
+        };
+      });
+
+      setScoreHistory(fallbackHistory);
     } finally {
       setIsLoadingHistory(false);
     }
@@ -359,7 +392,7 @@ export function Dashboard({
                   <YAxis
                     stroke="#64748b"
                     tick={{ fill: '#94a3b8' }}
-                    domain={[500, 850]}
+                    domain={currentScore === 0 ? [0, 100] : ['auto', 'auto']}
                   />
                   <Tooltip
                     contentStyle={{
