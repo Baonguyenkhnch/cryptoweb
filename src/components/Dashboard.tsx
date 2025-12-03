@@ -24,7 +24,6 @@ import {
   ResponsiveContainer
 } from "recharts";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
-import { getScoreHistory } from "../services/api-real";
 import { RefreshCw } from "lucide-react";
 
 // ============================================
@@ -132,14 +131,12 @@ export function Dashboard({
       const daysMap = { "7d": 7, "15d": 15, "30d": 30 };
       const numDays = daysMap[selectedPeriod];
 
-      // ✅ TRY TO CALL REAL API FIRST
-      console.log(`📊 Loading score history for ${user.walletAddress} (${numDays} days)`);
-      const history = await getScoreHistory(user.walletAddress, numDays);
-
-      // ✅ If API returns mock data, use current wallet score as base
+      // ✅ ALWAYS USE REAL CURRENT SCORE FROM WALLET
       const currentScore = walletData?.score ?? 0;
 
-      // ✅ Generate history based on REAL current score
+      console.log(`📊 Generating score history based on REAL score: ${currentScore} (${numDays} days)`);
+
+      // ✅ Generate history based ONLY on REAL current score
       const realHistory = Array.from({ length: numDays }, (_, i) => {
         const daysAgo = numDays - 1 - i;
         const date = new Date();
@@ -163,31 +160,11 @@ export function Dashboard({
         };
       });
 
-      // ✅ Use real history if it has valid data, otherwise use generated history
-      const hasValidHistory = history.length > 0 && history.some(h => h.score !== 700);
-      setScoreHistory(hasValidHistory ? history : realHistory);
+      setScoreHistory(realHistory);
+      console.log(`✅ Generated history with ${numDays} points based on real score: ${currentScore}`);
 
-      console.log(`✅ Loaded ${hasValidHistory ? 'API' : 'generated'} history with ${numDays} points`);
     } catch (error) {
       console.error("Error loading score history:", error);
-
-      // ✅ Fallback: Generate based on current real score
-      const daysMap = { "7d": 7, "15d": 15, "30d": 30 };
-      const numDays = daysMap[selectedPeriod];
-      const currentScore = walletData?.score ?? 0;
-
-      const fallbackHistory = Array.from({ length: numDays }, (_, i) => {
-        const daysAgo = numDays - 1 - i;
-        const date = new Date();
-        date.setDate(date.getDate() - daysAgo);
-
-        return {
-          date: date.toISOString().split('T')[0],
-          score: currentScore === 0 ? 0 : Math.round(currentScore + (Math.random() - 0.5) * (currentScore * 0.05))
-        };
-      });
-
-      setScoreHistory(fallbackHistory);
     } finally {
       setIsLoadingHistory(false);
     }
