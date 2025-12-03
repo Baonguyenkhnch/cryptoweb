@@ -313,10 +313,10 @@ export function Dashboard({
               </CardTitle>
 
               <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as any)}>
-                <TabsList className="bg-slate-900/50">
-                  <TabsTrigger value="7d">{t.statsLabels.period7d}</TabsTrigger>
-                  <TabsTrigger value="15d">{t.statsLabels.period15d}</TabsTrigger>
-                  <TabsTrigger value="30d">{t.statsLabels.period30d}</TabsTrigger>
+                <TabsList className="bg-slate-900/50 gap-1">
+                  <TabsTrigger value="7d" className="min-w-[70px]">{t.statsLabels.period7d}</TabsTrigger>
+                  <TabsTrigger value="15d" className="min-w-[70px]">{t.statsLabels.period15d}</TabsTrigger>
+                  <TabsTrigger value="30d" className="min-w-[70px]">{t.statsLabels.period30d}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
