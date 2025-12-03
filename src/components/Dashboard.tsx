@@ -131,10 +131,14 @@ export function Dashboard({
       // ❌ Backend không có endpoint /history - Dùng mock data thay thế
       console.log("⚠️ API /history không khả dụng - Sử dụng mock data");
 
+      // Determine number of days based on selected period
+      const daysMap = { "7d": 7, "15d": 15, "30d": 30 };
+      const numDays = daysMap[selectedPeriod];
+
       // Generate mock history data based on current score
       const currentScore = walletData?.score || MOCK_STATS.currentScore;
-      const mockHistory = Array.from({ length: 30 }, (_, i) => {
-        const daysAgo = 29 - i;
+      const mockHistory = Array.from({ length: numDays }, (_, i) => {
+        const daysAgo = numDays - 1 - i;
         const date = new Date();
         date.setDate(date.getDate() - daysAgo);
 
@@ -343,7 +347,14 @@ export function Dashboard({
                   <XAxis
                     dataKey="date"
                     stroke="#64748b"
-                    tick={{ fill: '#94a3b8' }}
+                    tick={{ fill: '#94a3b8', fontSize: 12 }}
+                    tickFormatter={(value) => {
+                      const date = new Date(value);
+                      const day = date.getDate();
+                      const month = date.getMonth() + 1;
+                      return `${day}/${month}`;
+                    }}
+                    interval="preserveStartEnd"
                   />
                   <YAxis
                     stroke="#64748b"
@@ -356,6 +367,13 @@ export function Dashboard({
                       border: '1px solid #334155',
                       borderRadius: '8px',
                       color: '#e2e8f0'
+                    }}
+                    labelFormatter={(value) => {
+                      const date = new Date(value);
+                      const day = date.getDate();
+                      const month = date.getMonth() + 1;
+                      const year = date.getFullYear();
+                      return `${day}/${month}/${year}`;
                     }}
                   />
                   <Area
