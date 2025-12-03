@@ -101,7 +101,7 @@ export function Dashboard({
   onRecalculate
 }: DashboardProps) {
   const { t } = useLanguage();
-  const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d">("30d");
+  const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "15d" | "30d">("7d");
   const [scoreHistory, setScoreHistory] = useState<ScoreHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
@@ -315,8 +315,8 @@ export function Dashboard({
               <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as any)}>
                 <TabsList className="bg-slate-900/50">
                   <TabsTrigger value="7d">{t.statsLabels.period7d}</TabsTrigger>
+                  <TabsTrigger value="15d">{t.statsLabels.period15d}</TabsTrigger>
                   <TabsTrigger value="30d">{t.statsLabels.period30d}</TabsTrigger>
-                  <TabsTrigger value="90d">{t.statsLabels.period90d}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>

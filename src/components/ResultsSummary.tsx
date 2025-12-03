@@ -39,7 +39,7 @@ export function ResultsSummary({
   onRegisterClick,
 }: ResultsSummaryProps) {
   const { t, language } = useLanguage();
-  const [showCalculationDetails, setShowCalculationDetails] = useState(false);
+  const [showCalculationDetails, setShowCalculationDetails] = useState(true); // ✅ Changed: Always show by default
 
   if (!walletData) {
     return null;
@@ -392,21 +392,7 @@ export function ResultsSummary({
                           : 'Login to unlock in-depth analysis - No password needed, just email!'}
                       </p>
 
-                      {/* Feature Badges */}
-                      <div className="flex flex-wrap gap-1.5">
-                        <Badge className="bg-green-500/25 text-green-300 border-green-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
-                          📊 Token Diversity Charts
-                        </Badge>
-                        <Badge className="bg-blue-500/25 text-blue-300 border-blue-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
-                          📈 Score Trend Analysis
-                        </Badge>
-                        <Badge className="bg-purple-500/25 text-purple-300 border-purple-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
-                          🔄 Transaction History
-                        </Badge>
-                        <Badge className="bg-cyan-500/25 text-cyan-300 border-cyan-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
-                          📧 Email Updates
-                        </Badge>
-                      </div>
+                      {/* ✅ REMOVED: Feature Badges - User request */}
                     </div>
                   </div>
 
@@ -448,21 +434,7 @@ export function ResultsSummary({
                           : 'Register for free to save wallet, track score and get notifications - Fully decentralized!'}
                       </p>
 
-                      {/* Feature Badges */}
-                      <div className="flex flex-wrap gap-1.5">
-                        <Badge className="bg-green-500/25 text-green-300 border-green-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
-                          💾 Save Wallets
-                        </Badge>
-                        <Badge className="bg-blue-500/25 text-blue-300 border-blue-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
-                          📊 Track Score
-                        </Badge>
-                        <Badge className="bg-purple-500/25 text-purple-300 border-purple-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
-                          🔔 Notifications
-                        </Badge>
-                        <Badge className="bg-cyan-500/25 text-cyan-300 border-cyan-500/40 border text-[10px] px-1.5 py-0.5 font-medium">
-                          🔒 Privacy First
-                        </Badge>
-                      </div>
+                      {/* ✅ REMOVED: Feature Badges - User request */}
                     </div>
                   </div>
 

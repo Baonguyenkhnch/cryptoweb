@@ -233,7 +233,6 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
               <div className="relative">
                 <CardHeader className="pb-1 pt-2 px-3">
                   <CardTitle className="text-xs md:text-sm text-white flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-orange-400" />
                     {t.auth.createAccount}
                   </CardTitle>
                 </CardHeader>
