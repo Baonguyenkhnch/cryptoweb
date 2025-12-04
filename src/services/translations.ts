@@ -187,7 +187,7 @@ export const translations = {
       },
       sendMagicLink: "Gửi Link Xác Nhận",
       sending: "Đang gửi...",
-      decentralizedFooter: "🔒 Phi tập trung - Không lưu mật khẩu",
+      decentralizedFooter: " Phi tập trung - Không lưu mật khẩu",
       emailSent: {
         title: "📧 Email Đã Gửi!",
         sentTo: "Chúng tôi đã gửi link xác nhận đến:",
@@ -722,7 +722,7 @@ export const translations = {
       },
       sendMagicLink: "Send Confirmation Link",
       sending: "Sending...",
-      decentralizedFooter: "🔒 Decentralized - No password storage",
+      decentralizedFooter: " Decentralized - No password storage",
       emailSent: {
         title: "📧 Email Sent!",
         sentTo: "We sent a confirmation link to:",
