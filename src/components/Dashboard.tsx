@@ -233,7 +233,7 @@ export function Dashboard({
               </h1>
               <p className="text-gray-400 text-xs md:text-sm flex items-center gap-2">
                 <Wallet className="w-3 h-3 md:w-4 md:h-4 text-cyan-400" />
-                {t.statsLabels.wallet} <span className="text-cyan-400 font-mono">{formatWalletAddress(user.walletAddress)}</span>
+                Ví <span className="text-cyan-400 font-mono">{formatWalletAddress(user.walletAddress)}</span>
               </p>
             </div>
 
@@ -306,7 +306,7 @@ export function Dashboard({
               <div className="text-2xl text-purple-400 mb-1">
                 {walletData?.walletTransactionsLast30d || 0}
               </div>
-              <div className="text-gray-400 text-xs">{t.statsLabels.transactions30d || 'Giao dịch 30 ngày'}</div>
+              <div className="text-gray-400 text-xs">Giao dịch 30 ngày</div>
             </CardContent>
           </Card>
 
@@ -406,10 +406,10 @@ export function Dashboard({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-2xl text-white flex items-center gap-2 mb-1">
-                {t.statsLabels.detailedAnalysis}
+                {'Phân tích chi tiết'}
               </h2>
               <p className="text-gray-400 text-sm">
-                {t.statsLabels.chartDescription} {formatWalletAddress(user.walletAddress)}
+                {'Phân tích chart số liệu ví'}
               </p>
             </div>
           </div>
@@ -435,3 +435,4 @@ export function Dashboard({
     </div>
   );
 }
+
