@@ -201,6 +201,8 @@ export function Dashboard({
   console.log("  - walletAge:", walletAge);
   console.log("  - totalTransactions:", totalTransactions);
   console.log("  - totalAssets:", totalAssets);
+  console.log("  - tokenBalances:", tokenBalances);
+  console.log("  - tokenBalances.length:", tokenBalances?.length || 0);
 
   const scoreChange = MOCK_STATS.currentScore - MOCK_STATS.previousScore;
   const scoreChangePercent = ((scoreChange / MOCK_STATS.previousScore) * 100).toFixed(1);

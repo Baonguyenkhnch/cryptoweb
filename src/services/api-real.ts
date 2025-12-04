@@ -556,11 +556,16 @@ export const verifyMagicLink = async (
 
         const data = await response.json();
 
+        console.log("🔍 verifyMagicLink() - Full Backend Response:");
+        console.log("  - Status:", response.status, response.statusText);
+        console.log("  - Response body:", JSON.stringify(data, null, 2));
+        console.log("  - Available keys:", Object.keys(data));
+
         if (!response.ok) {
             debugLog(`❌ Magic link verification error: ${response.status}`, data);
             return {
                 success: false,
-                message: data.message || data.error || "Token không hợp lệ hoặc đã hết hạn",
+                message: data.message || data.error || "Token không hợp lệ hoặc đ hết hạn",
             };
         }
 
@@ -568,6 +573,18 @@ export const verifyMagicLink = async (
 
         // ✅ FIX: Also check data.sessionToken like verifyRegistration()
         const sessionToken = data.sessionToken || data.token || data.authToken || data.access_token;
+
+        console.log("🔐 verifyMagicLink() - Token extraction:");
+        console.log("  - data.sessionToken:", data.sessionToken || "❌ NONE");
+        console.log("  - data.token:", data.token || "❌ NONE");
+        console.log("  - data.authToken:", data.authToken || "❌ NONE");
+        console.log("  - data.access_token:", data.access_token || "❌ NONE");
+        console.log("  - Final sessionToken:", sessionToken || "❌❌❌ NO TOKEN FOUND!");
+
+        if (!sessionToken) {
+            console.error("🚨 CRITICAL: Backend did not return any token!");
+            console.error("🚨 Backend response:", data);
+        }
 
         return {
             success: true,
@@ -957,22 +974,79 @@ export const analyzeWallet = async (
 
 // Helper function để map wallet data
 function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
+    // ✅ DEBUG: Log toàn bộ API response
+    console.log(`🔍 ========== FULL API RESPONSE ==========`);
+    console.log(`🔍 Complete data object:`, JSON.stringify(data, null, 2));
+    console.log(`🔍 ========================================`);
+
+    // ✅ NEW: Check all possible token list fields
+    console.log(`🔍 Checking all possible token fields:`);
+    console.log(`  - data.total_balances:`, data.total_balances);
+    console.log(`  - data.token_balances:`, data.token_balances);
+    console.log(`  - data.erc20_balances:`, data.erc20_balances);
+    console.log(`  - data.tokens:`, data.tokens);
+    console.log(`  - data.balances:`, data.balances);
+    console.log(`  - data.wallet_balances:`, data.wallet_balances);
+
+    // ✅ NEW: Try multiple possible field names for token list
+    const possibleTokenFields = [
+        data.total_balances,
+        data.token_balances,
+        data.erc20_balances,
+        data.tokens,
+        data.balances,
+        data.wallet_balances,
+    ];
+
+    const rawTokenData = possibleTokenFields.find(field => Array.isArray(field) && field.length > 0) || [];
+
+    console.log(`🔍 Selected token data source:`, rawTokenData);
+    console.log(`🔍 Token data length:`, rawTokenData.length);
+
     // Parse token balances
-    const tokenBalances = mapTokenBalances(data.total_balances || data.token_balances || []);
+    const tokenBalances = mapTokenBalances(rawTokenData);
+
+    console.log(`🔍 mapWalletData() - Parsed token balances:`, tokenBalances);
+    console.log(`🔍 Number of parsed tokens:`, tokenBalances.length);
+
+    // ✅ FIX: If token_diversity > 0 but tokenBalances is empty, create placeholder
+    if (tokenBalances.length === 0 && data.token_diversity > 0) {
+        console.warn(`⚠️ API reports ${data.token_diversity} token(s) but token_balances is empty!`);
+        console.warn(`⚠️ Creating ${data.token_diversity} placeholder token(s)...`);
+
+        // Create placeholder tokens based on token_diversity
+        for (let i = 0; i < data.token_diversity; i++) {
+            tokenBalances.push({
+                symbol: `Token ${i + 1}`,
+                balance: 0,
+                value: 0,
+                percentage: 0,
+                name: `Unknown Token ${i + 1}`,
+            });
+        }
+
+        console.log(`✅ Created ${tokenBalances.length} placeholder tokens:`, tokenBalances);
+    }
 
     // ✅ FIX: Filter out tokens with invalid USD values & sort by value
     const validTokens = tokenBalances
         .filter(token => {
-            if (token.value <= 0) return false;
+            console.log(`🔍 [NEW CODE v2] Checking token ${token.symbol} - value: $${token.value}`);
 
+            // ✅ CHANGED: Don't filter out tokens with value = 0, keep them to show diversity
+            // Only filter out tokens with suspicious high values
             if (token.value > 10_000_000_000) {
                 console.warn(`⚠️ Filtering out suspicious token ${token.symbol} with value $${token.value.toLocaleString()}`);
                 return false;
             }
 
+            // ✅ Keep all tokens, even with 0 value (shows diversity)
+            console.log(`✅ [NEW CODE v2] Keeping token ${token.symbol} - value: $${token.value}`);
             return true;
         })
         .sort((a, b) => b.value - a.value);
+
+    console.log(`✅ Valid tokens after filtering: ${validTokens.length}`, validTokens);
 
     // ✅ FIX: Recalculate total from valid tokens only
     const validTotalAssets = validTokens.reduce((sum, t) => sum + t.value, 0);
@@ -1057,19 +1131,68 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
 function mapTokenBalances(apiData: any[]): TokenBalance[] {
     if (!Array.isArray(apiData)) return [];
 
-    return apiData.map((token: any) => {
-        const rawBalance = token.balance || "0";
-        const decimals = token.decimals || 18;
+    console.log(`🔍 mapTokenBalances() - Processing ${apiData.length} tokens`);
+
+    return apiData.map((token: any, index: number) => {
+        console.log(`🔍 Processing token ${index + 1}:`, token);
+
+        // ✅ NEW: More flexible balance parsing
+        let rawBalance = "0";
+        if (token.balance !== undefined) {
+            rawBalance = String(token.balance);
+        } else if (token.amount !== undefined) {
+            rawBalance = String(token.amount);
+        } else if (token.value_decimal !== undefined) {
+            rawBalance = String(token.value_decimal);
+        }
+
+        // ✅ NEW: More flexible decimals parsing
+        let decimals = 18; // Default
+        if (token.decimals !== undefined && !isNaN(parseInt(token.decimals))) {
+            decimals = parseInt(token.decimals);
+        } else if (token.token_decimals !== undefined && !isNaN(parseInt(token.token_decimals))) {
+            decimals = parseInt(token.token_decimals);
+        }
+
+        // Calculate balance
         const balance = parseFloat(rawBalance) / Math.pow(10, decimals);
 
+        // ✅ NEW: More flexible USD value parsing
+        let usdValue = 0;
+        if (token.balance_usd !== undefined && !isNaN(parseFloat(token.balance_usd))) {
+            usdValue = parseFloat(token.balance_usd);
+        } else if (token.value !== undefined && !isNaN(parseFloat(token.value))) {
+            usdValue = parseFloat(token.value);
+        } else if (token.usd_value !== undefined && !isNaN(parseFloat(token.usd_value))) {
+            usdValue = parseFloat(token.usd_value);
+        } else if (token.value_usd !== undefined && !isNaN(parseFloat(token.value_usd))) {
+            usdValue = parseFloat(token.value_usd);
+        } else if (token.usd_price !== undefined && balance > 0) {
+            // Calculate from price * balance
+            usdValue = parseFloat(token.usd_price) * balance;
+        } else if (token.price_usd !== undefined && balance > 0) {
+            usdValue = parseFloat(token.price_usd) * balance;
+        }
+
+        // ✅ NEW: More flexible symbol parsing
+        const symbol = token.symbol || token.token_symbol || token.token_name || 'UNKNOWN';
+
+        // ✅ NEW: More flexible name parsing
+        const name = token.name || token.token_name || token.symbol || 'Unknown Token';
+
+        console.log(`  → Symbol: ${symbol}`);
+        console.log(`  → Balance: ${balance}`);
+        console.log(`  → USD Value: $${usdValue}`);
+        console.log(`  → Decimals: ${decimals}`);
+
         return {
-            symbol: token.symbol || token.token_symbol || '',
+            symbol: symbol,
             balance: balance,
-            value: parseFloat(token.balance_usd || token.value || 0),
-            percentage: 0,
-            token_address: token.token_address || token.address,
-            name: token.name || token.token_name,
-            logo: token.logo || token.token_logo,
+            value: usdValue,
+            percentage: 0, // Will be calculated later
+            token_address: token.token_address || token.address || token.contract_address,
+            name: name,
+            logo: token.logo || token.token_logo || token.thumbnail || token.icon,
             decimals: decimals,
         };
     });
@@ -1407,7 +1530,7 @@ export const submitFeatureFeedback = async (
     return simulateApiCall(
         {
             success: true,
-            message: "Cảm ơn bạn đã đóng góp ý kiến!",
+            message: "Cảm ơn bạn đã đóng góp  kiến!",
         },
         1000
     );
@@ -1484,7 +1607,7 @@ export const registerWalletWithEmail = async (data: {
     if (mockUserDatabase[data.email.toLowerCase()]) {
         return {
             success: false,
-            message: "Email này đã được đăng ký. Vui lòng đăng nhập hoặc dùng email khác.",
+            message: "Email này đã được đăng ký. Vui lòng đăng nhập hoặc dng email khác.",
         };
     }
 
