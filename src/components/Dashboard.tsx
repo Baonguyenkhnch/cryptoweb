@@ -306,7 +306,7 @@ export function Dashboard({
               <div className="text-2xl text-purple-400 mb-1">
                 {walletData?.walletTransactionsLast30d || 0}
               </div>
-              <div className="text-gray-400 text-xs">Giao dịch 30 ngày</div>
+              <div className="text-gray-400 text-xs">{t.statsLabels.transactions30d}</div>
             </CardContent>
           </Card>
 
