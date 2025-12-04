@@ -987,9 +987,15 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     console.log(`  - data.tokens:`, data.tokens);
     console.log(`  - data.balances:`, data.balances);
     console.log(`  - data.wallet_balances:`, data.wallet_balances);
+    console.log(`  - data.token_summary?.top_tokens:`, data.token_summary?.top_tokens);
+    console.log(`  - data.token_summary?.tokens:`, data.token_summary?.tokens);
+    console.log(`  - data.token_summary?.total_tokens:`, data.token_summary?.total_tokens);
 
-    // ✅ NEW: Try multiple possible field names for token list
+    // ✅ FIX: Try multiple possible field names for token list
+    // MOST IMPORTANT: Check token_summary.top_tokens FIRST (Real API structure!)
     const possibleTokenFields = [
+        data.token_summary?.top_tokens,      // ← NEW: Real API uses this!
+        data.token_summary?.tokens,          // ← NEW: Alternative
         data.total_balances,
         data.token_balances,
         data.erc20_balances,
@@ -1009,13 +1015,18 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     console.log(`🔍 mapWalletData() - Parsed token balances:`, tokenBalances);
     console.log(`🔍 Number of parsed tokens:`, tokenBalances.length);
 
-    // ✅ FIX: If token_diversity > 0 but tokenBalances is empty, create placeholder
-    if (tokenBalances.length === 0 && data.token_diversity > 0) {
-        console.warn(`⚠️ API reports ${data.token_diversity} token(s) but token_balances is empty!`);
-        console.warn(`⚠️ Creating ${data.token_diversity} placeholder token(s)...`);
+    // ✅ FIX: Get token_diversity from token_summary if available
+    const tokenDiversityFromAPI = data.token_summary?.total_tokens || data.token_diversity || 0;
 
-        // Create placeholder tokens based on token_diversity
-        for (let i = 0; i < data.token_diversity; i++) {
+    console.log(`🔍 Token diversity from API:`, tokenDiversityFromAPI);
+
+    // ✅ FIX: If token_diversity > 0 but tokenBalances is empty, create placeholder
+    if (tokenBalances.length === 0 && tokenDiversityFromAPI > 0) {
+        console.warn(`⚠️ API reports ${tokenDiversityFromAPI} token(s) but token_balances is empty!`);
+        console.warn(`⚠️ Creating ${Math.min(tokenDiversityFromAPI, 10)} placeholder token(s)...`);
+
+        // Create placeholder tokens based on token_diversity (max 10 to avoid clutter)
+        for (let i = 0; i < Math.min(tokenDiversityFromAPI, 10); i++) {
             tokenBalances.push({
                 symbol: `Token ${i + 1}`,
                 balance: 0,
@@ -1028,20 +1039,26 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
         console.log(`✅ Created ${tokenBalances.length} placeholder tokens:`, tokenBalances);
     }
 
-    // ✅ FIX: Filter out tokens with invalid USD values & sort by value
+    // ✅ FIX: Filter out spam tokens and tokens with invalid USD values & sort by value
     const validTokens = tokenBalances
         .filter(token => {
-            console.log(`🔍 [NEW CODE v2] Checking token ${token.symbol} - value: $${token.value}`);
+            console.log(`🔍 [NEW CODE v3] Checking token ${token.symbol} - value: $${token.value}, spam: ${(token as any).possible_spam}`);
 
-            // ✅ CHANGED: Don't filter out tokens with value = 0, keep them to show diversity
-            // Only filter out tokens with suspicious high values
-            if (token.value > 10_000_000_000) {
-                console.warn(`⚠️ Filtering out suspicious token ${token.symbol} with value $${token.value.toLocaleString()}`);
+            // ✅ NEW: Filter out spam tokens
+            if ((token as any).possible_spam === true) {
+                console.warn(`⚠️ Filtering out spam token: ${token.symbol}`);
                 return false;
             }
 
-            // ✅ Keep all tokens, even with 0 value (shows diversity)
-            console.log(`✅ [NEW CODE v2] Keeping token ${token.symbol} - value: $${token.value}`);
+            // ✅ CHANGED: Filter out tokens with suspicious high values (> $10M)
+            // This helps remove incorrectly priced tokens
+            if (token.value > 10_000_000) {
+                console.warn(`⚠️ Filtering out suspicious high-value token ${token.symbol} with value $${token.value.toLocaleString()}`);
+                return false;
+            }
+
+            // ✅ Keep all valid tokens, even with 0 value (shows diversity)
+            console.log(`✅ [NEW CODE v3] Keeping token ${token.symbol} - value: $${token.value}`);
             return true;
         })
         .sort((a, b) => b.value - a.value);
@@ -1095,11 +1112,17 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     // Map credit level
     const rating = data.credit_level || getRating(score);
 
+    // ✅ FIX: Use token_summary.total_tokens for tokenDiversity if available
+    const finalTokenDiversity = data.token_summary?.total_tokens || data.token_diversity || validTokens.length;
+
+    // ✅ FIX: Get total_transactions from transaction_summary if available
+    const totalTransactions = data.transaction_summary?.total_transactions || data.total_transactions || 0;
+
     const walletAnalysis: WalletAnalysis = {
         score: score,
         walletAge: walletAge,
-        totalTransactions: data.total_transactions || 0,
-        tokenDiversity: data.token_diversity || tokenBalances.length,
+        totalTransactions: totalTransactions,
+        tokenDiversity: finalTokenDiversity,
         totalAssets: totalAssetsUsd,
         rating: rating,
         tokenBalances: validTokens,
@@ -1115,7 +1138,7 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
         creditLevel: data.credit_level,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
-        walletTransactionsLast30d: data.wallet_transactions_last_30d,
+        walletTransactionsLast30d: data.wallet_transactions_last_30d || data.transaction_summary?.transactions_30d,
         stablecoinInflow30d: data.stablecoin_inflow_30d,
         featureImportance: data.explanation?.feature_importance,
         recommendations: data.recommendations || data.explanation?.recommendations,
@@ -1184,6 +1207,7 @@ function mapTokenBalances(apiData: any[]): TokenBalance[] {
         console.log(`  → Balance: ${balance}`);
         console.log(`  → USD Value: $${usdValue}`);
         console.log(`  → Decimals: ${decimals}`);
+        console.log(`  → Spam: ${token.possible_spam || false}`);
 
         return {
             symbol: symbol,
@@ -1194,7 +1218,11 @@ function mapTokenBalances(apiData: any[]): TokenBalance[] {
             name: name,
             logo: token.logo || token.token_logo || token.thumbnail || token.icon,
             decimals: decimals,
-        };
+            // ✅ NEW: Preserve spam flag for filtering
+            possible_spam: token.possible_spam || false,
+            verified_contract: token.verified_contract,
+            security_score: token.security_score,
+        } as any;
     });
 }
 
