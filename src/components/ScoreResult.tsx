@@ -105,6 +105,9 @@ function ScoreResultComponent({
   const percentage = useMemo(() => Math.min((score / 850) * 100, 100), [score]);
 
   const [showTokenDetails, setShowTokenDetails] = useState(false);
+  // --- Sửa đoạn này: tính diversity khớp thực tế ---
+  const diversity = (Array.isArray(tokenBalances) && tokenBalances.length > 0)
+    ? tokenBalances.length : (tokenDiversity ?? 0); // Ưu tiên lấy tokenBalances.length thực tế
 
   const chartData = useMemo(() => [
     { name: 'Score', value: percentage },
@@ -118,6 +121,10 @@ function ScoreResultComponent({
   const formatCurrency = (value: number) => {
     return formatCurrencyUtil(value);
   };
+
+  // Thay vì lọc theo balance_usd hay balance, chỉ filter spam:
+  const displayedTokens = tokenBalances.filter(token => !token.possible_spam);
+  const totalValue = displayedTokens.reduce((sum, t) => sum + (t.value ?? 0), 0);
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-12 animate-in fade-in-50 duration-700">
@@ -347,7 +354,7 @@ function ScoreResultComponent({
                   {/* Big number display */}
                   <div className="text-center py-6">
                     <div className="text-7xl bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent tracking-tight mb-3">
-                      {tokenDiversity}
+                      {diversity}
                     </div>
                     <div className="text-gray-400 text-base">{t.scoreResult.typesOfTokens}</div>
                   </div>
@@ -356,12 +363,12 @@ function ScoreResultComponent({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-400">{language === 'vi' ? 'Mức độ đa dạng' : 'Diversity Level'}</span>
-                      <span className="text-teal-400 font-medium">{Math.min((tokenDiversity / 20) * 100, 100).toFixed(0)}%</span>
+                      <span className="text-teal-400 font-medium">{Math.min((diversity / 20) * 100, 100).toFixed(0)}%</span>
                     </div>
                     <div className="w-full h-2.5 bg-slate-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-teal-500 to-teal-400 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min((tokenDiversity / 20) * 100, 100)}%` }}
+                        style={{ width: `${Math.min((diversity / 20) * 100, 100)}%` }}
                       />
                     </div>
                   </div>
@@ -381,7 +388,7 @@ function ScoreResultComponent({
           </div>
 
           {/* Token List - Right side, appears when showTokenDetails is true */}
-          {showTokenDetails && tokenBalances.length > 0 ? (
+          {showTokenDetails && displayedTokens.length > 0 ? (
             <div className="animate-in slide-in-from-right-4 duration-300">
               <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border-2 border-teal-500/30 shadow-xl rounded-2xl h-full">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-600/20 to-teal-500/20 rounded-2xl blur-xl opacity-50" />
@@ -394,37 +401,40 @@ function ScoreResultComponent({
                         {language === 'vi' ? 'Danh Sách Token' : 'Token List'}
                       </CardTitle>
                       <span className="text-sm text-teal-400 font-medium">
-                        {tokenBalances.length} {language === 'vi' ? 'tokens' : 'tokens'}
+                        {displayedTokens.length} {language === 'vi' ? 'tokens' : 'tokens'}
                       </span>
                     </div>
                   </CardHeader>
 
                   <CardContent className="flex-1 overflow-y-auto custom-scrollbar">
                     <div className="space-y-2">
-                      {tokenBalances.map((token, idx) => (
-                        <div
-                          key={token.symbol}
-                          className="group/token relative overflow-hidden p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl border border-teal-500/20 hover:border-teal-400/40 transition-all duration-300"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover/token:opacity-100 transition-opacity" />
+                      {displayedTokens.map((token, idx) => {
+                        const percentage = totalValue ? (token.value / totalValue) * 100 : 0;
+                        return (
+                          <div
+                            key={token.symbol}
+                            className="group/token relative overflow-hidden p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl border border-teal-500/20 hover:border-teal-400/40 transition-all duration-300"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover/token:opacity-100 transition-opacity" />
 
-                          <div className="relative flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className="w-3 h-3 rounded-full flex-shrink-0 shadow-lg"
-                                style={{ backgroundColor: TOKEN_COLORS[idx % TOKEN_COLORS.length] }}
-                              />
-                              <div>
-                                <div className="text-gray-200 font-semibold">{token.symbol}</div>
-                                <div className="text-teal-400 text-sm font-mono">{formatCurrency(token.value)}</div>
+                            <div className="relative flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-3 h-3 rounded-full flex-shrink-0 shadow-lg"
+                                  style={{ backgroundColor: TOKEN_COLORS[idx % TOKEN_COLORS.length] }}
+                                />
+                                <div>
+                                  <div className="text-gray-200 font-semibold">{token.symbol}</div>
+                                  <div className="text-teal-400 text-sm font-mono">{formatCurrency(token.value)}</div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-gray-400 text-sm font-medium">{percentage.toFixed(1)}%</div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <div className="text-gray-400 text-sm font-medium">{(token.percentage || 0).toFixed(1)}%</div>
-                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </div>
@@ -446,61 +456,6 @@ function ScoreResultComponent({
         </div>
       </div>
 
-      {/* Charts Section - 2 biểu đồ chính */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Token Distribution */}
-        {tokenBalances.length > 0 && (
-          <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-3xl">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 to-teal-500/30 rounded-3xl blur-xl opacity-50" />
-
-            <div className="relative">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-xl bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent flex items-center justify-center gap-2">
-                  <Wallet className="w-5 h-5 text-cyan-400" />
-                  {t.scoreResult.tokenDistribution}
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent className="p-4">
-                <div className="w-full h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={tokenBalances.slice(0, 5)}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={60}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {tokenBalances.slice(0, 5).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={TOKEN_COLORS[index % TOKEN_COLORS.length]} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="mt-2 space-y-1">
-                  {tokenBalances.slice(0, 3).map((token, idx) => (
-                    <div key={token.symbol} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: TOKEN_COLORS[idx % TOKEN_COLORS.length] }}
-                        />
-                        <span className="text-gray-300">{token.symbol}</span>
-                      </div>
-                      <span className="text-cyan-400">{(token.percentage || 0).toFixed(1)}%</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </div>
-          </Card>
-        )}
-      </div>
-
       {/* Action Buttons */}
       {onSubscribe && onFeedback && onRecalculate && (
         <div className="flex justify-center">
@@ -519,3 +474,4 @@ function ScoreResultComponent({
 }
 
 export const ScoreResult = memo(ScoreResultComponent);
+
