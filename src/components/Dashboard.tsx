@@ -233,7 +233,7 @@ export function Dashboard({
               </h1>
               <p className="text-gray-400 text-xs md:text-sm flex items-center gap-2">
                 <Wallet className="w-3 h-3 md:w-4 md:h-4 text-cyan-400" />
-                Ví <span className="text-cyan-400 font-mono">{formatWalletAddress(user.walletAddress)}</span>
+                {t.statsLabels.wallet} <span className="text-cyan-400 font-mono">{formatWalletAddress(user.walletAddress)}</span>
               </p>
             </div>
 
@@ -271,50 +271,50 @@ export function Dashboard({
         </div>
 
         {/* Quick Stats Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4 mb-6">
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
-            <CardContent className="p-4 text-center">
-              <div className="text-3xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-1">
+            <CardContent className="p-3 md:p-4 text-center">
+              <div className="text-2xl md:text-3xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-1">
                 {currentScore}
               </div>
-              <div className="text-gray-400 text-xs">{t.statsLabels.creditScore}</div>
-              <Badge className="mt-2 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+              <div className="text-gray-400 text-[10px] md:text-xs">{t.statsLabels.creditScore}</div>
+              <Badge className="mt-1.5 md:mt-2 bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] md:text-xs px-1.5 md:px-2">
                 {rating}
               </Badge>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
-            <CardContent className="p-4 text-center">
-              <Calendar className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
-              <div className="text-2xl text-cyan-400 mb-1">{walletAge}</div>
-              <div className="text-gray-400 text-xs">{t.statsLabels.walletAgeDays}</div>
+            <CardContent className="p-3 md:p-4 text-center">
+              <Calendar className="w-4 h-4 md:w-5 md:h-5 text-cyan-400 mx-auto mb-1" />
+              <div className="text-xl md:text-2xl text-cyan-400 mb-1">{walletAge}</div>
+              <div className="text-gray-400 text-[10px] md:text-xs">{t.statsLabels.walletAgeDays}</div>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
-            <CardContent className="p-4 text-center">
-              <Activity className="w-5 h-5 text-blue-400 mx-auto mb-1" />
-              <div className="text-2xl text-blue-400 mb-1">{totalTransactions.toLocaleString()}</div>
-              <div className="text-gray-400 text-xs">{t.statsLabels.transactions}</div>
+            <CardContent className="p-3 md:p-4 text-center">
+              <Activity className="w-4 h-4 md:w-5 md:h-5 text-blue-400 mx-auto mb-1" />
+              <div className="text-xl md:text-2xl text-blue-400 mb-1">{totalTransactions.toLocaleString()}</div>
+              <div className="text-gray-400 text-[10px] md:text-xs">{t.statsLabels.transactions}</div>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
-            <CardContent className="p-4 text-center">
-              <TrendingUp className="w-5 h-5 text-purple-400 mx-auto mb-1" />
-              <div className="text-2xl text-purple-400 mb-1">
+            <CardContent className="p-3 md:p-4 text-center">
+              <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-purple-400 mx-auto mb-1" />
+              <div className="text-xl md:text-2xl text-purple-400 mb-1">
                 {walletData?.walletTransactionsLast30d || 0}
               </div>
-              <div className="text-gray-400 text-xs">{t.statsLabels.transactions30d}</div>
+              <div className="text-gray-400 text-[10px] md:text-xs">{t.statsLabels.transactions30d || 'Giao dịch 30 ngày'}</div>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
-            <CardContent className="p-4 text-center">
-              <Wallet className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
-              <div className="text-2xl text-emerald-400 mb-1">{formatCurrency(totalAssets)}</div>
-              <div className="text-gray-400 text-xs">{t.statsLabels.assets}</div>
+            <CardContent className="p-3 md:p-4 text-center">
+              <Wallet className="w-4 h-4 md:w-5 md:h-5 text-emerald-400 mx-auto mb-1" />
+              <div className="text-xl md:text-2xl text-emerald-400 mb-1">{formatCurrency(totalAssets)}</div>
+              <div className="text-gray-400 text-[10px] md:text-xs">{t.statsLabels.assets}</div>
             </CardContent>
           </Card>
         </div>
@@ -406,10 +406,10 @@ export function Dashboard({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-2xl text-white flex items-center gap-2 mb-1">
-                {'Phân tích chi tiết'}
+                {t.statsLabels.detailedAnalysis}
               </h2>
               <p className="text-gray-400 text-sm">
-                {'Phân tích chart số liệu ví'}
+                {t.statsLabels.chartDescription} {formatWalletAddress(user.walletAddress)}
               </p>
             </div>
           </div>
@@ -435,4 +435,3 @@ export function Dashboard({
     </div>
   );
 }
-

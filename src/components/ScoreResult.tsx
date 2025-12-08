@@ -3,7 +3,7 @@ import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
 import { memo, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { Crown, Trophy, Award, Star, TrendingUp, Wallet, ChevronRight } from "lucide-react";
+import { Crown, Trophy, Award, Star, TrendingUp, Wallet, ChevronRight, ChevronLeft } from "lucide-react";
 import type { TokenBalance, Transaction } from "../services/api-real";
 import { ActionButtons } from "./ActionButtons";
 import { useLanguage } from "../services/LanguageContext";
@@ -75,10 +75,10 @@ const getRatingGradient = (rating: string): string => {
 
 const getRatingIcon = (rating: string) => {
   switch (rating) {
-    case "AAA": return <Crown className="w-8 h-8 text-emerald-400" />;
-    case "AA": return <Trophy className="w-8 h-8 text-green-400" />;
-    case "A": return <Award className="w-8 h-8 text-blue-400" />;
-    default: return <Star className="w-8 h-8 text-yellow-400" />;
+    case "AAA": return <Crown className="w-6 h-6 md:w-8 md:h-8 text-emerald-400" />;
+    case "AA": return <Trophy className="w-6 h-6 md:w-8 md:h-8 text-green-400" />;
+    case "A": return <Award className="w-6 h-6 md:w-8 md:h-8 text-blue-400" />;
+    default: return <Star className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" />;
   }
 };
 
@@ -105,9 +105,24 @@ function ScoreResultComponent({
   const percentage = useMemo(() => Math.min((score / 850) * 100, 100), [score]);
 
   const [showTokenDetails, setShowTokenDetails] = useState(false);
-  // --- Sửa đoạn này: tính diversity khớp thực tế ---
-  const diversity = (Array.isArray(tokenBalances) && tokenBalances.length > 0)
-    ? tokenBalances.length : (tokenDiversity ?? 0); // Ưu tiên lấy tokenBalances.length thực tế
+
+  // ✅ NEW: Pagination state for token list
+  const [currentPage, setCurrentPage] = useState(1);
+  const tokensPerPage = 6;
+
+  // ✅ Calculate pagination
+  const totalPages = Math.ceil(tokenBalances.length / tokensPerPage);
+  const startIndex = (currentPage - 1) * tokensPerPage;
+  const endIndex = startIndex + tokensPerPage;
+  const currentTokens = tokenBalances.slice(startIndex, endIndex);
+
+  // ✅ Reset to page 1 when token details panel opens
+  const handleToggleTokenDetails = () => {
+    if (!showTokenDetails) {
+      setCurrentPage(1);
+    }
+    setShowTokenDetails(!showTokenDetails);
+  };
 
   const chartData = useMemo(() => [
     { name: 'Score', value: percentage },
@@ -122,33 +137,29 @@ function ScoreResultComponent({
     return formatCurrencyUtil(value);
   };
 
-  // Thay vì lọc theo balance_usd hay balance, chỉ filter spam:
-  const displayedTokens = tokenBalances.filter(token => !token.possible_spam);
-  const totalValue = displayedTokens.reduce((sum, t) => sum + (t.value ?? 0), 0);
-
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-12 animate-in fade-in-50 duration-700">
+    <div className="w-full max-w-7xl mx-auto space-y-4 md:space-y-12 animate-in fade-in-50 duration-700 px-2 md:px-4">
       {/* Main Score Card */}
-      <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-3xl">
+      <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-xl md:rounded-3xl">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-cyan-900/20 to-slate-900/40" />
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-3xl blur-xl opacity-50" />
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-xl md:rounded-3xl blur-xl opacity-50" />
 
         <div className="relative">
-          <CardHeader className="text-center pb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
+          <CardHeader className="text-center pb-3 md:pb-8 pt-3 md:pt-6 px-3 md:px-6">
+            <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-1.5 md:mb-4">
               {getRatingIcon(rating)}
-              <CardTitle className="text-4xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              <CardTitle className="text-xl md:text-4xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                 {t.scoreResult.title}
               </CardTitle>
             </div>
-            <p className="text-gray-400 text-lg">{t.scoreResult.subtitle}</p>
+            <p className="text-gray-400 text-xs md:text-lg">{t.scoreResult.subtitle}</p>
           </CardHeader>
 
-          <CardContent className="pb-12">
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-16">
+          <CardContent className="pb-4 md:pb-12 px-3 md:px-6">
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-6 md:gap-16">
               {/* Enhanced Circular Chart */}
               <div className="relative">
-                <div className="w-72 h-72 relative">
+                <div className="w-40 h-40 sm:w-48 sm:h-48 md:w-72 md:h-72 relative">
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-600/40 to-blue-600/40 blur-2xl animate-pulse" />
 
                   <ResponsiveContainer width="100%" height="100%">
@@ -188,54 +199,54 @@ function ScoreResultComponent({
 
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-6xl mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
+                      <div className="text-3xl sm:text-4xl md:text-6xl mb-0.5 md:mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
                         {score}
                       </div>
-                      <div className="text-gray-400 text-lg">{t.scoreResult.score}</div>
+                      <div className="text-gray-400 text-xs md:text-lg">{t.scoreResult.score}</div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Enhanced Score Details */}
-              <div className="text-center space-y-8">
-                <div className="space-y-4">
-                  <div className="text-8xl mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
+              <div className="text-center space-y-3 md:space-y-8 w-full max-w-md">
+                <div className="space-y-1.5 md:space-y-4">
+                  <div className="text-4xl sm:text-5xl md:text-8xl mb-1.5 md:mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
                     {score}
                   </div>
-                  <div className="text-3xl text-gray-300">{t.scoreResult.creditScore}</div>
+                  <div className="text-lg md:text-3xl text-gray-300">{t.scoreResult.creditScore}</div>
                 </div>
 
                 <div className="relative inline-block">
-                  <div className={`absolute -inset-2 bg-gradient-to-r ${getRatingGradient(rating)} rounded-2xl blur-lg opacity-60 animate-pulse`} />
-                  <div className={`relative inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r ${getRatingGradient(rating)} shadow-2xl`}>
+                  <div className={`absolute -inset-1 md:-inset-2 bg-gradient-to-r ${getRatingGradient(rating)} rounded-xl md:rounded-2xl blur-lg opacity-60 animate-pulse`} />
+                  <div className={`relative inline-flex items-center gap-1.5 md:gap-3 px-4 md:px-8 py-2 md:py-4 rounded-xl md:rounded-2xl bg-gradient-to-r ${getRatingGradient(rating)} shadow-2xl`}>
                     {getRatingIcon(rating)}
-                    <span className="text-white text-4xl tracking-wider">{rating}</span>
+                    <span className="text-white text-xl md:text-4xl tracking-wider">{rating}</span>
                   </div>
                 </div>
 
-                <div className="w-80 space-y-4">
+                <div className="w-full max-w-xs md:max-w-md mx-auto space-y-2 md:space-y-4">
                   <div className="relative">
                     <Progress
                       value={percentage}
-                      className="h-4 bg-slate-700/50 rounded-full overflow-hidden"
+                      className="h-2 md:h-4 bg-slate-700/50 rounded-full overflow-hidden"
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 rounded-full pointer-events-none" />
                   </div>
-                  <div className="flex justify-between text-sm text-gray-400">
+                  <div className="flex justify-between text-[10px] md:text-sm text-gray-400">
                     <span>{percentage.toFixed(1)}% {t.scoreResult.maxProgress}</span>
                     <span>{t.scoreResult.maxScore}</span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-4">
-                  <div className="text-center p-3 bg-green-500/20 rounded-xl border border-green-400/30">
-                    <TrendingUp className="w-5 h-5 text-green-400 mx-auto mb-1" />
-                    <div className="text-green-400 text-sm">{t.scoreResult.excellent}</div>
+                <div className="grid grid-cols-2 gap-2 md:gap-4 pt-1.5 md:pt-4">
+                  <div className="text-center p-1.5 md:p-3 bg-green-500/20 rounded-lg md:rounded-xl border border-green-400/30">
+                    <TrendingUp className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-400 mx-auto mb-0.5 md:mb-1" />
+                    <div className="text-green-400 text-[10px] md:text-sm">{t.scoreResult.excellent}</div>
                   </div>
-                  <div className="text-center p-3 bg-blue-500/20 rounded-xl border border-blue-400/30">
-                    <Wallet className="w-5 h-5 text-blue-400 mx-auto mb-1" />
-                    <div className="text-blue-400 text-sm">{t.scoreResult.verified}</div>
+                  <div className="text-center p-1.5 md:p-3 bg-blue-500/20 rounded-lg md:rounded-xl border border-blue-400/30">
+                    <Wallet className="w-3.5 h-3.5 md:w-5 md:h-5 text-blue-400 mx-auto mb-0.5 md:mb-1" />
+                    <div className="text-blue-400 text-[10px] md:text-sm">{t.scoreResult.verified}</div>
                   </div>
                 </div>
               </div>
@@ -245,25 +256,25 @@ function ScoreResultComponent({
       </Card>
 
       {/* Enhanced Statistics Cards - NEW LAYOUT: Row 1 = 3 cards, Row 2 = Token card left + list right */}
-      <div className="space-y-8">
+      <div className="space-y-3 md:space-y-8">
         {/* Row 1: 3 Cards horizontal */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8">
           {/* Wallet Age Card */}
           <Card className="relative group overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-lg hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-500 hover:scale-105 hover:-translate-y-2 rounded-2xl">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-600/30 to-cyan-500/30 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative">
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-3 md:pb-4 px-4 md:px-6 pt-4 md:pt-6">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-cyan-400 text-sm tracking-wide uppercase">{t.scoreResult.walletAge}</CardTitle>
+                  <CardTitle className="text-cyan-400 text-xs md:text-sm tracking-wide uppercase">{t.scoreResult.walletAge}</CardTitle>
                   <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
                 <div className="space-y-2">
-                  <div className="text-4xl bg-gradient-to-r from-cyan-400 to-cyan-300 bg-clip-text text-transparent tracking-tight">
+                  <div className="text-3xl md:text-4xl bg-gradient-to-r from-cyan-400 to-cyan-300 bg-clip-text text-transparent tracking-tight">
                     {walletAge}
                   </div>
-                  <div className="text-gray-400 text-sm">{t.scoreResult.daysActive}</div>
+                  <div className="text-gray-400 text-xs md:text-sm">{t.scoreResult.daysActive}</div>
                   <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full w-3/4" />
                   </div>
@@ -276,18 +287,18 @@ function ScoreResultComponent({
           <Card className="relative group overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-blue-500/20 shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 hover:scale-105 hover:-translate-y-2 rounded-2xl">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/30 to-blue-500/30 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative">
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-3 md:pb-4 px-4 md:px-6 pt-4 md:pt-6">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-blue-400 text-sm tracking-wide uppercase">{t.scoreResult.transactions}</CardTitle>
+                  <CardTitle className="text-blue-400 text-xs md:text-sm tracking-wide uppercase">{t.scoreResult.transactions}</CardTitle>
                   <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
                 <div className="space-y-2">
-                  <div className="text-4xl bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent tracking-tight">
+                  <div className="text-3xl md:text-4xl bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent tracking-tight">
                     {totalTransactions.toLocaleString()}
                   </div>
-                  <div className="text-gray-400 text-sm">{t.scoreResult.totalTransactions}</div>
+                  <div className="text-gray-400 text-xs md:text-sm">{t.scoreResult.totalTransactions}</div>
                   <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full w-4/5" />
                   </div>
@@ -300,18 +311,18 @@ function ScoreResultComponent({
           <Card className="relative group overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-emerald-500/20 shadow-lg hover:shadow-2xl hover:shadow-emerald-500/20 transition-all duration-500 hover:scale-105 hover:-translate-y-2 rounded-2xl">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600/30 to-emerald-500/30 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative">
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-3 md:pb-4 px-4 md:px-6 pt-4 md:pt-6">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-emerald-400 text-sm tracking-wide uppercase">{t.scoreResult.totalAssets}</CardTitle>
+                  <CardTitle className="text-emerald-400 text-xs md:text-sm tracking-wide uppercase">{t.scoreResult.totalAssets}</CardTitle>
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
                 <div className="space-y-2">
-                  <div className="text-4xl bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent tracking-tight">
+                  <div className="text-3xl md:text-4xl bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent tracking-tight">
                     {formatCurrency(totalAssets)}
                   </div>
-                  <div className="text-gray-400 text-sm">{t.scoreResult.portfolioValue}</div>
+                  <div className="text-gray-400 text-xs md:text-sm">{t.scoreResult.portfolioValue}</div>
                   <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full w-5/6" />
                   </div>
@@ -322,65 +333,65 @@ function ScoreResultComponent({
         </div>
 
         {/* Row 2: Token Diversity Card (left) + Token List (right when clicked) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 items-start">
           {/* Token Diversity Card - Left side, centered and balanced */}
           <div className="flex justify-center">
             <Card className="relative group overflow-hidden bg-slate-800/50 backdrop-blur-xl border-2 border-teal-500/50 shadow-xl shadow-teal-500/20 hover:shadow-2xl hover:shadow-teal-500/30 transition-all duration-500 rounded-2xl w-full max-w-md">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-600/40 to-teal-500/40 rounded-2xl blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
               <div className="relative">
-                <CardHeader className="pb-6">
-                  <div className="text-center space-y-3">
+                <CardHeader className="pb-4 md:pb-6 px-4 md:px-6 pt-4 md:pt-6">
+                  <div className="text-center space-y-2 md:space-y-3">
                     <div className="flex items-center justify-center">
-                      <div className="p-4 bg-teal-500/20 rounded-2xl">
-                        <Wallet className="w-10 h-10 text-teal-400" />
+                      <div className="p-3 md:p-4 bg-teal-500/20 rounded-2xl">
+                        <Wallet className="w-8 h-8 md:w-10 md:h-10 text-teal-400" />
                       </div>
                     </div>
                     <div className="flex items-center justify-center gap-2">
-                      <CardTitle className="text-xl bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent tracking-wide uppercase">
+                      <CardTitle className="text-lg md:text-xl bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent tracking-wide uppercase">
                         {t.scoreResult.tokenDiversity}
                       </CardTitle>
                       <Badge className="bg-teal-500/20 text-teal-300 border-teal-400/40 text-xs px-2 py-0.5">
                         {language === 'vi' ? 'Chi Tiết' : 'Details'}
                       </Badge>
                     </div>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-400 text-xs md:text-sm">
                       {language === 'vi' ? 'Danh mục đa dạng giúp phân tán rủi ro' : 'Diversified portfolio helps spread risk'}
                     </p>
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4 md:space-y-6 px-4 md:px-6 pb-4 md:pb-6">
                   {/* Big number display */}
-                  <div className="text-center py-6">
-                    <div className="text-7xl bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent tracking-tight mb-3">
-                      {diversity}
+                  <div className="text-center py-4 md:py-6">
+                    <div className="text-6xl md:text-7xl bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent tracking-tight mb-2 md:mb-3">
+                      {tokenDiversity}
                     </div>
-                    <div className="text-gray-400 text-base">{t.scoreResult.typesOfTokens}</div>
+                    <div className="text-gray-400 text-sm md:text-base">{t.scoreResult.typesOfTokens}</div>
                   </div>
 
                   {/* Progress bar với label */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
+                  <div className="space-y-2 md:space-y-3">
+                    <div className="flex items-center justify-between text-xs md:text-sm">
                       <span className="text-gray-400">{language === 'vi' ? 'Mức độ đa dạng' : 'Diversity Level'}</span>
-                      <span className="text-teal-400 font-medium">{Math.min((diversity / 20) * 100, 100).toFixed(0)}%</span>
+                      <span className="text-teal-400 font-medium">{Math.min((tokenDiversity / 20) * 100, 100).toFixed(0)}%</span>
                     </div>
                     <div className="w-full h-2.5 bg-slate-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-teal-500 to-teal-400 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min((diversity / 20) * 100, 100)}%` }}
+                        style={{ width: `${Math.min((tokenDiversity / 20) * 100, 100)}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Button to view token details */}
                   <button
-                    onClick={() => setShowTokenDetails(!showTokenDetails)}
-                    className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 hover:from-teal-500/20 hover:to-cyan-500/20 border-2 border-teal-500/40 hover:border-teal-400/60 rounded-xl text-teal-300 font-medium transition-all duration-300 group/btn"
+                    onClick={handleToggleTokenDetails}
+                    className="w-full flex items-center justify-center gap-2 md:gap-3 px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 hover:from-teal-500/20 hover:to-cyan-500/20 border-2 border-teal-500/40 hover:border-teal-400/60 rounded-xl text-teal-300 text-sm md:text-base font-medium transition-all duration-300 group/btn"
                   >
-                    <Wallet className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                    <Wallet className="w-4 h-4 md:w-5 md:h-5 group-hover/btn:scale-110 transition-transform" />
                     <span>{t.scoreResult.viewTokenDetails || "Xem Chi Tiết Token"}</span>
-                    <ChevronRight className={`w-5 h-5 transition-transform duration-300 ${showTokenDetails ? 'rotate-90' : ''}`} />
+                    <ChevronRight className={`w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 ${showTokenDetails ? 'rotate-90' : ''}`} />
                   </button>
                 </CardContent>
               </div>
@@ -388,54 +399,93 @@ function ScoreResultComponent({
           </div>
 
           {/* Token List - Right side, appears when showTokenDetails is true */}
-          {showTokenDetails && displayedTokens.length > 0 ? (
+          {showTokenDetails && tokenBalances.length > 0 ? (
             <div className="animate-in slide-in-from-right-4 duration-300">
               <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border-2 border-teal-500/30 shadow-xl rounded-2xl h-full">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-600/20 to-teal-500/20 rounded-2xl blur-xl opacity-50" />
 
                 <div className="relative h-full flex flex-col">
-                  <CardHeader className="pb-4">
+                  <CardHeader className="relative pb-3 md:pb-4 px-4 md:px-6 pt-4 md:pt-6">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent flex items-center gap-2">
-                        <Wallet className="w-5 h-5 text-teal-400" />
+                      <CardTitle className="text-base md:text-lg bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent flex items-center gap-2">
+                        <Wallet className="w-4 h-4 md:w-5 md:h-5 text-teal-400" />
                         {language === 'vi' ? 'Danh Sách Token' : 'Token List'}
                       </CardTitle>
-                      <span className="text-sm text-teal-400 font-medium">
-                        {displayedTokens.length} {language === 'vi' ? 'tokens' : 'tokens'}
+                      <span className="text-xs md:text-sm text-teal-400 font-medium">
+                        {tokenBalances.length} {language === 'vi' ? 'tokens' : 'tokens'}
                       </span>
                     </div>
+                    {/* ✅ NEW: Show note if displaying subset of tokens */}
+                    {tokenDiversity > tokenBalances.length && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        {language === 'vi'
+                          ? `Hiển thị top ${tokenBalances.length} tokens (trên tổng ${tokenDiversity} tokens)`
+                          : `Showing top ${tokenBalances.length} tokens (out of ${tokenDiversity} total)`}
+                      </p>
+                    )}
                   </CardHeader>
 
-                  <CardContent className="flex-1 overflow-y-auto custom-scrollbar">
+                  <CardContent className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 pb-4 md:pb-6">
                     <div className="space-y-2">
-                      {displayedTokens.map((token, idx) => {
-                        const percentage = totalValue ? (token.value / totalValue) * 100 : 0;
-                        return (
-                          <div
-                            key={token.symbol}
-                            className="group/token relative overflow-hidden p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl border border-teal-500/20 hover:border-teal-400/40 transition-all duration-300"
-                          >
-                            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover/token:opacity-100 transition-opacity" />
+                      {currentTokens.map((token, idx) => (
+                        <div
+                          key={token.symbol}
+                          className="group/token relative overflow-hidden p-3 md:p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl border border-teal-500/20 hover:border-teal-400/40 transition-all duration-300"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover/token:opacity-100 transition-opacity" />
 
-                            <div className="relative flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className="w-3 h-3 rounded-full flex-shrink-0 shadow-lg"
-                                  style={{ backgroundColor: TOKEN_COLORS[idx % TOKEN_COLORS.length] }}
-                                />
-                                <div>
-                                  <div className="text-gray-200 font-semibold">{token.symbol}</div>
-                                  <div className="text-teal-400 text-sm font-mono">{formatCurrency(token.value)}</div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-gray-400 text-sm font-medium">{percentage.toFixed(1)}%</div>
+                          <div className="relative flex items-center justify-between">
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <div
+                                className="w-3 h-3 rounded-full flex-shrink-0 shadow-lg"
+                                style={{ backgroundColor: TOKEN_COLORS[(startIndex + idx) % TOKEN_COLORS.length] }}
+                              />
+                              <div>
+                                <div className="text-gray-200 text-sm md:text-base font-semibold">{token.symbol}</div>
+                                <div className="text-teal-400 text-xs md:text-sm font-mono">{formatCurrency(token.value)}</div>
                               </div>
                             </div>
+                            <div className="text-right">
+                              <div className="text-gray-400 text-xs md:text-sm font-medium">{(token.percentage || 0).toFixed(1)}%</div>
+                            </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
+
+                    {/* ✅ NEW: Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-teal-500/20">
+                        <div className="flex items-center justify-between">
+                          {/* Previous Button */}
+                          <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 hover:border-teal-400/50 rounded-lg text-teal-300 text-xs md:text-sm font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-teal-500/10"
+                          >
+                            <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
+                            <span>{language === 'vi' ? 'Trước' : 'Previous'}</span>
+                          </button>
+
+                          {/* Page Indicator */}
+                          <div className="text-xs md:text-sm text-gray-400">
+                            <span className="text-teal-400 font-medium">{currentPage}</span>
+                            {' / '}
+                            <span>{totalPages}</span>
+                          </div>
+
+                          {/* Next Button */}
+                          <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 hover:border-teal-400/50 rounded-lg text-teal-300 text-xs md:text-sm font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-teal-500/10"
+                          >
+                            <span>{language === 'vi' ? 'Sau' : 'Next'}</span>
+                            <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </div>
               </Card>
@@ -445,8 +495,8 @@ function ScoreResultComponent({
             !showTokenDetails && (
               <div className="hidden lg:flex items-center justify-center h-full">
                 <div className="text-center space-y-3 opacity-50">
-                  <Wallet className="w-16 h-16 text-teal-400/30 mx-auto" />
-                  <p className="text-gray-500 text-sm">
+                  <Wallet className="w-12 h-12 md:w-16 md:h-16 text-teal-400/30 mx-auto" />
+                  <p className="text-gray-500 text-xs md:text-sm">
                     {language === 'vi' ? 'Bấm "Xem Chi Tiết Token" để hiển thị danh sách' : 'Click "View Token Details" to display list'}
                   </p>
                 </div>
@@ -454,6 +504,61 @@ function ScoreResultComponent({
             )
           )}
         </div>
+      </div>
+
+      {/* Charts Section - 2 biểu đồ chính */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+        {/* Token Distribution */}
+        {tokenBalances.length > 0 && (
+          <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-2xl md:rounded-3xl">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 to-teal-500/30 rounded-2xl md:rounded-3xl blur-xl opacity-50" />
+
+            <div className="relative">
+              <CardHeader className="text-center pb-3 md:pb-4 px-4 md:px-6 pt-4 md:pt-6">
+                <CardTitle className="text-lg md:text-xl bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent flex items-center justify-center gap-2">
+                  <Wallet className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
+                  {t.scoreResult.tokenDistribution}
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="p-3 md:p-4">
+                <div className="w-full h-40 md:h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={tokenBalances.slice(0, 5)}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={60}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {tokenBalances.slice(0, 5).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={TOKEN_COLORS[index % TOKEN_COLORS.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-2 space-y-1">
+                  {tokenBalances.slice(0, 3).map((token, idx) => (
+                    <div key={token.symbol} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: TOKEN_COLORS[idx % TOKEN_COLORS.length] }}
+                        />
+                        <span className="text-gray-300">{token.symbol}</span>
+                      </div>
+                      <span className="text-cyan-400">{(token.percentage || 0).toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Action Buttons */}
@@ -474,4 +579,3 @@ function ScoreResultComponent({
 }
 
 export const ScoreResult = memo(ScoreResultComponent);
-

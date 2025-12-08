@@ -365,7 +365,7 @@ export const translations = {
 
     // Score Result Page
     scoreResult: {
-      title: "Điểm Tín Dụng Của Bạn",
+      title: "Điểm Tín Dụng ",
       subtitle: "Phân tích độ tin cậy ví blockchain",
       score: "Điểm",
       creditScore: "Điểm Tín Dụng",
