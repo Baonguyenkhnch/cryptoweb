@@ -826,8 +826,7 @@ export default function App() {
       </div>
 
       {/* Top Left - Logo */}
-      <div className="absolute top-2.5 md:top-4 left-8 md:left-10
- z-20">
+      <div className="absolute top-2.5 md:top-4 left-4 md:left-6 z-20">
         <div className="relative group cursor-pointer">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative w-9 h-9 md:w-12 md:h-12 rounded-full bg-white shadow-lg overflow-hidden flex items-center justify-center">
@@ -842,8 +841,11 @@ export default function App() {
 
       {/* Top Right - Register & Login Buttons & Language Switcher (if not logged in) */}
       {!currentUser && (
-        <div className="absolute top-2.5 md:top-4 right-2.5 md:right-4 z-20 flex items-center gap-1">
-          <LanguageSwitcher size="sm" />
+        <div className="absolute top-2.5 md:top-4 right-2.5 md:right-4 z-20 flex items-center gap-1 md:gap-2">
+          {/* Language Switcher - Hidden on mobile, visible on tablet+ */}
+          <div className="hidden sm:block">
+            <LanguageSwitcher size="sm" />
+          </div>
 
           {/* Đăng ký button */}
           <Button
@@ -852,16 +854,16 @@ export default function App() {
               setCurrentPage("login");
             }}
             variant="outline"
-            className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/20 hover:border-cyan-400/60 hover:text-white rounded-lg h-7 md:h-9 px-2.5 md:px-4 text-[11px] md:text-sm font-medium whitespace-nowrap transition-all duration-300"
+            className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/20 hover:border-cyan-400/60 hover:text-white rounded-lg h-7 md:h-9 px-2 md:px-4 text-[10px] md:text-sm font-medium whitespace-nowrap transition-all duration-300"
           >
             {t.auth.register}
           </Button>
 
-          {/* Đăng nhập button - Icon only on mobile */}
+          {/* Đăng nhập button */}
           <Button
             onClick={() => setShowEmailLoginDialog(true)}
             variant="outline"
-            className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/20 hover:border-cyan-400/60 hover:text-white rounded-lg h-7 md:h-9 px-2.5 md:px-4 text-[11px] md:text-sm font-medium whitespace-nowrap transition-all duration-300"
+            className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/20 hover:border-cyan-400/60 hover:text-white rounded-lg h-7 md:h-9 px-2 md:px-4 text-[10px] md:text-sm font-medium whitespace-nowrap transition-all duration-300"
           >
             {t.navigation.login}
           </Button>
@@ -1062,22 +1064,22 @@ export default function App() {
           </div>
         ) : (
           /* Results Section - Responsive Max Width for Large Screens */
-          <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pl-16 md:pl-20 pr-4">
+          <div className="max-w-7xl mx-auto space-y-4 md:space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-3 px-3 md:px-4">
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="bg-cyan-500/20 backdrop-blur-sm border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200 hover:border-cyan-400/50 transition-all duration-300 rounded-xl px-4 md:px-6 py-2 md:py-3 text-sm md:text-base"
+                className="bg-cyan-500/20 backdrop-blur-sm border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200 hover:border-cyan-400/50 transition-all duration-300 rounded-lg md:rounded-xl px-3 md:px-6 py-1.5 md:py-3 text-xs md:text-base h-8 md:h-auto"
               >
                 ← {t.calculator.buttons.tryAnother}
               </Button>
 
               {/* Demo Mode Banner */}
               {useDemoMode && (
-                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg backdrop-blur-sm animate-in fade-in-0 duration-500">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-green-400 text-sm">
+                <div className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg backdrop-blur-sm animate-in fade-in-0 duration-500">
+                  <div className="flex items-center gap-1.5 md:gap-2">
+                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-pulse" />
+                    <span className="text-green-400 text-xs md:text-sm">
                       🎨 {language === "vi" ? "Demo Mode - Dữ liệu mẫu" : "Demo Mode - Sample Data"}
                     </span>
                   </div>
