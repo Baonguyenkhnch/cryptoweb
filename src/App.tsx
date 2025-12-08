@@ -1065,7 +1065,7 @@ export default function App() {
         ) : (
           /* Results Section - Responsive Max Width for Large Screens */
           <div className="max-w-7xl mx-auto space-y-4 md:space-y-8 animate-in fade-in-0 slide-in-from-bottom-10 duration-1000">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-3 px-3 md:px-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-3 px-3 md:px-4 pt-12 md:pt-0">
               <Button
                 onClick={handleReset}
                 variant="outline"
