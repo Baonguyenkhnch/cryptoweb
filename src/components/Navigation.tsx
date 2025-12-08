@@ -73,16 +73,16 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-2xl bg-slate-900/90 border-b border-cyan-500/20 shadow-lg shadow-cyan-500/5">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
+      <div className="container mx-auto px-3 md:px-4">
+        <div className="flex items-center justify-between h-14 md:h-20">
           {/* Logo Section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             {/* MigoFin Logo */}
             <div className="relative group cursor-pointer" onClick={() => handleNavigate("dashboard")}>
               {/* White background container with simple orange border */}
-              <div className="relative bg-white rounded-lg overflow-hidden flex items-center gap-2 px-3 py-2 border border-orange-400/40 hover:border-orange-500/60 transition-all duration-300">
+              <div className="relative bg-white rounded-md md:rounded-lg overflow-hidden flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 border border-orange-400/40 hover:border-orange-500/60 transition-all duration-300">
                 {/* Logo Icon - Always visible */}
-                <div className="relative w-10 h-10 flex items-center justify-center">
+                <div className="relative w-7 h-7 md:w-10 md:h-10 flex items-center justify-center">
                   <img
                     src={logoIcon}
                     alt="MigoFin"
@@ -97,7 +97,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                     <img
                       src={logoFull}
                       alt="MigoFin"
-                      className="h-5 object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="h-4 md:h-5 object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                 )}
@@ -149,9 +149,11 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-3">
-            {/* Language Switcher - Always visible on all screen sizes */}
-            <LanguageSwitcher size="sm" />
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Language Switcher - Hidden on mobile, visible on desktop */}
+            <div className="hidden md:block">
+              <LanguageSwitcher size="sm" />
+            </div>
 
             {/* User Menu - Desktop */}
             <div className="hidden md:block">
@@ -283,6 +285,16 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                   </button>
                 );
               })}
+
+              {/* Language Switcher - Mobile */}
+              <div className="pt-2 pb-2">
+                <div className="px-4 py-2 text-xs text-gray-500 uppercase tracking-wide">
+                  {t.navigation.language || 'Language'}
+                </div>
+                <div className="px-2">
+                  <LanguageSwitcher size="sm" />
+                </div>
+              </div>
 
               {/* Logout Button */}
               <button
