@@ -1183,7 +1183,6 @@ export default function App() {
         open={showCaptchaCalculator}
         onOpenChange={setShowCaptchaCalculator}
         onVerified={handleCaptchaVerifiedCalculator}
-        title="Xác Minh Trước Khi Tính Điểm"
       />
     </div>
   );

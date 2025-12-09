@@ -48,16 +48,25 @@ export function ResultsSummary({
   // Helper function to format assets consistently
   const formatAssets = (value: number): string => {
     if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(2)}M`;
+      return `$${(value / 1000000).toFixed(1)}M`; // Changed from .toFixed(2) to .toFixed(1)
     } else if (value >= 1000) {
       return `$${(value / 1000).toFixed(1)}k`;
     } else {
-      return `$${value.toFixed(2)}`;
+      return `$${value.toFixed(1)}`; // Changed from .toFixed(2) to .toFixed(1)
     }
   };
 
   // Get rating badge info
   const getRatingInfo = (score: number) => {
+    // ✅ Handle score = 0 case with "Không Có Hạng"
+    if (score === 0) return {
+      text: "N/A",
+      color: "from-gray-500 to-gray-600",
+      bgColor: "bg-gray-500/20",
+      textColor: "text-gray-400",
+      borderColor: "border-gray-500/30",
+      label: language === 'vi' ? 'Không Có Hạng' : 'No Rating'
+    };
     if (score >= 750) return {
       text: "AAA",
       color: "from-emerald-500 to-green-500",
@@ -118,8 +127,8 @@ export function ResultsSummary({
       value: walletData.walletAge,
       unit: language === 'vi' ? 'ngày' : 'days',
       subtitle: `${(walletData.walletAge / 365).toFixed(1)} ${language === 'vi' ? 'năm' : 'years'}`,
-      weight: 30,
-      contributedScore: Math.round(walletData.score * 0.30),
+      weight: 20, // Changed from 30% to 20%
+      contributedScore: Math.round(walletData.score * 0.20), // Changed from 0.30 to 0.20
       badge: language === 'vi' ? 'Trung Bình' : 'Average',
       badgeColor: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       iconColor: 'text-cyan-400',
@@ -131,8 +140,8 @@ export function ResultsSummary({
       value: walletData.totalTransactions.toLocaleString(),
       unit: '',
       subtitle: language === 'vi' ? 'giao dịch' : 'transactions',
-      weight: 25,
-      contributedScore: Math.round(walletData.score * 0.25),
+      weight: 30, // Changed from 25% to 30%
+      contributedScore: Math.round(walletData.score * 0.30), // Changed from 0.25 to 0.30
       badge: language === 'vi' ? 'Hoạt Động' : 'Active',
       badgeColor: 'bg-green-500/20 text-green-400 border-green-500/30',
       iconColor: 'text-blue-400',
@@ -147,7 +156,7 @@ export function ResultsSummary({
       weight: 20,
       contributedScore: Math.round(walletData.score * 0.20),
       badge: language === 'vi' ? 'Ổn Định' : 'Stable',
-      badgeColor: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      badgeColor: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30', // Changed from purple to cyan
       iconColor: 'text-purple-400',
       iconBg: 'bg-purple-500/20',
     },
@@ -157,8 +166,8 @@ export function ResultsSummary({
       value: formatAssets(walletData.totalAssets),
       unit: '',
       subtitle: 'USD',
-      weight: 25,
-      contributedScore: Math.round(walletData.score * 0.25),
+      weight: 30, // Changed from 25% to 30%
+      contributedScore: Math.round(walletData.score * 0.30), // Changed from 0.25 to 0.30
       badge: language === 'vi' ? 'Tốt' : 'Good',
       badgeColor: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
       iconColor: 'text-green-400',
@@ -179,27 +188,27 @@ export function ResultsSummary({
   // Optimization factors
   const optimizationFactors = [
     {
-      icon: TrendingUp,
+      icon: Clock,
       label: language === 'vi' ? 'Tuổi ví và thời gian sử dụng' : 'Wallet age and usage time',
-      percentage: 30,
+      percentage: 20, // Changed from 30% to 20%
       color: 'text-cyan-400',
     },
     {
-      icon: Zap,
+      icon: Activity,
       label: language === 'vi' ? 'Tần suất và khối lượng giao dịch' : 'Transaction frequency and volume',
-      percentage: 25,
+      percentage: 30, // Changed from 25% to 30%
       color: 'text-blue-400',
     },
     {
-      icon: Shield,
+      icon: Coins,
       label: language === 'vi' ? 'Đa dạng hóa tài sản token' : 'Token asset diversification',
       percentage: 20,
       color: 'text-purple-400',
     },
     {
-      icon: Target,
+      icon: Wallet,
       label: language === 'vi' ? 'Tổng tài sản' : 'Total assets',
-      percentage: 25,
+      percentage: 30, // Changed from 25% to 30%
       color: 'text-green-400',
     },
   ];
@@ -325,17 +334,17 @@ export function ResultsSummary({
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-400 mt-1">•</span>
                   <span>
-                    <span className="text-cyan-400">{language === 'vi' ? 'Tuổi Ví' : 'Wallet Age'} (30%)</span>
+                    <span className="text-cyan-400">{language === 'vi' ? 'Tuổi Ví' : 'Wallet Age'} (20%)</span>
                     {' - '}
-                    {walletData.score} × 30% = {Math.round(walletData.score * 0.3)} {language === 'vi' ? 'điểm' : 'pts'}
+                    {walletData.score} × 20% = {Math.round(walletData.score * 0.2)} {language === 'vi' ? 'điểm' : 'pts'}
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400 mt-1">•</span>
                   <span>
-                    <span className="text-blue-400">{language === 'vi' ? 'Giao Dịch' : 'Transactions'} (25%)</span>
+                    <span className="text-blue-400">{language === 'vi' ? 'Giao Dịch' : 'Transactions'} (30%)</span>
                     {' - '}
-                    {walletData.score} × 25% = {Math.round(walletData.score * 0.25)} {language === 'vi' ? 'điểm' : 'pts'}
+                    {walletData.score} × 30% = {Math.round(walletData.score * 0.3)} {language === 'vi' ? 'điểm' : 'pts'}
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
@@ -349,9 +358,9 @@ export function ResultsSummary({
                 <li className="flex items-start gap-2">
                   <span className="text-green-400 mt-1">•</span>
                   <span>
-                    <span className="text-green-400">{language === 'vi' ? 'Tổng Tài Sản' : 'Total Assets'} (25%)</span>
+                    <span className="text-green-400">{language === 'vi' ? 'Tổng Tài Sản' : 'Total Assets'} (30%)</span>
                     {' - '}
-                    {walletData.score} × 25% = {Math.round(walletData.score * 0.25)} {language === 'vi' ? 'điểm' : 'pts'}
+                    {walletData.score} × 30% = {Math.round(walletData.score * 0.3)} {language === 'vi' ? 'điểm' : 'pts'}
                   </span>
                 </li>
               </ul>
@@ -466,7 +475,9 @@ export function ResultsSummary({
           <CardContent className="px-6 pb-6">
             <div className="space-y-3">
               {ratingRanges.map((item, index) => {
-                const isCurrentRating = item.rating === rating.text;
+                // ✅ Only highlight when score > 0 AND matches the rating
+                // For score = 0, rating.text is "N/A" which won't match any tier
+                const isCurrentRating = walletData.score > 0 && item.rating === rating.text;
                 return (
                   <div
                     key={index}
@@ -484,6 +495,7 @@ export function ResultsSummary({
                         <div className="text-xs text-gray-400">{item.label}</div>
                       </div>
                     </div>
+                    {/* ✅ Only show 👈 when score > 0 AND it's the current rating */}
                     {isCurrentRating && (
                       <div className="text-xl">👈</div>
                     )}
@@ -526,7 +538,7 @@ export function ResultsSummary({
               <div className="mt-4 pt-4 border-t border-slate-700/50">
                 <p className="text-xs text-gray-400 text-center italic">
                   💡 {language === 'vi'
-                    ? 'Điểm được tính toán tự động từ dữ liệu blockchain'
+                    ? 'Điểm đưc tính toán tự động từ dữ liệu blockchain'
                     : 'Score is automatically calculated from blockchain data'}
                 </p>
               </div>

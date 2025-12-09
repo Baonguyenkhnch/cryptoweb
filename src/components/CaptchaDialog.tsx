@@ -9,6 +9,7 @@ import {
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { Shield, CheckCircle2 } from "lucide-react";
+import { useLanguage } from "../services/LanguageContext";
 
 interface CaptchaDialogProps {
     open: boolean;
@@ -21,11 +22,17 @@ export function CaptchaDialog({
     open,
     onOpenChange,
     onVerified,
-    title = "Xác Minh Bảo Mật"
+    title
 }: CaptchaDialogProps) {
+    const { language } = useLanguage();
     const [isChecked, setIsChecked] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
     const [isVerified, setIsVerified] = useState(false);
+
+    // Default title based on language
+    const defaultTitle = language === 'vi'
+        ? 'Xác Minh Trước Khi Tính Điểm'
+        : 'Verify Before Calculating Score';
 
     // Reset state when dialog opens/closes
     useEffect(() => {
@@ -69,11 +76,13 @@ export function CaptchaDialog({
                     </div>
 
                     <DialogTitle className="text-center text-xl bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                        {title}
+                        {title || defaultTitle}
                     </DialogTitle>
 
                     <DialogDescription className="text-center text-gray-300 text-sm mt-1">
-                        Xác nhận bạn không phải robot để tiếp tục
+                        {language === 'vi'
+                            ? 'Xác nhận bạn không phải robot để tiếp tục'
+                            : 'Confirm you are not a robot to continue'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -117,12 +126,20 @@ export function CaptchaDialog({
                                 >
                                     {isVerified ? (
                                         <span className="flex items-center gap-2">
-                                            <span>✓ Đã xác minh thành công!</span>
+                                            <span>
+                                                {language === 'vi'
+                                                    ? '✓ Đã xác minh thành công!'
+                                                    : '✓ Successfully verified!'}
+                                            </span>
                                         </span>
                                     ) : isVerifying ? (
                                         <span className="flex items-center gap-2">
                                             <div className="w-4 h-4 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
-                                            <span>Đang xác minh...</span>
+                                            <span>
+                                                {language === 'vi'
+                                                    ? 'Đang xác minh...'
+                                                    : 'Verifying...'}
+                                            </span>
                                         </span>
                                     ) : (
                                         "I'm not a robot"
@@ -151,8 +168,8 @@ export function CaptchaDialog({
                         <div className="mt-3 text-center">
                             <p className="text-xs text-gray-400">
                                 {isVerified
-                                    ? "Bảo mật đã được xác minh ✓"
-                                    : "Vui lòng xác nhận bạn không phải robot"
+                                    ? (language === 'vi' ? 'Bảo mật đã được xác minh ✓' : 'Security verified ✓')
+                                    : (language === 'vi' ? 'Vui lòng xác nhận bạn không phải robot' : 'Please confirm you are not a robot')
                                 }
                             </p>
                         </div>
@@ -167,7 +184,7 @@ export function CaptchaDialog({
                                 className="w-full bg-slate-700/30 border-slate-600 text-gray-300 hover:bg-slate-700/50 hover:text-white"
                                 disabled={isVerifying}
                             >
-                                Hủy
+                                {language === 'vi' ? 'Hủy' : 'Cancel'}
                             </Button>
                         </div>
                     )}

@@ -3,7 +3,7 @@ import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
 import { memo, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { Crown, Trophy, Award, Star, TrendingUp, Wallet, ChevronRight } from "lucide-react";
+import { Crown, Trophy, Award, Star, TrendingUp, Wallet, ChevronRight, AlertCircle } from "lucide-react";
 import type { TokenBalance, Transaction } from "../services/api-real";
 import { ActionButtons } from "./ActionButtons";
 import { useLanguage } from "../services/LanguageContext";
@@ -40,6 +40,7 @@ interface ScoreResultProps {
 }
 
 const getRating = (score: number): string => {
+  if (score === 0) return "N/A"; // ✅ No score yet
   if (score >= 750) return "AAA";
   if (score >= 700) return "AA";
   if (score >= 650) return "A";
@@ -51,6 +52,7 @@ const getRating = (score: number): string => {
 
 const getRatingColor = (rating: string): string => {
   switch (rating) {
+    case "N/A": return "text-gray-400"; // ✅ No score yet
     case "AAA": return "text-emerald-400";
     case "AA": return "text-green-400";
     case "A": return "text-blue-400";
@@ -63,6 +65,7 @@ const getRatingColor = (rating: string): string => {
 
 const getRatingGradient = (rating: string): string => {
   switch (rating) {
+    case "N/A": return "from-gray-500 to-gray-600"; // ✅ No score yet
     case "AAA": return "from-emerald-400 to-green-400";
     case "AA": return "from-green-400 to-cyan-400";
     case "A": return "from-blue-400 to-purple-400";
@@ -75,6 +78,7 @@ const getRatingGradient = (rating: string): string => {
 
 const getRatingIcon = (rating: string) => {
   switch (rating) {
+    case "N/A": return <AlertCircle className="w-4 h-4 md:w-8 md:h-8 text-gray-400" />; // ✅ No score yet
     case "AAA": return <Crown className="w-4 h-4 md:w-8 md:h-8 text-emerald-400" />;
     case "AA": return <Trophy className="w-4 h-4 md:w-8 md:h-8 text-green-400" />;
     case "A": return <Award className="w-4 h-4 md:w-8 md:h-8 text-blue-400" />;
@@ -203,14 +207,21 @@ function ScoreResultComponent({
                   <div className="text-4xl md:text-6xl lg:text-8xl mb-1 md:mb-3 lg:mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
                     {score}
                   </div>
-                  <div className="text-lg md:text-2xl lg:text-3xl text-gray-300">{t.scoreResult.creditScore}</div>
+                  {/* ✅ Bỏ text "Không Có Điểm" khi score = 0 */}
+                  {score > 0 && (
+                    <div className="text-lg md:text-2xl lg:text-3xl text-gray-300">
+                      {t.scoreResult.creditScore}
+                    </div>
+                  )}
                 </div>
 
                 <div className="relative inline-block">
                   <div className={`absolute -inset-1 md:-inset-1.5 lg:-inset-2 bg-gradient-to-r ${getRatingGradient(rating)} rounded-lg md:rounded-xl lg:rounded-2xl blur md:blur-md lg:blur-lg opacity-60 animate-pulse`} />
                   <div className={`relative inline-flex items-center gap-1.5 md:gap-2.5 lg:gap-3 px-4 md:px-6 lg:px-8 py-2 md:py-3 lg:py-4 rounded-lg md:rounded-xl lg:rounded-2xl bg-gradient-to-r ${getRatingGradient(rating)} shadow-xl md:shadow-2xl`}>
                     {getRatingIcon(rating)}
-                    <span className="text-white text-xl md:text-3xl lg:text-4xl tracking-wider">{rating}</span>
+                    <span className="text-white text-xl md:text-3xl lg:text-4xl tracking-wider">
+                      {rating === "N/A" ? t.scoreResult.noRating : rating}
+                    </span>
                   </div>
                 </div>
 
@@ -225,17 +236,6 @@ function ScoreResultComponent({
                   <div className="flex justify-between text-[10px] md:text-xs lg:text-sm text-gray-400">
                     <span>{percentage.toFixed(1)}% {t.scoreResult.maxProgress}</span>
                     <span>{t.scoreResult.maxScore}</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 md:gap-3 lg:gap-4 pt-2 md:pt-3 lg:pt-4">
-                  <div className="text-center p-2 md:p-2.5 lg:p-3 bg-green-500/20 rounded-lg md:rounded-xl border border-green-400/30">
-                    <TrendingUp className="w-4 h-4 md:w-4.5 md:h-4.5 lg:w-5 lg:h-5 text-green-400 mx-auto mb-0.5 md:mb-0.5 lg:mb-1" />
-                    <div className="text-green-400 text-[10px] md:text-xs lg:text-sm">{t.scoreResult.excellent}</div>
-                  </div>
-                  <div className="text-center p-2 md:p-2.5 lg:p-3 bg-blue-500/20 rounded-lg md:rounded-xl border border-blue-400/30">
-                    <Wallet className="w-4 h-4 md:w-4.5 md:h-4.5 lg:w-5 lg:h-5 text-blue-400 mx-auto mb-0.5 md:mb-0.5 lg:mb-1" />
-                    <div className="text-blue-400 text-[10px] md:text-xs lg:text-sm">{t.scoreResult.verified}</div>
                   </div>
                 </div>
               </div>
@@ -379,7 +379,7 @@ function ScoreResultComponent({
                     className="w-full flex items-center justify-center gap-2 md:gap-2.5 lg:gap-3 px-4 md:px-5 lg:px-6 py-2.5 md:py-3.5 lg:py-4 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 hover:from-teal-500/20 hover:to-cyan-500/20 border-2 border-teal-500/40 hover:border-teal-400/60 rounded-lg md:rounded-xl text-teal-300 text-xs md:text-sm lg:text-base font-medium transition-all duration-300 group/btn"
                   >
                     <Wallet className="w-4 h-4 md:w-4.5 md:h-4.5 lg:w-5 lg:h-5 group-hover/btn:scale-110 transition-transform" />
-                    <span>{t.scoreResult.viewTokenDetails || "Xem Chi Tiết Token"}</span>
+                    <span>{t.scoreResult.viewTokenDetails}</span>
                     <ChevronRight className={`w-4 h-4 md:w-4.5 md:h-4.5 lg:w-5 lg:h-5 transition-transform duration-300 ${showTokenDetails ? 'rotate-90' : ''}`} />
                   </button>
                 </CardContent>
