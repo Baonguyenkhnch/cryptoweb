@@ -350,7 +350,7 @@ export function ResultsSummary({
                 <li className="flex items-start gap-2">
                   <span className="text-purple-400 mt-1">•</span>
                   <span>
-                    <span className="text-purple-400">{language === 'vi' ? 'Đa Dạng Token' : 'Token Diversity'} (20%)</span>
+                    <span className="text-purple-400">{language === 'vi' ? 'Đa Dạng Tokens' : 'Tokens Diversity'} (20%)</span>
                     {' - '}
                     {walletData.score} × 20% = {Math.round(walletData.score * 0.2)} {language === 'vi' ? 'điểm' : 'pts'}
                   </span>
