@@ -1018,7 +1018,7 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     // ✅ FIX: Get token_diversity from token_summary if available
     const tokenDiversityFromAPI = data.token_summary?.total_tokens || data.token_diversity || 0;
 
-    console.log(`🔍 Token diversity from API:`, tokenDiversityFromAPI);
+    console.log(`🔍 Tokens diversity from API:`, tokenDiversityFromAPI);
 
     // ✅ FIX: If token_diversity > 0 but tokenBalances is empty, create placeholder
     if (tokenBalances.length === 0 && tokenDiversityFromAPI > 0) {

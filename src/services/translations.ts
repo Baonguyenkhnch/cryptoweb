@@ -920,7 +920,7 @@ export const translations = {
       daysActive: "Days Active",
       transactions: "Transactions",
       totalTransactions: "Total Transactions",
-      tokenDiversity: "Token Diversity",
+      tokenDiversity: "Tokens Diversity",
       typesOfTokens: "Token Types",
       totalAssets: "Total Assets",
       portfolioValue: "Total Assets", // ✅ CHANGED: Was "Portfolio Value"
@@ -930,7 +930,7 @@ export const translations = {
       portfolioComposition: "Portfolio Composition",
       activityTimeline: "Activity Timeline",
       recentTransactions: "Recent Transactions",
-      viewTokenDetails: "View Token Details", // ✅ NEW
+      viewTokenDetails: "View Tokens Details", // ✅ NEW
       type: "Type",
       token: "Token",
       amount: "Amount",
@@ -950,7 +950,7 @@ export const translations = {
       years: "years",
       totalTransactions: "Total Transactions",
       transactions: "transactions",
-      tokenDiversity: "Token Diversity",
+      tokenDiversity: "Tokens Diversity",
       typesToken: "token types",
       totalAssets: "Total Assets",
       usd: "USD",

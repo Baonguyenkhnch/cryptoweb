@@ -384,7 +384,7 @@ function ScoreResultComponent({
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm md:text-base lg:text-lg bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent flex items-center gap-1.5 md:gap-2">
                         <Wallet className="w-4 h-4 md:w-4.5 md:h-4.5 lg:w-5 lg:h-5 text-teal-400" />
-                        {language === 'vi' ? 'Danh Sách Token' : 'Token List'}
+                        {language === 'vi' ? 'Danh Sách Tokens' : 'Tokens List'}
                       </CardTitle>
                       <span className="text-[10px] md:text-xs lg:text-sm text-teal-400 font-medium">
                         {displayedTokens.length} {language === 'vi' ? 'tokens' : 'tokens'}
@@ -415,7 +415,7 @@ function ScoreResultComponent({
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="text-gray-400 text-[10px] md:text-xs lg:text-sm font-medium">{percentage.toFixed(1)}%</div>
+                                <div className="text-gray-400 text-[10px] md:text-xs lg:text-sm font-medium">{percentage.toFixed(2)}%</div>
                               </div>
                             </div>
                           </div>
@@ -433,7 +433,7 @@ function ScoreResultComponent({
                 <div className="text-center space-y-2 md:space-y-3 opacity-50">
                   <Wallet className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 text-teal-400/30 mx-auto" />
                   <p className="text-gray-500 text-xs md:text-sm">
-                    {language === 'vi' ? 'Bấm "Xem Chi Tiết Token" để hiển thị danh sách' : 'Click "View Token Details" to display list'}
+                    {language === 'vi' ? 'Bấm "Xem Chi Tiết Tokens" để hiển thị danh sách' : 'Click "View Tokens Details" to display list'}
                   </p>
                 </div>
               </div>
