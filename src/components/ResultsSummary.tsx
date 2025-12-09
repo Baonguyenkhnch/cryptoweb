@@ -60,7 +60,7 @@ export function ResultsSummary({
   const getRatingInfo = (score: number) => {
     // ✅ Handle score = 0 case with "Không Có Hạng"
     if (score === 0) return {
-      text: "N/A",
+      // text: "N/A",
       color: "from-gray-500 to-gray-600",
       bgColor: "bg-gray-500/20",
       textColor: "text-gray-400",
