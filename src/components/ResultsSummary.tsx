@@ -149,10 +149,10 @@ export function ResultsSummary({
     },
     {
       icon: Coins,
-      label: language === 'vi' ? 'Đa Dạng Token' : 'Token Diversity',
+      label: language === 'vi' ? 'Đa Dạng Tokens' : 'Tokens Diversity',
       value: walletData.tokenDiversity,
       unit: '',
-      subtitle: language === 'vi' ? 'loại token' : 'tokens',
+      subtitle: language === 'vi' ? 'loại tokens' : 'tokens',
       weight: 20,
       contributedScore: Math.round(walletData.score * 0.20),
       badge: language === 'vi' ? 'Ổn Định' : 'Stable',
@@ -482,8 +482,8 @@ export function ResultsSummary({
                   <div
                     key={index}
                     className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isCurrentRating
-                        ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
-                        : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
+                      ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
+                      : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
                       }`}
                   >
                     <div className="flex items-center gap-3">
