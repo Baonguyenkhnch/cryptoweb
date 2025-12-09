@@ -447,7 +447,7 @@ function ScoreResultComponent({
                 <div className="text-center space-y-2 md:space-y-3 opacity-50">
                   <Wallet className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 text-teal-400/30 mx-auto" />
                   <p className="text-gray-500 text-xs md:text-sm">
-                    {language === 'vi' ? 'Bấm "Xem Chi Tiết Token" để hiển thị danh sách' : 'Click "View Token Details" to display list'}
+                    {language === 'vi' ? 'Bấm "Xem Chi Tiết Tokens" để hiển thị danh sách' : 'Click "View Tokens Details" to display list'}
                   </p>
                 </div>
               </div>
