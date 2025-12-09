@@ -359,20 +359,6 @@ function ScoreResultComponent({
                     <div className="text-gray-400 text-xs md:text-sm lg:text-base">{t.scoreResult.typesOfTokens}</div>
                   </div>
 
-                  {/* Progress bar với label */}
-                  <div className="space-y-1.5 md:space-y-2.5 lg:space-y-3">
-                    <div className="flex items-center justify-between text-[10px] md:text-xs lg:text-sm">
-                      <span className="text-gray-400">{language === 'vi' ? 'Mức độ đa dạng' : 'Diversity Level'}</span>
-                      <span className="text-teal-400 font-medium">{Math.min((diversity / 20) * 100, 100).toFixed(0)}%</span>
-                    </div>
-                    <div className="w-full h-2 md:h-2.5 bg-slate-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-teal-500 to-teal-400 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min((diversity / 20) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-
                   {/* Button to view token details */}
                   <button
                     onClick={() => setShowTokenDetails(!showTokenDetails)}
@@ -447,7 +433,7 @@ function ScoreResultComponent({
                 <div className="text-center space-y-2 md:space-y-3 opacity-50">
                   <Wallet className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 text-teal-400/30 mx-auto" />
                   <p className="text-gray-500 text-xs md:text-sm">
-                    {language === 'vi' ? 'Bấm "Xem Chi Tiết Tokens" để hiển thị danh sách' : 'Click "View Tokens Details" to display list'}
+                    {language === 'vi' ? 'Bấm "Xem Chi Tiết Token" để hiển thị danh sách' : 'Click "View Token Details" to display list'}
                   </p>
                 </div>
               </div>
