@@ -114,6 +114,17 @@ export function Dashboard({
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  // Helper function to format assets consistently (same as ResultsSummary)
+  const formatAssets = (value: number): string => {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(2)}M`; // Removed $ sign
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(2)}k`; // Removed $ sign
+    } else {
+      return `${value.toFixed(2)}`; // Removed $ sign
+    }
+  };
+
   // REMOVED: formatAssets function - now using formatCurrency from utils/format.ts
 
   // ============================================
@@ -313,8 +324,8 @@ export function Dashboard({
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-3 md:p-4 text-center">
               <Wallet className="w-4 h-4 md:w-5 md:h-5 text-emerald-400 mx-auto mb-1" />
-              <div className="text-xl md:text-2xl text-emerald-400 mb-1">{formatCurrency(totalAssets)}</div>
-              <div className="text-gray-400 text-[10px] md:text-xs">{t.statsLabels.assets}</div>
+              <div className="text-xl md:text-2xl text-emerald-400 mb-1">{formatAssets(totalAssets)}</div>
+              <div className="text-gray-400 text-[10px] md:text-xs">USD</div>
             </CardContent>
           </Card>
         </div>

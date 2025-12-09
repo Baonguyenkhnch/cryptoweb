@@ -48,11 +48,11 @@ export function ResultsSummary({
   // Helper function to format assets consistently
   const formatAssets = (value: number): string => {
     if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`; // Changed from .toFixed(2) to .toFixed(1)
+      return `${(value / 1000000).toFixed(2)}M`; // Removed $ sign
     } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(1)}k`;
+      return `${(value / 1000).toFixed(2)}k`; // Removed $ sign
     } else {
-      return `$${value.toFixed(1)}`; // Changed from .toFixed(2) to .toFixed(1)
+      return `${value.toFixed(2)}`; // Removed $ sign
     }
   };
 
@@ -60,7 +60,7 @@ export function ResultsSummary({
   const getRatingInfo = (score: number) => {
     // ✅ Handle score = 0 case with "Không Có Hạng"
     if (score === 0) return {
-      // text: "N/A",
+      text: "N/A",
       color: "from-gray-500 to-gray-600",
       bgColor: "bg-gray-500/20",
       textColor: "text-gray-400",
@@ -149,10 +149,10 @@ export function ResultsSummary({
     },
     {
       icon: Coins,
-      label: language === 'vi' ? 'Đa Dạng Tokens' : 'Tokens Diversity',
+      label: language === 'vi' ? 'Đa Dạng Token' : 'Token Diversity',
       value: walletData.tokenDiversity,
       unit: '',
-      subtitle: language === 'vi' ? 'loại tokens' : 'tokens',
+      subtitle: language === 'vi' ? 'loại token' : 'tokens',
       weight: 20,
       contributedScore: Math.round(walletData.score * 0.20),
       badge: language === 'vi' ? 'Ổn Định' : 'Stable',
@@ -201,7 +201,7 @@ export function ResultsSummary({
     },
     {
       icon: Coins,
-      label: language === 'vi' ? 'Đa dạng hóa tài sản token' : 'Token asset diversification',
+      label: language === 'vi' ? 'Đa dạng hóa tài sn token' : 'Token asset diversification',
       percentage: 20,
       color: 'text-purple-400',
     },
@@ -220,7 +220,7 @@ export function ResultsSummary({
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle className="flex items-center gap-2 text-cyan-400">
             <TrendingUp className="w-5 h-5" />
-            📊 {language === 'vi' ? 'Tổng Quan Nhanh' : 'Quick Overview'}
+            {language === 'vi' ? 'Tổng Quan Nhanh' : 'Quick Overview'}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
@@ -350,7 +350,7 @@ export function ResultsSummary({
                 <li className="flex items-start gap-2">
                   <span className="text-purple-400 mt-1">•</span>
                   <span>
-                    <span className="text-purple-400">{language === 'vi' ? 'Đa Dạng Tokens' : 'Tokens Diversity'} (20%)</span>
+                    <span className="text-purple-400">{language === 'vi' ? 'Đa Dạng Token' : 'Token Diversity'} (20%)</span>
                     {' - '}
                     {walletData.score} × 20% = {Math.round(walletData.score * 0.2)} {language === 'vi' ? 'điểm' : 'pts'}
                   </span>
@@ -420,46 +420,7 @@ export function ResultsSummary({
           )}
 
           {/* Register Card - Orange */}
-          {onRegisterClick && (
-            <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-orange-500/20 rounded-2xl">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-orange-500/10 to-yellow-500/10 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-yellow-500/10 to-orange-500/10 rounded-full blur-3xl" />
-
-              <CardContent className="relative p-5">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  {/* Left Section - Icon + Text + Badges */}
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className="p-2.5 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-xl border border-orange-400/30 flex-shrink-0">
-                      <UserPlus className="w-6 h-6 text-orange-400" />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm text-orange-300 mb-1.5">
-                        {language === 'vi' ? 'Bạn Chưa Có Tài Khoản?' : 'Don\'t Have Account?'}
-                      </h3>
-                      <p className="text-xs text-gray-400 mb-2.5">
-                        {language === 'vi'
-                          ? 'Đăng ký miễn phí để lưu ví, theo dõi điểm số và nhận thông báo - Hoàn toàn phi tập trung!'
-                          : 'Register for free to save wallet, track score and get notifications - Fully decentralized!'}
-                      </p>
-
-                      {/* ✅ REMOVED: Feature Badges - User request */}
-                    </div>
-                  </div>
-
-                  {/* Right Section - Register Button */}
-                  <Button
-                    onClick={onRegisterClick}
-                    className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-500 hover:to-yellow-500 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all duration-300 group flex-shrink-0 font-medium"
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    {language === 'vi' ? 'Đăng Ký Ngay' : 'Register Now'}
-                    <ArrowUpRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* ✅ REMOVED: Register section per user request - only login is needed */}
         </div>
       )}
 
