@@ -45,13 +45,13 @@ export function FeatureFeedbackDialog({
       return;
     }
     if (!email.trim()) {
-      setError("Email là bắt buộc để nhận phản hồi");
+      setError(t.featureFeedback.errors.emailRequired);
       return;
     }
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError("Email không hợp lệ");
+      setError(t.featureFeedback.errors.emailInvalid);
       return;
     }
 
@@ -161,7 +161,7 @@ export function FeatureFeedbackDialog({
                 {/* Email (Required) */}
                 <div className="space-y-2">
                   <Label htmlFor="feedback-email" className="text-gray-300 text-sm">
-                    📧 Email Nhận Phản Hồi <span className="text-red-400">*</span>
+                    {t.featureFeedback.emailResponseLabel} <span className="text-red-400">*</span>
                   </Label>
                   <Input
                     id="feedback-email"
@@ -172,7 +172,7 @@ export function FeatureFeedbackDialog({
                     className="bg-slate-900/50 border-purple-500/30 focus:border-purple-400 text-white placeholder:text-gray-500 h-10 text-sm"
                   />
                   <p className="text-xs text-gray-400">
-                    Chúng tôi sẽ liên hệ với bạn khi tính năng đề xuất đã được triển khai
+                    {t.featureFeedback.emailResponseHint}
                   </p>
                 </div>
 

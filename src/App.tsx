@@ -972,7 +972,7 @@ export default function App() {
                           <Wallet className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-teal-400 flex-shrink-0" />
                           <span className="text-teal-400">
                             {walletAddress.length === 42
-                              ? "✓ Hợp lệ"
+                              ? t.calculator.input.validWallet
                               : `${walletAddress.length}/42`}
                           </span>
                         </>

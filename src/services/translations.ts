@@ -17,13 +17,15 @@ export const translations = {
       subtitle: "Đánh giá độ tin cậy của ví blockchain",
       noData: "Không có dữ liệu",
       input: {
-        title: "Nhập Địa Chỉ Ví :",
+        title: "Nhập Địa Chỉ Ví Của Bạn ",
         subtitle: "Kết nối ví của bạn để khám phá tiềm năng tín dụng",
-        label: "Địa Chỉ Ví Của Bạn :",
+        label: "Địa Chỉ Ví : ",
         // placeholder: "0x742d... hoặc email@example.com",
         emailSearching: "Đang tìm ví từ email...",
         emailNotFound: "Email chưa đăng ký hoặc chưa liên kết ví",
         emailFound: "Tìm thấy ví! Đang phân tích...",
+        validWallet: "✓ Hợp lệ",
+        validEmail: "✓ Email hợp lệ",
       },
       idwallet: {
         place: "Nhập địa chỉ ví (0x + 40 ký tự)",
@@ -382,7 +384,7 @@ export const translations = {
       transactions: "Giao Dịch",
       totalTransactions: "Tổng Giao Dịch",
       tokenDiversity: "Đa Dạng Tokens",
-      typesOfTokens: "Loại Token",
+      typesOfTokens: "Loại Tokens",
       totalAssets: "Tổng Tài Sản",
       portfolioValue: "Tổng Tài Sản", // ✅ CHANGED: Was "Giá Trị Danh Mục"
       scoreTrend: "Xu Hướng Điểm",
@@ -412,10 +414,10 @@ export const translations = {
       totalTransactions: "Tổng Giao Dịch",
       transactions: "giao dịch",
       tokenDiversity: "Đa Dạng Tokens",
-      typesToken: "loại token",
+      typesToken: "loại tokens",
       totalAssets: "Tổng Tài Sản",
       usd: "USD",
-      scoreBreakdown: "Quy Trình Tính ��iểm",
+      scoreBreakdown: "Quy Trình Tính iểm",
       factorsAffecting: "Các yếu tố ảnh hưởng đến điểm của bạn",
       walletAgeImpact: "Tuổi Ví",
       transactionImpact: "Giao Dịch",
@@ -473,9 +475,11 @@ export const translations = {
       // descriptionPlaceholder: "Mô tả chi tiết về tính năng bạn muốn đề xuất...",
       charactersCount: "ký tự",
       emailLabel: "📧 Email Nhận Phản Hồi",
+      emailResponseLabel: "📧 Email Nhận Phản Hồi",
       emailOptional: "(Không bắt buộc)",
       // emailPlaceholder: "your.email@example.com",
       emailHint: "Chúng tôi sẽ liên hệ nếu cần thêm thông tin",
+      emailResponseHint: "Chúng tôi sẽ liên hệ với bạn khi tính năng đề xuất đã được triển khai",
       benefits: {
         title: "Đề xuất của bạn sẽ được:",
         review: "Xem xét bởi đội ngũ phát triển",
@@ -483,13 +487,15 @@ export const translations = {
         notification: "Nhận thông báo khi tính năng ra mắt",
       },
       buttons: {
-        cancel: "Hy",
+        cancel: "Hủy",
         submit: "Gửi Đề Xuất",
         submitting: "Đang Gửi...",
       },
       errors: {
         nameRequired: "Vui lòng nhập tên tính năng",
         descriptionRequired: "Vui lòng mô tả chi tiết tính năng",
+        emailRequired: "Email là bắt buộc để nhận phản hồi",
+        emailInvalid: "Email không hợp lệ",
         submitError: "Có lỗi xảy ra. Vui lòng thử lại.",
       },
       success: {
@@ -512,13 +518,13 @@ export const translations = {
     emailSubscription: {
       subscribed: {
         title: "Bạn Đã Đăng Ký!",
-        description: "Chúng tôi sẽ gửi cập nhật điểm tín dụng và phân tích chi tiết đến email của bạn định kỳ.",
+        description: "Chúng tôi sẽ gửi c��p nhật điểm tín dụng và phân tích chi tiết đến email của bạn định kỳ.",
       },
       cta: {
         title: "Nhận Cập Nhật Định Kỳ",
         description: "Để lại email để nhận thông báo khi điểm tín dụng của bạn thay đổi và các phân tích chi tiết về ví.",
         button: "Đăng Ký Ngay",
-        privacy: "100% t�� nguyện",
+        privacy: "100% t nguyện",
         emailUse: "Email chỉ dùng để gửi cập nhật",
       },
       benefits: {
@@ -564,6 +570,8 @@ export const translations = {
         emailSearching: "Searching wallet from email...",
         emailNotFound: "Email not registered or not linked to wallet",
         emailFound: "Wallet found! Analyzing...",
+        validWallet: "✓ Valid",
+        validEmail: "✓ Valid Email",
       },
       idwallet: {
         place: "Enter wallet address (0x + 40 characters)",
@@ -700,7 +708,7 @@ export const translations = {
       subtitle: "Login to manage your credit score",
       registerTitle: "Free Registration",
       registerSubtitle: "Takes only 30 seconds • Fully decentralized",
-      passwordlessSubtitle: "Passwordless Login - Using Email  ",
+      passwordlessSubtitle: "Passwordless Login - Using Email ",
       createAccount: "Create Account",
       loginButton: "Login",
       registerButton: "Create Account",
@@ -921,7 +929,7 @@ export const translations = {
       transactions: "Transactions",
       totalTransactions: "Total Transactions",
       tokenDiversity: "Tokens Diversity",
-      typesOfTokens: "Token Types",
+      typesOfTokens: "Tokens Types",
       totalAssets: "Total Assets",
       portfolioValue: "Total Assets", // ✅ CHANGED: Was "Portfolio Value"
       scoreTrend: "Score Trend",
@@ -951,7 +959,7 @@ export const translations = {
       totalTransactions: "Total Transactions",
       transactions: "transactions",
       tokenDiversity: "Tokens Diversity",
-      typesToken: "token types",
+      typesToken: "tokens types",
       totalAssets: "Total Assets",
       usd: "USD",
       scoreBreakdown: "Score Calculation Process",
@@ -1011,9 +1019,11 @@ export const translations = {
       // descriptionPlaceholder: "Describe the feature you want to suggest in detail...",
       charactersCount: "characters",
       emailLabel: "📧 Email for Feedback",
+      emailResponseLabel: "📧 Email for Feedback",
       emailOptional: "(Optional)",
       // emailPlaceholder: "your.email@example.com",
       emailHint: "We will contact you if we need more information",
+      emailResponseHint: "We will contact you when the feature suggestion has been implemented",
       benefits: {
         title: "Your suggestion will be:",
         review: "Reviewed by the development team",
@@ -1028,6 +1038,8 @@ export const translations = {
       errors: {
         nameRequired: "Please enter feature name",
         descriptionRequired: "Please describe the feature in detail",
+        emailRequired: "Email is required to receive feedback",
+        emailInvalid: "Invalid email",
         submitError: "An error occurred. Please try again.",
       },
       success: {
