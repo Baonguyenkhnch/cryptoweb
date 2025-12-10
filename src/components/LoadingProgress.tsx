@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, Database, TrendingUp, CheckCircle, Clock } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
+import { useLanguage } from "../services/LanguageContext";
 
 interface LoadingProgressProps {
     isVisible: boolean;
@@ -21,28 +22,26 @@ export function LoadingProgress({ isVisible, walletAddress, onCancel, onTryDemo 
     const [currentStep, setCurrentStep] = useState(0);
     const [timeElapsed, setTimeElapsed] = useState(0);
     const [showDemoButton, setShowDemoButton] = useState(false);
+    const { language } = useLanguage();
 
     const steps = [
         {
             icon: Database,
-            title: "Đang kết nối blockchain...",
-            titleEn: "Connecting to blockchain...",
+            title: language === 'en' ? "Connecting to blockchain..." : "Đang kết nối blockchain...",
             duration: 2000,
-            tips: "Đang truy xuất dữ liệu từ mạng Ethereum",
+            tips: language === 'en' ? "Retrieving data from Ethereum network" : "Đang truy xuất dữ liệu từ mạng Ethereum",
         },
         {
             icon: TrendingUp,
-            title: "Đang phân tích giao dịch...",
-            titleEn: "Analyzing transactions...",
+            title: language === 'en' ? "Analyzing transactions..." : "Đang phân tích giao dịch...",
             duration: 3000,
-            tips: "Đang xử lý lịch sử giao dịch và token balances",
+            tips: language === 'en' ? "Processing transaction history and token balances" : "Đang xử lý lịch sử giao dịch và token balances",
         },
         {
             icon: CheckCircle,
-            title: "Đang tính toán điểm...",
-            titleEn: "Calculating credit score...",
+            title: language === 'en' ? "Calculating credit score..." : "Đang tính toán điểm...",
             duration: 3000,
-            tips: "Áp dụng thuật toán đánh giá tín dụng",
+            tips: language === 'en' ? "Applying credit scoring algorithm" : "Áp dụng thuật toán đánh giá tín dụng",
         },
     ];
 
@@ -177,52 +176,32 @@ export function LoadingProgress({ isVisible, walletAddress, onCancel, onTryDemo 
                     <div className="flex items-center justify-center text-sm">
                         <div className="flex items-center gap-2 text-gray-400">
                             <Clock className="w-4 h-4" />
-                            <span>Đã phân tích: {timeElapsed}s</span>
+                            <span>{language === 'en' ? 'Analyzed:' : 'Đã phân tích:'} {timeElapsed}s</span>
                         </div>
                     </div>
 
                     {/* Wallet Address */}
                     {walletAddress && (
                         <div className="text-center">
-                            <p className="text-xs text-gray-500 mb-1">Analyzing wallet:</p>
+                            <p className="text-xs text-gray-500 mb-1">{language === 'en' ? 'Analyzing wallet:' : 'Đang phân tích ví:'}</p>
                             <p className="text-xs text-cyan-400 font-mono bg-slate-900/50 px-3 py-2 rounded-lg">
                                 {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
                             </p>
                         </div>
                     )}
 
-                    {/* Info Message - Phản ánh đúng tiến trình */}
-                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-                        <p className="text-xs text-blue-300 text-center">
-                            {timeElapsed > 2
-                                ? "⚡ Backend đang xử lý... Bạn có thể xem Demo!"
-                                : timeElapsed > 1
-                                    ? "🔍 Đang phân tích giao dịch on-chain..."
-                                    : "💡 Đang kết nối blockchain Ethereum..."}
-                        </p>
-                    </div>
-
                     {/* Action Buttons - HIỆN SAU 2 GIÂY */}
-                    {showDemoButton ? (
-                        <div className="space-y-2">
-                            <p className="text-xs text-orange-400 text-center font-medium">
-                                ⚠️ Backend đang xử lý dữ liệu blockchain... Vui lòng đợi
-                            </p>
-                            <div className="flex justify-center">
-                                {onCancel && (
-                                    <button
-                                        onClick={onCancel}
-                                        className="bg-slate-700 hover:bg-slate-600 text-gray-300 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
-                                    >
-                                        ❌ Hủy
-                                    </button>
-                                )}
-                            </div>
+                    {showDemoButton && (
+                        <div className="flex justify-center">
+                            {onCancel && (
+                                <button
+                                    onClick={onCancel}
+                                    className="bg-slate-700 hover:bg-slate-600 text-gray-300 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+                                >
+                                    {language === 'en' ? '❌ Cancel' : '❌ Hủy'}
+                                </button>
+                            )}
                         </div>
-                    ) : (
-                        <p className="text-xs text-gray-500 text-center">
-                            🚀 Vui lòng đợi trong giây lát...
-                        </p>
                     )}
                 </CardContent>
             </Card>

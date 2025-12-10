@@ -47,12 +47,18 @@ export function ResultsSummary({
 
   // Helper function to format assets consistently
   const formatAssets = (value: number): string => {
+    // ✅ FIX: Handle invalid numbers (NaN, Infinity, scientific notation)
+    if (!isFinite(value) || isNaN(value) || value < 0) {
+      return '0.00';
+    }
+
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(2)}M`; // Removed $ sign
     } else if (value >= 1000) {
       return `${(value / 1000).toFixed(2)}k`; // Removed $ sign
     } else {
-      return `${value.toFixed(2)}`; // Removed $ sign
+      // ✅ FIX: Always use toFixed(2) to avoid scientific notation
+      return value.toFixed(2);
     }
   };
 
@@ -220,7 +226,7 @@ export function ResultsSummary({
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle className="flex items-center gap-2 text-cyan-400">
             <TrendingUp className="w-5 h-5" />
-            {language === 'vi' ? 'Tổng Quan Nhanh' : 'Quick Overview'}
+            📊 {language === 'vi' ? 'Tng Quan Nhanh' : 'Quick Overview'}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
@@ -443,8 +449,8 @@ export function ResultsSummary({
                   <div
                     key={index}
                     className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isCurrentRating
-                      ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
-                      : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
+                        ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
+                        : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -456,7 +462,7 @@ export function ResultsSummary({
                         <div className="text-xs text-gray-400">{item.label}</div>
                       </div>
                     </div>
-                    {/* ✅ Only show 👈 when score > 0 AND it's the current rating */}
+                    {/* ✅ Only show ��� when score > 0 AND it's the current rating */}
                     {isCurrentRating && (
                       <div className="text-xl">👈</div>
                     )}

@@ -3,7 +3,7 @@ import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
 import { memo, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { Crown, Trophy, Award, Star, TrendingUp, Wallet, ChevronRight, AlertCircle } from "lucide-react";
+import { Crown, Trophy, Award, Star, TrendingUp, Wallet, ChevronRight, AlertCircle, ChevronLeft } from "lucide-react";
 import type { TokenBalance, Transaction } from "../services/api-real";
 import { ActionButtons } from "./ActionButtons";
 import { useLanguage } from "../services/LanguageContext";
@@ -109,6 +109,10 @@ function ScoreResultComponent({
   const percentage = useMemo(() => Math.min((score / 850) * 100, 100), [score]);
 
   const [showTokenDetails, setShowTokenDetails] = useState(false);
+  // ✅ PAGINATION STATE: 5 tokens per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const TOKENS_PER_PAGE = 5;
+
   // --- Sửa đoạn này: tính diversity khớp thực tế ---
   const diversity = (Array.isArray(tokenBalances) && tokenBalances.length > 0)
     ? tokenBalances.length : (tokenDiversity ?? 0); // Ưu tiên lấy tokenBalances.length thực tế
@@ -124,12 +128,18 @@ function ScoreResultComponent({
 
   // Helper function to format assets consistently (same as ResultsSummary)
   const formatAssets = (value: number): string => {
+    // ✅ FIX: Handle invalid numbers (NaN, Infinity, scientific notation)
+    if (!isFinite(value) || isNaN(value) || value < 0) {
+      return '0.00';
+    }
+
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(2)}M`; // Removed $ sign
     } else if (value >= 1000) {
       return `${(value / 1000).toFixed(2)}k`; // Removed $ sign
     } else {
-      return `${value.toFixed(2)}`; // Removed $ sign
+      // ✅ FIX: Always use toFixed(2) to avoid scientific notation
+      return value.toFixed(2);
     }
   };
 
@@ -140,6 +150,19 @@ function ScoreResultComponent({
   // Thay vì lọc theo balance_usd hay balance, chỉ filter spam:
   const displayedTokens = tokenBalances.filter(token => !token.possible_spam);
   const totalValue = displayedTokens.reduce((sum, t) => sum + (t.value ?? 0), 0);
+
+  // ✅ PAGINATION LOGIC
+  const totalPages = Math.ceil(displayedTokens.length / TOKENS_PER_PAGE);
+  const paginatedTokens = displayedTokens.slice(
+    (currentPage - 1) * TOKENS_PER_PAGE,
+    currentPage * TOKENS_PER_PAGE
+  );
+
+  // Reset to page 1 when token details are toggled
+  const handleToggleTokenDetails = () => {
+    setShowTokenDetails(!showTokenDetails);
+    setCurrentPage(1); // Reset to first page
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-3 md:space-y-8 lg:space-y-12 animate-in fade-in-50 duration-700 px-2 md:px-4">
@@ -372,7 +395,7 @@ function ScoreResultComponent({
 
                   {/* Button to view token details */}
                   <button
-                    onClick={() => setShowTokenDetails(!showTokenDetails)}
+                    onClick={handleToggleTokenDetails}
                     className="w-full flex items-center justify-center gap-2 md:gap-2.5 lg:gap-3 px-4 md:px-5 lg:px-6 py-2.5 md:py-3.5 lg:py-4 bg-gradient-to-r from-teal-500/10 to-cyan-500/10 hover:from-teal-500/20 hover:to-cyan-500/20 border-2 border-teal-500/40 hover:border-teal-400/60 rounded-lg md:rounded-xl text-teal-300 text-xs md:text-sm lg:text-base font-medium transition-all duration-300 group/btn"
                   >
                     <Wallet className="w-4 h-4 md:w-4.5 md:h-4.5 lg:w-5 lg:h-5 group-hover/btn:scale-110 transition-transform" />
@@ -395,7 +418,7 @@ function ScoreResultComponent({
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm md:text-base lg:text-lg bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent flex items-center gap-1.5 md:gap-2">
                         <Wallet className="w-4 h-4 md:w-4.5 md:h-4.5 lg:w-5 lg:h-5 text-teal-400" />
-                        {language === 'vi' ? 'Danh Sách Token' : 'Token List'}
+                        {language === 'vi' ? 'Danh Sách Token' : 'Tokens List'}
                       </CardTitle>
                       <span className="text-[10px] md:text-xs lg:text-sm text-teal-400 font-medium">
                         {displayedTokens.length} {language === 'vi' ? 'tokens' : 'tokens'}
@@ -405,7 +428,7 @@ function ScoreResultComponent({
 
                   <CardContent className="flex-1 overflow-y-auto custom-scrollbar px-3 md:px-5 lg:px-6 pb-3 md:pb-4 lg:pb-5">
                     <div className="space-y-1.5 md:space-y-2">
-                      {displayedTokens.map((token, idx) => {
+                      {paginatedTokens.map((token, idx) => {
                         const percentage = totalValue ? (token.value / totalValue) * 100 : 0;
                         return (
                           <div
@@ -433,6 +456,58 @@ function ScoreResultComponent({
                         );
                       })}
                     </div>
+
+                    {/* ✅ PAGINATION CONTROLS - Only show if more than 1 page */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 mt-4 pt-3 border-t border-teal-500/20">
+                        {/* Previous Button */}
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                          disabled={currentPage === 1}
+                          className={`p-2 rounded-lg transition-all duration-200 ${currentPage === 1
+                            ? 'bg-slate-700/30 text-gray-600 cursor-not-allowed'
+                            : 'bg-teal-500/20 text-teal-300 hover:bg-teal-500/30 hover:scale-105'
+                            }`}
+                          aria-label="Previous page"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+                        {/* Page Numbers */}
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                            <button
+                              key={pageNum}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={`w-8 h-8 rounded-lg text-xs font-medium transition-all duration-200 ${currentPage === pageNum
+                                ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg scale-105'
+                                : 'bg-slate-700/30 text-gray-400 hover:bg-teal-500/20 hover:text-teal-300'
+                                }`}
+                            >
+                              {pageNum}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Next Button */}
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                          disabled={currentPage === totalPages}
+                          className={`p-2 rounded-lg transition-all duration-200 ${currentPage === totalPages
+                            ? 'bg-slate-700/30 text-gray-600 cursor-not-allowed'
+                            : 'bg-teal-500/20 text-teal-300 hover:bg-teal-500/30 hover:scale-105'
+                            }`}
+                          aria-label="Next page"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+
+                        {/* Page Info */}
+                        <div className="ml-2 text-xs text-gray-400">
+                          {language === 'vi' ? 'Trang' : 'Page'} {currentPage}/{totalPages}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </div>
               </Card>

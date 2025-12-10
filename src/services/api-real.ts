@@ -901,7 +901,17 @@ export const analyzeWallet = async (
                 const data = await response.json();
                 debugLog(`✅ API Response:`, data);
 
+                // ✅ DEBUG: Log wallet address and score to check for cache issues
+                console.log(`🔍 ========== WALLET ANALYSIS DEBUG ==========`);
+                console.log(`📍 Requested Wallet: ${walletAddress}`);
+                console.log(`📊 API Response Score: ${data.score || data.credit_score || 'N/A'}`);
+                console.log(`💰 API Response Total Assets: ${data.total_assets || 'N/A'}`);
+                console.log(`🎂 API Response Wallet Age: ${data.wallet_age || 'N/A'}`);
+                console.log(`📈 API Response Transactions: ${data.total_transactions || 'N/A'}`);
+                console.log(`🔍 ============================================`);
+
                 // Success - break retry loop
+                // ✅ mapWalletData now throws error if backend returns wrong wallet
                 const walletAnalysis = mapWalletData(data, walletAddress);
 
                 // ✅ SAVE TO CACHE (both logged-in and public users)
@@ -991,7 +1001,16 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     console.log(`  - data.token_summary?.tokens:`, data.token_summary?.tokens);
     console.log(`  - data.token_summary?.total_tokens:`, data.token_summary?.total_tokens);
 
-    // ✅ FIX: Try multiple possible field names for token list
+    // ✅ NEW: Check for native ETH balance fields
+    console.log(`🔍 Checking ETH native balance fields:`);
+    console.log(`  - data.native_balance:`, data.native_balance);
+    console.log(`  - data.eth_balance:`, data.eth_balance);
+    console.log(`  - data.wallet_summary?.native_balance:`, data.wallet_summary?.native_balance);
+    console.log(`  - data.wallet_summary?.eth_balance:`, data.wallet_summary?.eth_balance);
+    console.log(`  - data.total_assets_usd:`, data.total_assets_usd);
+    console.log(`  - data.total_assets:`, data.total_assets);
+
+    // �� FIX: Try multiple possible field names for token list
     // MOST IMPORTANT: Check token_summary.top_tokens FIRST (Real API structure!)
     const possibleTokenFields = [
         data.token_summary?.top_tokens,      // ← NEW: Real API uses this!
@@ -1018,7 +1037,7 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     // ✅ FIX: Get token_diversity from token_summary if available
     const tokenDiversityFromAPI = data.token_summary?.total_tokens || data.token_diversity || 0;
 
-    console.log(`🔍 Tokens diversity from API:`, tokenDiversityFromAPI);
+    console.log(`🔍 Token diversity from API:`, tokenDiversityFromAPI);
 
     // ✅ FIX: If token_diversity > 0 but tokenBalances is empty, create placeholder
     if (tokenBalances.length === 0 && tokenDiversityFromAPI > 0) {
@@ -1040,25 +1059,35 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     }
 
     // ✅ FIX: Filter out spam tokens and tokens with invalid USD values & sort by value
+    // ✅ CALCULATE TOTAL PORTFOLIO VALUE FIRST (before filtering)
+    const totalPortfolioValue = tokenBalances.reduce((sum, t) => sum + (t.value || 0), 0);
+    console.log(`💰 Total portfolio value (before filtering): $${totalPortfolioValue.toLocaleString()}`);
+
     const validTokens = tokenBalances
         .filter(token => {
-            console.log(`🔍 [NEW CODE v3] Checking token ${token.symbol} - value: $${token.value}, spam: ${(token as any).possible_spam}`);
+            console.log(`🔍 [FILTER v5] Checking token ${token.symbol} - value: $${token.value}, spam: ${(token as any).possible_spam}`);
 
-            // ✅ NEW: Filter out spam tokens
+            // ✅ STRICT: Filter out spam tokens
             if ((token as any).possible_spam === true) {
-                console.warn(`⚠️ Filtering out spam token: ${token.symbol}`);
+                console.warn(`⚠️ [FILTER v5] Filtering out spam token: ${token.symbol}`);
                 return false;
             }
 
-            // ✅ CHANGED: Filter out tokens with suspicious high values (> $10M)
-            // This helps remove incorrectly priced tokens
+            // ✅ SMART FILTER: Adaptive threshold based on portfolio size
+            // If single token value > 80% of total portfolio AND > $10k, it's suspicious
+            if (totalPortfolioValue > 0 && token.value > totalPortfolioValue * 0.8 && token.value > 10000) {
+                console.warn(`⚠️ [FILTER v5] Filtering out suspicious dominant token ${token.symbol} with value $${token.value.toLocaleString()} (>${(totalPortfolioValue * 0.8).toLocaleString()}, >80% of $${totalPortfolioValue.toLocaleString()} portfolio)`);
+                return false;
+            }
+
+            // Absolute ceiling: No single token should be > $10M (likely scam/spam)
             if (token.value > 10_000_000) {
-                console.warn(`⚠️ Filtering out suspicious high-value token ${token.symbol} with value $${token.value.toLocaleString()}`);
+                console.warn(`⚠️ [FILTER v5] Filtering out absurdly high-value token ${token.symbol} with value $${token.value.toLocaleString()} (> $10M ceiling)`);
                 return false;
             }
 
             // ✅ Keep all valid tokens, even with 0 value (shows diversity)
-            console.log(`✅ [NEW CODE v3] Keeping token ${token.symbol} - value: $${token.value}`);
+            console.log(`✅ [FILTER v5] Keeping token ${token.symbol} - value: $${token.value}`);
             return true;
         })
         .sort((a, b) => b.value - a.value);
@@ -1067,6 +1096,65 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
 
     // ✅ FIX: Recalculate total from valid tokens only
     const validTotalAssets = validTokens.reduce((sum, t) => sum + t.value, 0);
+
+    // ✅ NEW: Get ETH native balance (in USD) from API
+    // Try multiple possible fields for ETH native balance in USD
+    let nativeBalanceUsd = 0;
+
+    if (data.native_balance_usd !== undefined && !isNaN(parseFloat(data.native_balance_usd))) {
+        nativeBalanceUsd = parseFloat(data.native_balance_usd);
+        console.log(`✅ Found native_balance_usd: $${nativeBalanceUsd}`);
+    } else if (data.eth_balance_usd !== undefined && !isNaN(parseFloat(data.eth_balance_usd))) {
+        nativeBalanceUsd = parseFloat(data.eth_balance_usd);
+        console.log(`✅ Found eth_balance_usd: $${nativeBalanceUsd}`);
+    } else if (data.wallet_summary?.native_balance_usd !== undefined && !isNaN(parseFloat(data.wallet_summary.native_balance_usd))) {
+        nativeBalanceUsd = parseFloat(data.wallet_summary.native_balance_usd);
+        console.log(`✅ Found wallet_summary.native_balance_usd: $${nativeBalanceUsd}`);
+    } else if (data.wallet_summary?.eth_balance_usd !== undefined && !isNaN(parseFloat(data.wallet_summary.eth_balance_usd))) {
+        nativeBalanceUsd = parseFloat(data.wallet_summary.eth_balance_usd);
+        console.log(`✅ Found wallet_summary.eth_balance_usd: $${nativeBalanceUsd}`);
+    } else {
+        // ✅ FALLBACK: If backend only provides native_balance in wei (not USD), try to calculate
+        // Try to find native balance in wei and ETH price
+        let nativeBalanceWei = 0;
+        let ethPriceUsd = 0;
+
+        // Try multiple field names for native balance in wei
+        if (data.native_balance !== undefined) {
+            nativeBalanceWei = parseFloat(data.native_balance);
+            console.log(`📍 Found native_balance (wei): ${nativeBalanceWei}`);
+        } else if (data.eth_balance !== undefined) {
+            nativeBalanceWei = parseFloat(data.eth_balance);
+            console.log(`📍 Found eth_balance (wei): ${nativeBalanceWei}`);
+        } else if (data.wallet_summary?.native_balance !== undefined) {
+            nativeBalanceWei = parseFloat(data.wallet_summary.native_balance);
+            console.log(`📍 Found wallet_summary.native_balance (wei): ${nativeBalanceWei}`);
+        } else if (data.wallet_summary?.eth_balance !== undefined) {
+            nativeBalanceWei = parseFloat(data.wallet_summary.eth_balance);
+            console.log(`📍 Found wallet_summary.eth_balance (wei): ${nativeBalanceWei}`);
+        }
+
+        // Try to find ETH price
+        if (data.eth_price !== undefined) {
+            ethPriceUsd = parseFloat(data.eth_price);
+            console.log(`📍 Found eth_price: $${ethPriceUsd}`);
+        } else if (data.wallet_summary?.eth_price !== undefined) {
+            ethPriceUsd = parseFloat(data.wallet_summary.eth_price);
+            console.log(`📍 Found wallet_summary.eth_price: $${ethPriceUsd}`);
+        }
+
+        // Calculate USD value if we have both wei and price
+        if (nativeBalanceWei > 0 && ethPriceUsd > 0) {
+            const nativeBalanceEth = nativeBalanceWei / Math.pow(10, 18);
+            nativeBalanceUsd = nativeBalanceEth * ethPriceUsd;
+            console.log(`✅ Calculated native balance: ${nativeBalanceEth} ETH * $${ethPriceUsd} = $${nativeBalanceUsd}`);
+        } else {
+            console.log(`⚠️ No ETH native balance found in API response`);
+        }
+    }
+
+    console.log(`💎 Native ETH Balance (USD): $${nativeBalanceUsd.toLocaleString()}`);
+    console.log(`🪙 ERC20 Tokens Total (USD): $${validTotalAssets.toLocaleString()}`);
 
     let totalAssetsUsd = data.total_assets_usd || 0;
 
@@ -1080,14 +1168,17 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
         totalAssetsUsd = validTotalAssets;
     }
 
-    // ✅ FIX: Calculate percentage based on valid total
+    // ✅ CRITICAL FIX: Add native ETH balance to total assets
+    totalAssetsUsd += nativeBalanceUsd;
+
+    console.log(`💰 Total Assets (ERC20 + ETH): $${totalAssetsUsd.toLocaleString()} (${validTokens.length} valid tokens + ${nativeBalanceUsd > 0 ? 'ETH native' : 'no ETH'})`);
+
+    // ✅ FIX: Calculate percentage based on total (including ETH)
     if (totalAssetsUsd > 0) {
         validTokens.forEach(token => {
             token.percentage = (token.value / totalAssetsUsd) * 100;
         });
     }
-
-    console.log(`💰 Total Assets: $${totalAssetsUsd.toLocaleString()} (${validTokens.length} valid tokens)`);
 
     // Parse transactions
     const recentTransactions = mapTransactions(
@@ -1118,6 +1209,23 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     // ✅ FIX: Get total_transactions from transaction_summary if available
     const totalTransactions = data.transaction_summary?.total_transactions || data.total_transactions || 0;
 
+    // ✅ CRITICAL VALIDATION: Check if backend returned correct wallet address
+    const returnedWallet = data.wallet_address;
+    if (returnedWallet && returnedWallet.toLowerCase() !== walletAddress.toLowerCase()) {
+        console.error(`🚨 ========== BACKEND BUG CRITICAL ==========`);
+        console.error(`🚨 Requested: ${walletAddress}`);
+        console.error(`🚨 Received:  ${returnedWallet}`);
+        console.error(`🚨 Backend cache/database混淆 - REJECTING DATA!`);
+        console.error(`🚨 ==========================================`);
+
+        throw new Error(
+            `Backend returned wrong wallet data!\n\n` +
+            `Requested: ${walletAddress}\n` +
+            `Received: ${returnedWallet}\n\n` +
+            `This is a critical backend bug. Please contact admin@migofin.com`
+        );
+    }
+
     const walletAnalysis: WalletAnalysis = {
         score: score,
         walletAge: walletAge,
@@ -1127,7 +1235,7 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
         rating: rating,
         tokenBalances: validTokens,
         recentTransactions: recentTransactions,
-        walletAddress: data.wallet_address,
+        walletAddress: returnedWallet || walletAddress, // Use returned wallet if valid, otherwise requested
         chain: data.chain,
         employmentStatus: data.employment_status,
         monthlyIncome: data.monthly_income,
