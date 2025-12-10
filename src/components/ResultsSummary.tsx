@@ -226,7 +226,7 @@ export function ResultsSummary({
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle className="flex items-center gap-2 text-cyan-400">
             <TrendingUp className="w-5 h-5" />
-            📊 {language === 'vi' ? 'Tng Quan Nhanh' : 'Quick Overview'}
+            {language === 'vi' ? 'Tổng Quan Nhanh' : 'Quick Overview'}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
@@ -449,8 +449,8 @@ export function ResultsSummary({
                   <div
                     key={index}
                     className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isCurrentRating
-                        ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
-                        : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
+                      ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
+                      : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
                       }`}
                   >
                     <div className="flex items-center gap-3">
