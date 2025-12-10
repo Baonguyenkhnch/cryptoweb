@@ -340,7 +340,7 @@ export const translations = {
         generalError: "Có lỗi xảy ra, vui lòng thử lại",
         invalidOTP: "Mã OTP phải có 6 chữ số",
         wrongOTP: "Mã OTP không đúng, vui lòng thử lại",
-        resent: "✅ Đã gửi mã OTP mới!",
+        resent: " Đã gửi mã OTP mới!",
       },
       tips: {
         checkSpam: "Kiểm tra thư mục spam nếu không thấy email",
@@ -518,7 +518,7 @@ export const translations = {
     emailSubscription: {
       subscribed: {
         title: "Bạn Đã Đăng Ký!",
-        description: "Chúng tôi sẽ gửi c��p nhật điểm tín dụng và phân tích chi tiết đến email của bạn định kỳ.",
+        description: "Chúng tôi sẽ gửi cập nhật điểm tín dụng và phân tích chi tiết đến email của bạn định kỳ.",
       },
       cta: {
         title: "Nhận Cập Nhật Định Kỳ",
@@ -885,7 +885,7 @@ export const translations = {
         generalError: "An error occurred, please try again",
         invalidOTP: "OTP code must be 6 digits",
         wrongOTP: "Incorrect OTP code, please try again",
-        resent: "✅ A new OTP code has been sent!",
+        resent: " A new OTP code has been sent!",
       },
       tips: {
         checkSpam: "Check spam folder if you don't see the email",
