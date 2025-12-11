@@ -173,6 +173,10 @@ const debugLog = (...args: any[]) => {
  * @param email - User email address
  * @param walletAddress - User wallet address (0x...)
  * @returns Success status and verification token
+ * 
+ * ⚠️ BACKEND REQUIREMENT:
+ * Email template phải hiển thị button với text "Xác nhận và Đăng nhập" 
+ * thay vì hiển thị link trực tiếp. Button này sẽ link đến verification URL.
  */
 export const registerUser = async (
     email: string,
@@ -211,6 +215,7 @@ export const registerUser = async (
                 email: email.toLowerCase().trim(),
                 wallet_address: walletAddress.trim(),
                 password: "DefaultPassword@123", // ✅ Backend yêu cầu password field (passwordless auth nhưng vẫn cần field này)
+                buttonText: "Xác nhận và Đăng nhập", // ✅ Backend cần hiển thị button text này thay vì link trong email
             }),
         });
 
@@ -462,6 +467,10 @@ export const verifyRegistration = async (
  * Send Magic Link for passwordless login - POST /api/send-magic-link
  * @param email - User email
  * @param walletAddress - Optional wallet address to link
+ * 
+ * ⚠️ BACKEND REQUIREMENT:
+ * Email template phải hiển thị button với text "Xác nhận và Đăng nhập" 
+ * thay vì hiển thị link trực tiếp. Button này sẽ link đến verification URL.
  */
 export const sendMagicLinkReal = async (
     email: string,
@@ -485,6 +494,7 @@ export const sendMagicLinkReal = async (
         const url = `${API_BASE_URL}/api/send-magic-link`;
         const requestBody: any = {
             email: email.toLowerCase().trim(),
+            buttonText: "Xác nhận và Đăng nhập", // ✅ Backend cần hiển thị button text này thay vì link trong email
         };
 
         // Add wallet address if provided
@@ -1882,3 +1892,4 @@ export default {
 
 export const sendMagicLink = sendMagicLinkReal;
 export const verifyToken = verifyMagicLink;
+
