@@ -23,6 +23,7 @@ import { useState } from "react";
 import type { WalletAnalysis } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 
+
 interface ResultsSummaryProps {
   walletData: WalletAnalysis;
   onSubscribeClick?: () => void;
@@ -33,6 +34,7 @@ interface ResultsSummaryProps {
   onSendReport?: () => void;
 }
 
+
 export function ResultsSummary({
   walletData,
   onSubscribeClick,
@@ -41,13 +43,24 @@ export function ResultsSummary({
   const { t, language } = useLanguage();
   const [showCalculationDetails, setShowCalculationDetails] = useState(true); // ✅ Changed: Always show by default
 
+
   if (!walletData) {
     return null;
   }
 
+
+  // ✅ FIX: Calculate token diversity from tokenBalances (after filtering spam) to match ScoreResult
+  // This ensures consistency between ScoreResult and ResultsSummary displays
+  const displayedTokens = (walletData.tokenBalances || []).filter(token => !token.possible_spam);
+  const calculatedTokenDiversity = displayedTokens.length > 0 ? displayedTokens.length : (walletData.tokenDiversity ?? 0);
+
+
   // ✅ DEBUG: Log để check tokenDiversity value
   console.log("🔍 [ResultsSummary] walletData.tokenDiversity:", walletData.tokenDiversity);
+  console.log("🔍 [ResultsSummary] displayedTokens.length:", displayedTokens.length);
+  console.log("🔍 [ResultsSummary] calculatedTokenDiversity:", calculatedTokenDiversity);
   console.log("🔍 [ResultsSummary] Full walletData:", walletData);
+
 
   // Helper function to format assets consistently
   const formatAssets = (value: number): string => {
@@ -55,6 +68,7 @@ export function ResultsSummary({
     if (!isFinite(value) || isNaN(value) || value < 0) {
       return '0.00';
     }
+
 
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(2)}M`; // Removed $ sign
@@ -65,6 +79,7 @@ export function ResultsSummary({
       return value.toFixed(2);
     }
   };
+
 
   // Get rating badge info
   const getRatingInfo = (score: number) => {
@@ -127,7 +142,9 @@ export function ResultsSummary({
     };
   };
 
+
   const rating = getRatingInfo(walletData.score);
+
 
   // Calculate metrics with score contribution
   const metrics = [
@@ -160,7 +177,7 @@ export function ResultsSummary({
     {
       icon: Coins,
       label: language === 'vi' ? 'Đa Dạng Token' : 'Token Diversity',
-      value: walletData.tokenDiversity, // ✅ MUST be the actual value (e.g., 6), NOT the weight (20%)
+      value: calculatedTokenDiversity, // ✅ FIX: Use calculated value from filtered tokens to match ScoreResult
       unit: language === 'vi' ? 'loại token' : 'token types',
       subtitle: '',
       weight: 20, // This is the percentage weight, NOT the value
@@ -185,12 +202,14 @@ export function ResultsSummary({
     },
   ];
 
+
   // ✅ DEBUG: Log metrics array to verify values
   console.log("📊 [ResultsSummary] Metrics array:", metrics.map(m => ({
     label: m.label,
     value: m.value,
     weight: m.weight,
   })));
+
 
   // Rating ranges for guide
   const ratingRanges = [
@@ -201,6 +220,7 @@ export function ResultsSummary({
     { rating: 'BB', range: '550-599', label: language === 'vi' ? 'Trung Bình' : 'Average', color: 'from-orange-500 to-red-500', bgColor: 'bg-orange-500/20', textColor: 'text-orange-400', borderColor: 'border-orange-500/30' },
     { rating: 'B-C', range: '< 550', label: language === 'vi' ? 'Cần Cải Thi��n' : 'Needs Improvement', color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/20', textColor: 'text-red-400', borderColor: 'border-red-500/30' },
   ];
+
 
   // Optimization factors
   const optimizationFactors = [
@@ -230,6 +250,7 @@ export function ResultsSummary({
     },
   ];
 
+
   return (
     <div className="space-y-6">
       {/* Quick Overview Grid */}
@@ -252,6 +273,7 @@ export function ResultsSummary({
                 >
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
+
                   <div className="relative space-y-3">
                     <div className="flex items-start justify-between">
                       <div className={`p-2 rounded-lg ${metric.iconBg} border border-slate-600/30`}>
@@ -262,10 +284,12 @@ export function ResultsSummary({
                       </Badge>
                     </div>
 
+
                     <div>
                       <div className="text-xs text-gray-400 mb-1">{metric.label}</div>
                       <div className="text-sm text-gray-500">{metric.subtitle}</div>
                     </div>
+
 
                     <div className="flex items-end justify-between">
                       <div>
@@ -291,10 +315,12 @@ export function ResultsSummary({
             })}
           </div>
 
+
           {/* Total Credit Score */}
           <div className="relative overflow-hidden bg-gradient-to-r from-slate-800/80 via-slate-700/50 to-slate-800/80 backdrop-blur-sm border-2 border-cyan-500/30 rounded-xl p-6">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl" />
             <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl" />
+
 
             <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -311,6 +337,7 @@ export function ResultsSummary({
                 </div>
               </div>
 
+
               <div className={`px-6 py-3 rounded-xl bg-gradient-to-r ${rating.color} text-white shadow-lg`}>
                 <div className="text-sm opacity-80">{rating.label}</div>
                 <div className="text-3xl">{rating.text}</div>
@@ -319,6 +346,7 @@ export function ResultsSummary({
           </div>
         </CardContent>
       </Card>
+
 
       {/* Calculation Details (Collapsible) */}
       <Card className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl overflow-hidden">
@@ -338,6 +366,7 @@ export function ResultsSummary({
             <ChevronDown className="w-5 h-5 text-gray-400" />
           )}
         </button>
+
 
         {showCalculationDetails && (
           <CardContent className="px-6 pb-6 pt-0 border-t border-slate-700/50">
@@ -391,6 +420,7 @@ export function ResultsSummary({
         )}
       </Card>
 
+
       {/* Login & Register CTA - Side by Side */}
       {(onSubscribeClick || onRegisterClick) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -400,6 +430,7 @@ export function ResultsSummary({
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl" />
               <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl" />
 
+
               <CardContent className="relative p-5">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   {/* Left Section - Icon + Text + Badges */}
@@ -407,6 +438,7 @@ export function ResultsSummary({
                     <div className="p-2.5 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl border border-cyan-400/30 flex-shrink-0">
                       <Shield className="w-6 h-6 text-cyan-400" />
                     </div>
+
 
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm text-cyan-300 mb-1.5">
@@ -418,9 +450,11 @@ export function ResultsSummary({
                           : 'Login to unlock in-depth analysis - No password needed, just email!'}
                       </p>
 
+
                       {/* ✅ REMOVED: Feature Badges - User request */}
                     </div>
                   </div>
+
 
                   {/* Right Section - Login Button */}
                   <Button
@@ -436,10 +470,12 @@ export function ResultsSummary({
             </Card>
           )}
 
+
           {/* Register Card - Orange */}
           {/* ✅ REMOVED: Register section per user request - only login is needed */}
         </div>
       )}
+
 
       {/* Two Column Layout: Rating Guide + Optimization Factors */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -460,8 +496,8 @@ export function ResultsSummary({
                   <div
                     key={index}
                     className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isCurrentRating
-                        ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
-                        : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
+                      ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
+                      : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -483,6 +519,7 @@ export function ResultsSummary({
             </div>
           </CardContent>
         </Card>
+
 
         {/* Optimization Factors */}
         <Card className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl">
@@ -512,6 +549,7 @@ export function ResultsSummary({
                   </div>
                 );
               })}
+
 
               <div className="mt-4 pt-4 border-t border-slate-700/50">
                 <p className="text-xs text-gray-400 text-center italic">
