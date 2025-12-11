@@ -12,6 +12,7 @@ import { Label } from "./ui/label";
 import { Mail, Send, CheckCircle2, AlertCircle, Lock, Shield, UserPlus } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
 import { sendMagicLink } from "../services/api-real";
+import { maskEmail } from "../utils/maskEmail";
 
 interface EmailLoginDialogProps {
   open: boolean;
@@ -300,7 +301,7 @@ export function EmailLoginDialog({
               <p className="text-gray-300 mb-1 text-sm">
                 {t.emailLogin.success.sentTo}
               </p>
-              <p className="text-cyan-400 mb-3 text-sm">{email}</p>
+              <p className="text-cyan-400 mb-3 text-sm">{maskEmail(email)}</p>
 
               <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg inline-block">
                 <div className="flex items-center gap-2 text-sm text-gray-300">

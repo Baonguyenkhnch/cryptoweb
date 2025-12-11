@@ -12,6 +12,7 @@ import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
 import { Mail, Shield, CheckCircle2, AlertCircle } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
+import { maskEmail } from "../utils/maskEmail";
 
 interface OTPVerificationDialogProps {
   open: boolean;
@@ -234,7 +235,7 @@ export function OTPVerificationDialog({
 
               <DialogDescription className="text-center text-gray-300 mt-2">
                 {t.otpVerification.otpDescription}<br />
-                <span className="text-cyan-400">{email}</span>
+                <span className="text-cyan-400">{maskEmail(email)}</span>
               </DialogDescription>
             </DialogHeader>
 
