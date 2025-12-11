@@ -191,9 +191,9 @@ export const translations = {
       sending: "Đang gửi...",
       decentralizedFooter: " Phi tập trung - Không lưu mật khẩu",
       emailSent: {
-        title: "📧 Email Đã Gửi!",
+        title: " Email Đã Gửi!",
         sentTo: "Chúng tôi đã gửi link xác nhận đến:",
-        nextSteps: "📝 Bước tiếp theo:",
+        nextSteps: " Bước tiếp theo:",
         openEmail: "Mở hộp thư",
         findEmail: "Tìm email từ",
         clickButton: "Click vào nút",
@@ -737,9 +737,9 @@ export const translations = {
       sending: "Sending...",
       decentralizedFooter: " Decentralized - No password storage",
       emailSent: {
-        title: "📧 Email Sent!",
+        title: " Email Sent!",
         sentTo: "We sent a confirmation link to:",
-        nextSteps: "📝 Next steps:",
+        nextSteps: " Next steps:",
         openEmail: "Open mailbox",
         findEmail: "Find email from",
         clickButton: "Click the button",

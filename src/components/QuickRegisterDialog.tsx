@@ -141,7 +141,7 @@ export function QuickRegisterDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[calc(100%-1rem)] sm:max-w-[380px] max-h-[85vh] overflow-y-auto bg-slate-800/95 backdrop-blur-xl border border-cyan-500/30 shadow-2xl p-4">
+            <DialogContent className="w-[calc(100%-1rem)] sm:max-w-[600px] max-h-[85vh] overflow-y-auto bg-slate-800/95 backdrop-blur-xl border border-cyan-500/30 shadow-2xl p-6">
                 {!showEmailSent ? (
                     <>
                         <DialogHeader>
@@ -291,7 +291,7 @@ export function QuickRegisterDialog({
                         </div>
 
                         <DialogTitle className="text-center bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent mb-2">
-                            📧 Email Đã Gửi!
+                            Email Đã Gửi!
                         </DialogTitle>
 
                         <DialogDescription className="text-center text-gray-300 text-sm space-y-2">
@@ -311,7 +311,7 @@ export function QuickRegisterDialog({
                         {/* Instructions */}
                         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-left">
                             <div className="text-xs text-blue-300 space-y-2">
-                                <div className="font-medium mb-2">📝 Bước tiếp theo:</div>
+                                <div className="font-medium mb-2"> Bước tiếp theo:</div>
                                 <ol className="space-y-1.5 ml-4 list-decimal text-gray-300">
                                     <li>Mở hộp thư email của bạn</li>
                                     <li>Tìm email từ <span className="text-orange-400">Migo</span></li>
