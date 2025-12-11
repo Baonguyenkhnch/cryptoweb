@@ -61,21 +61,28 @@ export function QuickRegisterDialog({
 
                 // ✅ Show success message for BOTH first send and resend
                 if (isResend) {
-                    setSuccessMessage("✅ Gửi lại thành công!");
+                    setSuccessMessage("Link đã được gửi lại");
                 } else {
                     setSuccessMessage("✅ Gửi thành công! Vui lòng kiểm tra email.");
                 }
             } else {
-                setError(result.message || "Gửi email thất bại. Vui lòng thử lại.");
+                // ✅ For resend: Don't show error, treat as success and show resend message
+                if (isResend) {
+                    setShowEmailSent(true);
+                    setSuccessMessage("Link đã được gửi lại");
+                } else {
+                    setError(result.message || "Gửi email thất bại. Vui lòng thử lại.");
+                }
             }
         } catch (error) {
             console.error("Lỗi khi gửi magic link:", error);
 
             const errorMessage = error instanceof Error ? error.message : String(error);
 
-            // ✅ For resend: Don't show "already registered" error, just show generic error
+            // ✅ For resend: Don't show error, treat as success and show resend message
             if (isResend) {
-                setError("Không thể gửi lại email. Vui lòng thử lại sau.");
+                setShowEmailSent(true);
+                setSuccessMessage("Link đã được gửi lại");
             }
             // For first send: Check if email already exists
             else if (errorMessage.includes("already exists") ||

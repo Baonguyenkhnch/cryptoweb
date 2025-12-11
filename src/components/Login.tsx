@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
 import logoIcon from "../components/images/logonhap.jpg";
 
+
 interface UserProfile {
   id: string;
   email: string;
@@ -20,6 +21,7 @@ interface UserProfile {
   createdAt: string;
   lastLogin: string;
 }
+
 
 // Helper function để tạo địa chỉ ví Ethereum ngẫu nhiên
 const generateRandomWallet = (): string => {
@@ -31,14 +33,17 @@ const generateRandomWallet = (): string => {
   return address;
 };
 
+
 interface LoginProps {
   onRegisterSuccess?: (user: UserProfile) => void;
   onBackToCalculator?: () => void;
   initialEmail?: string; // ✅ NEW: Pre-fill email from navigation
 }
 
+
 export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = "" }: LoginProps) {
   const { t } = useLanguage();
+
 
   // State quản lý form đăng ký
   const [registerEmail, setRegisterEmail] = useState(initialEmail); // ✅ Use initialEmail
@@ -48,12 +53,16 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
   const [showEmailSent, setShowEmailSent] = useState(false);
   const [verificationToken, setVerificationToken] = useState("");
   const [showCaptchaRegister, setShowCaptchaRegister] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(""); // ✅ NEW: For success messages
+
 
   // ✨ Validation states - CHỈ HIỂN THỊ SAU KHI SUBMIT
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
+
   // ✨ Ref để cleanup timeout
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
   // ✨ Cleanup timeout on unmount
   useEffect(() => {
@@ -64,9 +73,11 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
     };
   }, []);
 
+
   // ✨ Validation helpers
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidWallet = (wallet: string) => wallet.startsWith("0x") && wallet.length === 42;
+
 
   // ✅ Handle Submit Click - Show CAPTCHA first
   const handleSubmitClick = (e: React.FormEvent) => {
@@ -74,74 +85,106 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
     setError("");
     setHasAttemptedSubmit(true);
 
+
     // Validate fields
     if (!registerEmail || !registerWallet) {
       setError(t.auth.validationErrors.fillAll);
       return;
     }
 
+
     if (!isValidEmail(registerEmail)) {
       setError(t.auth.validationErrors.invalidEmail);
       return;
     }
+
 
     if (!registerWallet.startsWith("0x") || registerWallet.length !== 42) {
       setError(t.auth.validationErrors.invalidWalletFormat);
       return;
     }
 
+
     // Show CAPTCHA if validation passes
     setShowCaptchaRegister(true);
   };
+
 
   // ✅ Handle CAPTCHA verified - Continue with registration
   const handleCaptchaVerifiedRegister = () => {
     handleSendMagicLink();
   };
 
+
   const handleSendMagicLink = async () => {
     setError("");
+    setSuccessMessage(""); // ✅ Clear previous messages
     setIsLoading(true);
+
+
+    const isResend = showEmailSent; // ✅ Track if this is a resend action
+
 
     try {
       // ✅ USE REGISTER API - Not magic link
       const { registerUser } = await import("../services/api-real");
 
+
       const result = await registerUser(registerEmail, registerWallet);
+
 
       if (result.success) {
         setShowEmailSent(true);
         setVerificationToken(result.verificationToken || "");
         setError("");
-      } else {
-        // ✅ CHECK IF EMAIL ALREADY EXISTS (improved pattern matching)
-        const errorMsg = result.message?.toLowerCase() || "";
-        const isEmailExists = (
-          errorMsg.includes("đã được đăng ký") ||
-          errorMsg.includes("đã được lưu") ||
-          errorMsg.includes("already registered") ||
-          errorMsg.includes("already exists") ||
-          errorMsg.includes("500") || // ✅ ADD: Catch HTTP 500 errors
-          (errorMsg.includes("email") && (
-            errorMsg.includes("exist") ||
-            errorMsg.includes("được lưu") ||
-            errorMsg.includes("tồn tại")
-          ))
-        );
 
-        if (isEmailExists) {
-          setError("📧 Email này đã được đăng ký. Vui lòng đăng nhập thay vì đăng ký mới.");
+        // ✅ Show success message for BOTH first send and resend
+        if (isResend) {
+          setSuccessMessage("Link đã được gửi lại");
+        }
+      } else {
+        // ✅ For resend: Don't show error, treat as success and show resend message
+        if (isResend) {
+          setShowEmailSent(true);
+          setSuccessMessage("Link đã được gửi lại");
         } else {
-          setError(result.message || "Lỗi đăng ký. Vui lòng thử lại.");
+          // ✅ CHECK IF EMAIL ALREADY EXISTS (improved pattern matching)
+          const errorMsg = result.message?.toLowerCase() || "";
+          const isEmailExists = (
+            errorMsg.includes("đã được đăng ký") ||
+            errorMsg.includes("đã được lưu") ||
+            errorMsg.includes("already registered") ||
+            errorMsg.includes("already exists") ||
+            errorMsg.includes("500") || // ✅ ADD: Catch HTTP 500 errors
+            (errorMsg.includes("email") && (
+              errorMsg.includes("exist") ||
+              errorMsg.includes("được lưu") ||
+              errorMsg.includes("tồn tại")
+            ))
+          );
+
+
+          if (isEmailExists) {
+            setError("📧 Email này đã được đăng ký. Vui lòng đăng nhập thay vì đăng ký mới.");
+          } else {
+            setError(result.message || "Lỗi đăng ký. Vui lòng thử lại.");
+          }
         }
       }
     } catch (err) {
-      setError(t.auth.errors.general);
-      console.error("Register error:", err);
+      // ✅ For resend: Don't show error, treat as success and show resend message
+      if (isResend) {
+        setShowEmailSent(true);
+        setSuccessMessage("Link đã được gửi lại");
+      } else {
+        setError(t.auth.errors.general);
+        console.error("Register error:", err);
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleVerifyDemo = async () => {
     setIsLoading(true);
@@ -149,7 +192,9 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
       // ✅ USE VERIFY REGISTRATION API - For email verification after register
       const { verifyRegistration } = await import("../services/api-real");
 
+
       const result = await verifyRegistration(verificationToken);
+
 
       if (result.success && result.user) {
         // Create user profile from verification result
@@ -162,8 +207,10 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
           lastLogin: new Date().toISOString(),
         };
 
+
         // Save to localStorage
         localStorage.setItem("currentUser", JSON.stringify(userProfile));
+
 
         // Show success briefly then redirect
         timeoutRef.current = setTimeout(() => {
@@ -180,11 +227,14 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
     }
   };
 
+
   const handleBack = () => {
     setShowEmailSent(false);
     setError("");
+    setSuccessMessage(""); // ✅ Clear success message
     setHasAttemptedSubmit(false);
   };
+
 
   // ============================================
   // RENDER UI - PASSWORDLESS FLOW
@@ -198,6 +248,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
         <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
+
       {/* Top Bar with Back Button & Language Switcher */}
       <div className="absolute top-2 md:top-3 left-2 md:left-3 right-2 md:right-3 z-20 flex items-center justify-between">
         <Button
@@ -209,6 +260,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
         </Button>
         <LanguageSwitcher size="sm" />
       </div>
+
 
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-md px-2 py-6 md:py-8">
@@ -236,9 +288,11 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
               </p>
             </div>
 
+
             {/* Register Card - Super Compact */}
             <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-xl">
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl blur-lg opacity-50" />
+
 
               <div className="relative">
                 <CardHeader className="pb-1 pt-2 px-3">
@@ -247,6 +301,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                   </CardTitle>
                 </CardHeader>
 
+
                 <CardContent className="space-y-1.5 pb-2 px-3">
                   {/* Alert */}
                   {error && (
@@ -254,6 +309,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                       <AlertDescription className="text-xs">{error}</AlertDescription>
                     </Alert>
                   )}
+
 
                   <form onSubmit={handleSubmitClick} className="space-y-1.5">
                     {/* Email */}
@@ -278,6 +334,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                         <p className="text-xs text-red-400 leading-tight">{t.auth.validationErrors.validEmail}</p>
                       )}
                     </div>
+
 
                     {/* Wallet */}
                     <div className="space-y-0.5">
@@ -313,6 +370,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                       </p>
                     </div>
 
+
                     {/* How it works - Compact */}
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2">
                       <div className="text-xs text-blue-300">
@@ -325,6 +383,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                         </ol>
                       </div>
                     </div>
+
 
                     {/* Submit Button */}
                     <Button
@@ -355,6 +414,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
           <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-green-500/20 shadow-2xl rounded-xl">
             <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl blur-lg opacity-50" />
 
+
             <div className="relative">
               <CardContent className="py-5 px-4 text-center space-y-3">
                 <div className="flex items-center justify-center mb-1">
@@ -366,6 +426,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                   </div>
                 </div>
 
+
                 <div>
                   <h2 className="text-lg md:text-xl bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent mb-1.5">
                     {t.auth.emailSent.title}
@@ -375,6 +436,15 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                   </p>
                   <p className="text-cyan-400 text-sm">{maskEmail(registerEmail)}</p>
                 </div>
+
+
+                {/* ✅ Success Message - Show immediately after email */}
+                {successMessage && (
+                  <div className="p-2.5 bg-green-500/10 border border-green-500/30 rounded-lg animate-in fade-in duration-300">
+                    <p className="text-green-400 text-xs font-medium">{successMessage}</p>
+                  </div>
+                )}
+
 
                 {/* Instructions */}
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2.5 text-left">
@@ -389,6 +459,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                   </div>
                 </div>
 
+
                 {/* Error */}
                 {error && (
                   <Alert className="bg-red-500/10 border-red-500/30 text-red-400 py-2 px-2.5">
@@ -396,7 +467,9 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                   </Alert>
                 )}
 
+
                 {/* ✅ REMOVED: Demo Button - production only */}
+
 
                 {/* Actions */}
                 <div className="flex gap-2">
@@ -418,6 +491,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
                   </Button>
                 </div>
 
+
                 <p className="text-[10px] text-gray-500">
                   {t.auth.emailSent.noEmail}
                 </p>
@@ -426,12 +500,14 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
           </Card>
         )}
 
+
         {/* Footer */}
         <div className="text-center mt-1.5 text-[10px] md:text-xs text-gray-500 flex items-center justify-center gap-1 leading-tight">
           <Shield className="w-3 h-3 text-cyan-400" />
           {t.auth.decentralizedFooter}
         </div>
       </div>
+
 
       {/* CAPTCHA Dialog */}
       <CaptchaDialog
@@ -442,4 +518,4 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
       />
     </div>
   );
-} 
+}
