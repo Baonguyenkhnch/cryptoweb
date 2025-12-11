@@ -48,6 +48,8 @@ import { updateUserProfile, formatWalletAddress } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 import { copyToClipboard } from "./ui/utils";
 import { EmailChangeDialog } from "./EmailChangeDialog"; // ✅ NEW
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
 
 // ============================================
 // TYPES
@@ -309,7 +311,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
                 <div className="text-center space-y-3">
                   <div>
                     <h2 className="text-2xl text-white font-mono">{formatWalletAddress(user.walletAddress)}</h2>
-                    <p className="text-gray-400 text-sm">{user.email || t.profile.fields.noEmail}</p>
+                    <p className="text-gray-400 text-sm">{user.email ? maskEmail(user.email) : t.profile.fields.noEmail}</p>
                   </div>
 
                   <Badge className="bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-400 border-emerald-500/30">

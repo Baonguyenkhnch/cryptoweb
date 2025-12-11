@@ -11,6 +11,7 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Mail, CheckCircle2, Wallet, Sparkles, Clock, ArrowRight } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
+import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail
 
 interface QuickRegisterDialogProps {
     open: boolean;
@@ -32,15 +33,19 @@ export function QuickRegisterDialog({
     const [showEmailSent, setShowEmailSent] = useState(false);
     const [verificationToken, setVerificationToken] = useState("");
     const [error, setError] = useState("");
+    const [successMessage, setSuccessMessage] = useState(""); // ✅ NEW: For success messages
 
     const handleSendMagicLink = async () => {
         setError("");
+        setSuccessMessage(""); // ✅ Clear previous messages
 
         // Validation
         if (!email.trim() || !email.includes("@")) {
             setError("Vui lòng nhập email hợp lệ");
             return;
         }
+
+        const isResend = showEmailSent; // ✅ Track if this is a resend action
 
         setIsLoading(true);
         try {
@@ -53,17 +58,27 @@ export function QuickRegisterDialog({
             if (result.success) {
                 setShowEmailSent(true);
                 setVerificationToken(result.verificationToken || "");
+
+                // ✅ Show success message for BOTH first send and resend
+                if (isResend) {
+                    setSuccessMessage("✅ Gửi lại thành công!");
+                } else {
+                    setSuccessMessage("✅ Gửi thành công! Vui lòng kiểm tra email.");
+                }
             } else {
                 setError(result.message || "Gửi email thất bại. Vui lòng thử lại.");
             }
         } catch (error) {
             console.error("Lỗi khi gửi magic link:", error);
 
-            // ✅ FIX: Check for specific error messages
             const errorMessage = error instanceof Error ? error.message : String(error);
 
-            // Check if email already exists
-            if (errorMessage.includes("already exists") ||
+            // ✅ For resend: Don't show "already registered" error, just show generic error
+            if (isResend) {
+                setError("Không thể gửi lại email. Vui lòng thử lại sau.");
+            }
+            // For first send: Check if email already exists
+            else if (errorMessage.includes("already exists") ||
                 errorMessage.includes("đã tồn tại") ||
                 errorMessage.includes("already registered") ||
                 errorMessage.includes("500")) {
@@ -121,6 +136,7 @@ export function QuickRegisterDialog({
     const handleBack = () => {
         setShowEmailSent(false);
         setError("");
+        setSuccessMessage(""); // ✅ NEW: Clear success message
     };
 
     return (
@@ -169,7 +185,7 @@ export function QuickRegisterDialog({
                                     </li>
                                     <li className="flex items-start gap-1.5">
                                         <span className="text-green-400 mt-0.5">✓</span>
-                                        <span>Truy cập Dashboard cá nhân</span>
+                                        <span>Truy cp Dashboard cá nhân</span>
                                     </li>
                                     <li className="flex items-start gap-1.5">
                                         <span className="text-green-400 mt-0.5">✓</span>
@@ -204,6 +220,13 @@ export function QuickRegisterDialog({
                             {error && (
                                 <div className="p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
                                     <p className="text-red-400 text-xs">{error}</p>
+                                </div>
+                            )}
+
+                            {/* Success Message */}
+                            {successMessage && (
+                                <div className="p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+                                    <p className="text-green-400 text-xs">{successMessage}</p>
                                 </div>
                             )}
 
@@ -275,46 +298,30 @@ export function QuickRegisterDialog({
                             <p>
                                 Chúng tôi đã gửi link xác nhận đến:
                             </p>
-                            <p className="text-cyan-400 font-medium">{email}</p>
+                            <p className="text-cyan-400 font-medium">{maskEmail(email)}</p> {/* ✅ NEW: Mask email */}
                         </DialogDescription>
+
+                        {/* ✅ Success Message - Show immediately after email */}
+                        {successMessage && (
+                            <div className="p-2.5 bg-green-500/10 border border-green-500/30 rounded-lg animate-in fade-in duration-300">
+                                <p className="text-green-400 text-xs font-medium">{successMessage}</p>
+                            </div>
+                        )}
 
                         {/* Instructions */}
                         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-left">
                             <div className="text-xs text-blue-300 space-y-2">
                                 <div className="font-medium mb-2">📝 Bước tiếp theo:</div>
                                 <ol className="space-y-1.5 ml-4 list-decimal text-gray-300">
-                                    <li>Mở hộp thư <span className="text-cyan-400">{email}</span></li>
-                                    <li>Tìm email từ <span className="text-orange-400">ScorePage</span></li>
-                                    <li>Click vào nút <span className="text-green-400">"Xác Nhận Email"</span></li>
+                                    <li>Mở hộp thư email của bạn</li>
+                                    <li>Tìm email từ <span className="text-orange-400">Migo</span></li>
+                                    <li>Click vào nút <span className="text-green-400">"Xác nhận và Đăng nhập"</span></li>
                                     <li>Tự động chuyển đến Dashboard ✨</li>
                                 </ol>
                             </div>
                         </div>
 
-                        {/* Demo Button - For Testing */}
-                        <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-3">
-                            <p className="text-xs text-purple-300 mb-2">
-                                🎨 <span className="font-medium">Demo Mode:</span> Giả lập click email
-                            </p>
-                            <Button
-                                onClick={handleVerifyDemo}
-                                disabled={isLoading}
-                                className="w-full h-9 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-sm shadow-lg"
-                            >
-                                {isLoading ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        <span>Đang xác thực...</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <CheckCircle2 className="w-4 h-4" />
-                                        <span>Giả Lập Click Email</span>
-                                        <ArrowRight className="w-4 h-4" />
-                                    </div>
-                                )}
-                            </Button>
-                        </div>
+                        {/* ✅ REMOVED: Demo Mode button - production only */}
 
                         {/* Resend / Back */}
                         <div className="flex gap-2">
@@ -343,7 +350,6 @@ export function QuickRegisterDialog({
                             </div>
                         )}
 
-                        {/* Help Text */}
                         <p className="text-xs text-gray-500">
                             Không nhận được email? Kiểm tra hộp thư spam hoặc gửi lại
                         </p>

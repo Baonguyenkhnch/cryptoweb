@@ -45,6 +45,10 @@ export function ResultsSummary({
     return null;
   }
 
+  // ✅ DEBUG: Log để check tokenDiversity value
+  console.log("🔍 [ResultsSummary] walletData.tokenDiversity:", walletData.tokenDiversity);
+  console.log("🔍 [ResultsSummary] Full walletData:", walletData);
+
   // Helper function to format assets consistently
   const formatAssets = (value: number): string => {
     // ✅ FIX: Handle invalid numbers (NaN, Infinity, scientific notation)
@@ -144,8 +148,8 @@ export function ResultsSummary({
       icon: Activity,
       label: language === 'vi' ? 'Giao Dịch' : 'Transactions',
       value: walletData.totalTransactions.toLocaleString(),
-      unit: '',
-      subtitle: language === 'vi' ? 'giao dịch' : 'transactions',
+      unit: language === 'vi' ? 'giao dịch' : 'transactions',
+      subtitle: '',
       weight: 30, // Changed from 25% to 30%
       contributedScore: Math.round(walletData.score * 0.30), // Changed from 0.25 to 0.30
       badge: language === 'vi' ? 'Hoạt Động' : 'Active',
@@ -156,10 +160,10 @@ export function ResultsSummary({
     {
       icon: Coins,
       label: language === 'vi' ? 'Đa Dạng Token' : 'Token Diversity',
-      value: walletData.tokenDiversity,
-      unit: '',
-      subtitle: language === 'vi' ? 'loại token' : 'tokens',
-      weight: 20,
+      value: walletData.tokenDiversity, // ✅ MUST be the actual value (e.g., 6), NOT the weight (20%)
+      unit: language === 'vi' ? 'loại token' : 'token types',
+      subtitle: '',
+      weight: 20, // This is the percentage weight, NOT the value
       contributedScore: Math.round(walletData.score * 0.20),
       badge: language === 'vi' ? 'Ổn Định' : 'Stable',
       badgeColor: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30', // Changed from purple to cyan
@@ -170,8 +174,8 @@ export function ResultsSummary({
       icon: Wallet,
       label: language === 'vi' ? 'Tổng Tài Sản' : 'Total Assets',
       value: formatAssets(walletData.totalAssets),
-      unit: '',
-      subtitle: 'USD',
+      unit: 'USD',
+      subtitle: '',
       weight: 30, // Changed from 25% to 30%
       contributedScore: Math.round(walletData.score * 0.30), // Changed from 0.25 to 0.30
       badge: language === 'vi' ? 'Tốt' : 'Good',
@@ -181,6 +185,13 @@ export function ResultsSummary({
     },
   ];
 
+  // ✅ DEBUG: Log metrics array to verify values
+  console.log("📊 [ResultsSummary] Metrics array:", metrics.map(m => ({
+    label: m.label,
+    value: m.value,
+    weight: m.weight,
+  })));
+
   // Rating ranges for guide
   const ratingRanges = [
     { rating: 'AAA', range: '750-850', label: language === 'vi' ? 'Xuất Sắc' : 'Excellent', color: 'from-emerald-500 to-green-500', bgColor: 'bg-emerald-500/20', textColor: 'text-emerald-400', borderColor: 'border-emerald-500/30' },
@@ -188,7 +199,7 @@ export function ResultsSummary({
     { rating: 'A', range: '650-699', label: language === 'vi' ? 'Tốt' : 'Good', color: 'from-cyan-500 to-blue-500', bgColor: 'bg-cyan-500/20', textColor: 'text-cyan-400', borderColor: 'border-cyan-500/30' },
     { rating: 'BBB', range: '600-649', label: language === 'vi' ? 'Khá' : 'Fair', color: 'from-yellow-500 to-amber-500', bgColor: 'bg-yellow-500/20', textColor: 'text-yellow-400', borderColor: 'border-yellow-500/30' },
     { rating: 'BB', range: '550-599', label: language === 'vi' ? 'Trung Bình' : 'Average', color: 'from-orange-500 to-red-500', bgColor: 'bg-orange-500/20', textColor: 'text-orange-400', borderColor: 'border-orange-500/30' },
-    { rating: 'B-C', range: '< 550', label: language === 'vi' ? 'Cần Cải Thiện' : 'Needs Improvement', color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/20', textColor: 'text-red-400', borderColor: 'border-red-500/30' },
+    { rating: 'B-C', range: '< 550', label: language === 'vi' ? 'Cần Cải Thi��n' : 'Needs Improvement', color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/20', textColor: 'text-red-400', borderColor: 'border-red-500/30' },
   ];
 
   // Optimization factors
@@ -226,7 +237,7 @@ export function ResultsSummary({
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle className="flex items-center gap-2 text-cyan-400">
             <TrendingUp className="w-5 h-5" />
-            {language === 'vi' ? 'Tổng Quan Nhanh' : 'Quick Overview'}
+            📊 {language === 'vi' ? 'Tng Quan Nhanh' : 'Quick Overview'}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
@@ -449,8 +460,8 @@ export function ResultsSummary({
                   <div
                     key={index}
                     className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isCurrentRating
-                      ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
-                      : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
+                        ? `${item.bgColor} ${item.borderColor} border-2 ring-2 ring-offset-2 ring-offset-slate-900 ${item.textColor.replace('text-', 'ring-')}`
+                        : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-700/40'
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -462,7 +473,7 @@ export function ResultsSummary({
                         <div className="text-xs text-gray-400">{item.label}</div>
                       </div>
                     </div>
-                    {/* ✅ Only show ��� when score > 0 AND it's the current rating */}
+                    {/* ✅ Only show  when score > 0 AND it's the current rating */}
                     {isCurrentRating && (
                       <div className="text-xl">👈</div>
                     )}

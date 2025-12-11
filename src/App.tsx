@@ -18,8 +18,8 @@ import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { LoadingProgress } from "./components/LoadingProgress";
 import { ErrorDialog } from "./components/ErrorDialog";
 import { QuotaWarningBanner } from "./components/QuotaWarningBanner";
-import { VerifyPage } from "./pages/Verify"; // ✅ Import VerifyPage
-import { CaptchaDialog } from "./components/CaptchaDialog"; // ✅ Import CaptchaDialog
+import { VerifyPage } from "./pages/Verify";
+import { CaptchaDialog } from "./components/CaptchaDialog";
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
@@ -94,10 +94,11 @@ export default function App() {
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorType, setErrorType] = useState<"quota" | "network" | "general">("general");
   const [errorMessage, setErrorMessage] = useState("");
-  const [useDemoMode, setUseDemoMode] = useState(false); // Demo mode toggle
+  // ✅ REMOVED: useDemoMode state - No demo mode anymore
   const [showQuotaWarning, setShowQuotaWarning] = useState(false); // Quota warning banner
   const [showVerifyPage, setShowVerifyPage] = useState(false); // ✅ Verify page state
   const [showCaptchaCalculator, setShowCaptchaCalculator] = useState(false); // ✅ CAPTCHA for calculator
+  const [prefilledEmail, setPrefilledEmail] = useState(""); // ✅ NEW: Email pre-filled from EmailLoginDialog
 
   // ✅ Check URL hash for verify page
   useEffect(() => {
@@ -376,7 +377,7 @@ export default function App() {
             // ❌ API FAILED - Show clear error message
             console.error("🚫 Failed to fetch onchain data for first login:", apiError.message);
 
-            // ✅ FIX: Show alert to user so they know what happened
+            //  FIX: Show alert to user so they know what happened
             const errorMsg = apiError.message || "Lỗi kết nối";
             const isQuotaError = errorMsg.includes('quota') || errorMsg.includes('rate limit') ||
               errorMsg.includes('401') || errorMsg.includes('500');
@@ -522,7 +523,7 @@ export default function App() {
     // Validate wallet address or email format first
     const address = walletAddress.trim();
     if (!isValidEmail(address) && !isValidWalletAddress(address)) {
-      alert("Vui lòng nhập địa chỉ ví hợp lệ (0x...) hoặc email đã đăng ký.");
+      alert("Vui lòng nhập địa chỉ ví hợp lệ (0x...) hoc email đã đăng ký.");
       return;
     }
 
@@ -707,7 +708,7 @@ export default function App() {
     setShowEmailLoginDialog(false);
     setShowFeedbackDialog(false);
     setSubscriptionStatus(null);
-    setUseDemoMode(false); // Reset demo mode
+    // ✅ REMOVED: setUseDemoMode(false); // Reset demo mode
   };
 
   // ✅ REMOVED: handleTryDemoMode - No demo mode, app uses real data only
@@ -1074,17 +1075,7 @@ export default function App() {
                 ← {t.calculator.buttons.tryAnother}
               </Button>
 
-              {/* Demo Mode Banner */}
-              {useDemoMode && (
-                <div className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg backdrop-blur-sm animate-in fade-in-0 duration-500">
-                  <div className="flex items-center gap-1.5 md:gap-2">
-                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-green-400 text-xs md:text-sm">
-                      🎨 {language === "vi" ? "Demo Mode - Dữ liệu mẫu" : "Demo Mode - Sample Data"}
-                    </span>
-                  </div>
-                </div>
-              )}
+              {/* ��� REMOVED: Demo Mode Banner - No longer needed */}
             </div>
 
             {walletData ? (
@@ -1134,6 +1125,18 @@ export default function App() {
         onOpenChange={setShowEmailLoginDialog}
         onMagicLinkSuccess={handleEmailLogin}
         walletAddress={walletAddress}
+        onNavigateToRegister={(email) => {
+          // ✅ NEW: Navigate to auth page (login page) with register tab
+          setPrefilledEmail(email); // Save email for pre-fill
+          setShowEmailLoginDialog(false); // Close login dialog
+          setLoginTab("register"); // Switch to register tab
+          setCurrentPage("login"); // Navigate to auth page
+        }}
+        onRegisterClick={() => {
+          // ✅ DEPRECATED: Fallback to QuickRegisterDialog (old flow)
+          setShowEmailLoginDialog(false);
+          setShowQuickRegisterDialog(true);
+        }}
       />
 
       {/* Quick Register Dialog */}
@@ -1147,10 +1150,10 @@ export default function App() {
         }}
       />
 
-      {/* Floating Feedback Button */}
-      <FloatingFeedbackButton
+      {/* Floating Feedback Button - REMOVED */}
+      {/* <FloatingFeedbackButton
         onClick={() => setShowFeedbackDialog(true)}
-      />
+      /> */}
 
       {/* Feature Feedback Dialog */}
       <FeatureFeedbackDialog
@@ -1221,6 +1224,7 @@ export default function App() {
             <Login
               onRegisterSuccess={handleLogin}
               onBackToCalculator={() => setCurrentPage("calculator")}
+              initialEmail={prefilledEmail} // ✅ NEW: Pass pre-filled email from navigation
             />
           )}
           {currentPage === "calculator" && renderCalculatorPage()}
@@ -1243,8 +1247,8 @@ export default function App() {
             />
           )}
 
-          {/* Floating Feedback Button - Show on all pages */}
-          <FloatingFeedbackButton onClick={() => setShowFeedbackDialog(true)} />
+          {/* Floating Feedback Button - Show on all pages - REMOVED */}
+          {/* <FloatingFeedbackButton onClick={() => setShowFeedbackDialog(true)} /> */}
 
           {/* Feature Feedback Dialog */}
           <FeatureFeedbackDialog

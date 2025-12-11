@@ -9,7 +9,7 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
-import { Mail, Send, CheckCircle2, AlertCircle, Lock, Shield } from "lucide-react";
+import { Mail, Send, CheckCircle2, AlertCircle, Lock, Shield, UserPlus } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
 import { sendMagicLink } from "../services/api-real";
 
@@ -19,6 +19,8 @@ interface EmailLoginDialogProps {
   onSuccess?: () => void;
   onMagicLinkSuccess?: (email: string) => void;
   walletAddress?: string; // Wallet address để gắn với email
+  onRegisterClick?: (email: string) => void; // ✅ DEPRECATED: Dùng onNavigateToRegister thay thế
+  onNavigateToRegister?: (email: string) => void; // ✅ NEW: Navigate to auth page with register tab
 }
 
 export function EmailLoginDialog({
@@ -27,12 +29,15 @@ export function EmailLoginDialog({
   onSuccess,
   onMagicLinkSuccess,
   walletAddress = "",
+  onRegisterClick,
+  onNavigateToRegister,
 }: EmailLoginDialogProps) {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [emailNotFound, setEmailNotFound] = useState(false); // ✅ NEW: Track nếu email chưa được đăng ký
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -76,18 +81,35 @@ export function EmailLoginDialog({
       const errorMsg = err instanceof Error ? err.message : t.emailLogin.errors.generalError;
       console.error("❌ Lỗi gửi magic link:", errorMsg);
 
-      // ✅ FIX: Check for email already exists
-      if (errorMsg.includes("already exists") ||
+      // ✅ FIX: Đổi thứ tự check - Ưu tiên check "not found" trước
+      // Check for email not found (chưa được đăng ký)
+      if (errorMsg.includes("not found") ||
+        errorMsg.includes("not registered") ||
+        errorMsg.includes("chưa được đăng ký") ||
+        errorMsg.includes("không tồn tại") ||
+        errorMsg.includes("does not exist") ||
+        errorMsg.includes("404") ||
+        errorMsg.includes("401")) {
+        setEmailNotFound(true);
+        setError("📧 Email này chưa được đăng ký. Vui lòng đăng ký.");
+      }
+      // Check for email already exists (đã đăng ký)
+      else if (errorMsg.includes("already exists") ||
         errorMsg.includes("đã tồn tại") ||
-        errorMsg.includes("already registered") ||
-        errorMsg.includes("500")) {
-        setError("📧 Email này chưa được đăng ký. Vui lòng đăng ký thay vì đăng nhập.");
+        errorMsg.includes("already registered")) {
+        setEmailNotFound(false);
+        setError("📧 Email này đã được đăng ký. Vui lòng đăng nhập.");
       }
       // Nếu backend offline, hiển thị demo mode
       else if (errorMsg.includes('DEMO')) {
         setShowSuccess(true);
-      } else {
-        setError(errorMsg);
+      }
+      // ✅ FIX: Default case - Giả định email chưa được đăng ký
+      else {
+        // Nếu không match pattern nào, giả định email chưa được đăng ký
+        console.warn("⚠️ Unknown error pattern, assuming email not found:", errorMsg);
+        setEmailNotFound(true);
+        setError("📧 Email này chưa được đăng ký. Vui lòng đăng ký.");
       }
     } finally {
       setIsLoading(false);
@@ -98,6 +120,7 @@ export function EmailLoginDialog({
     setEmail("");
     setError("");
     setShowSuccess(false);
+    setEmailNotFound(false); // ✅ Reset email not found state
     onOpenChange(false);
   };
 
@@ -107,6 +130,22 @@ export function EmailLoginDialog({
       onMagicLinkSuccess(email);
     }
     handleClose();
+  };
+
+  const handleRegisterClick = () => {
+    // ✅ NEW: Chuyển sang QuickRegisterDialog khi email chưa được đăng ký
+    if (onRegisterClick) {
+      onRegisterClick(email);
+      handleClose();
+    }
+  };
+
+  const handleNavigateToRegister = () => {
+    // ✅ NEW: Navigate to auth page with register tab
+    if (onNavigateToRegister) {
+      onNavigateToRegister(email);
+      handleClose();
+    }
   };
 
   return (
@@ -213,23 +252,37 @@ export function EmailLoginDialog({
                 {t.emailLogin.cancel}
               </Button>
 
-              <Button
-                onClick={handleSubmit}
-                disabled={!email.trim() || !validateEmail(email) || isLoading}
-                className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30 h-10"
-              >
-                {isLoading ? (
+              {/* ✅ NEW: Đổi button thành "Đăng ký" nếu email chưa được đăng ký */}
+              {emailNotFound ? (
+                <Button
+                  onClick={handleNavigateToRegister}
+                  disabled={!email.trim() || !validateEmail(email)}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-500/30 h-10"
+                >
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    {t.emailLogin.sending}
+                    <UserPlus className="w-4 h-4" />
+                    Đăng ký
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Send className="w-4 h-4" />
-                    {t.emailLogin.sendButton}
-                  </div>
-                )}
-              </Button>
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!email.trim() || !validateEmail(email) || isLoading}
+                  className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30 h-10"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      {t.emailLogin.sending}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Send className="w-4 h-4" />
+                      {t.emailLogin.sendButton}
+                    </div>
+                  )}
+                </Button>
+              )}
             </div>
           </>
         ) : (

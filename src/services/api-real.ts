@@ -461,14 +461,17 @@ export const verifyRegistration = async (
 /**
  * Send Magic Link for passwordless login - POST /api/send-magic-link
  * @param email - User email
+ * @param walletAddress - Optional wallet address to link
  */
 export const sendMagicLinkReal = async (
-    email: string
+    email: string,
+    walletAddress?: string
 ): Promise<{
     success: boolean;
     message: string;
+    verificationToken?: string;
 }> => {
-    debugLog(`🔐 Sending magic link to: ${email}`);
+    debugLog(`🔐 Sending magic link to: ${email}`, walletAddress ? `with wallet: ${walletAddress}` : '');
 
     try {
         // Validate email
@@ -480,15 +483,22 @@ export const sendMagicLinkReal = async (
         }
 
         const url = `${API_BASE_URL}/api/send-magic-link`;
+        const requestBody: any = {
+            email: email.toLowerCase().trim(),
+        };
+
+        // Add wallet address if provided
+        if (walletAddress) {
+            requestBody.walletAddress = walletAddress;
+        }
+
         const response = await fetch(url, {
             method: "POST",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                email: email.toLowerCase().trim(),
-            }),
+            body: JSON.stringify(requestBody),
         });
 
         const data = await response.json();
@@ -506,6 +516,7 @@ export const sendMagicLinkReal = async (
         return {
             success: true,
             message: data.message || "Magic link đã được gửi đến email của bạn!",
+            verificationToken: data.verificationToken || data.verification_token || data.token,
         };
     } catch (error: any) {
         debugLog(`❌ Magic link error:`, error.message);
@@ -1204,7 +1215,16 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     const rating = data.credit_level || getRating(score);
 
     // ✅ FIX: Use token_summary.total_tokens for tokenDiversity if available
-    const finalTokenDiversity = data.token_summary?.total_tokens || data.token_diversity || validTokens.length;
+    // ✅ UPDATED: Prioritize validTokens.length (actual parsed tokens) over API's token_diversity
+    // because API's token_diversity field might be unreliable or represent something else (e.g., weight percentage)
+    const finalTokenDiversity = data.token_summary?.total_tokens || validTokens.length || data.token_diversity || 0;
+
+    console.log(`🔍 ========== TOKEN DIVERSITY CALCULATION ==========`);
+    console.log(`  - data.token_summary?.total_tokens: ${data.token_summary?.total_tokens || 'N/A'}`);
+    console.log(`  - validTokens.length (ACTUAL): ${validTokens.length}`);
+    console.log(`  - data.token_diversity (API): ${data.token_diversity || 'N/A'}`);
+    console.log(`  - finalTokenDiversity (SELECTED): ${finalTokenDiversity}`);
+    console.log(`🔍 ================================================`);
 
     // ✅ FIX: Get total_transactions from transaction_summary if available
     const totalTransactions = data.transaction_summary?.total_transactions || data.total_transactions || 0;

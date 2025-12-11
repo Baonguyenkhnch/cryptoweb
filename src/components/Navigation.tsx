@@ -1,29 +1,8 @@
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import {
-  TrendingUp,
-  Wallet,
-  User as UserIcon,
-  LogOut,
-  Shield,
-  Settings,
-  Menu,
-  X,
-  ChevronDown,
-} from "lucide-react";
 import type { UserProfile } from "../services/api-real";
 import { formatWalletAddress } from "../services/api-real";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
+import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
 import logoIcon from "../components/images/logonhap.jpg";
 import logoFull from "../components/images/logodash.jpg";
 
@@ -192,7 +171,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                       Online
                     </div>
-                    <div className="text-xs text-gray-500 font-normal">{user.email}</div>
+                    <div className="text-xs text-gray-500 font-normal">{maskEmail(user.email)}</div> {/* ✅ NEW: Use maskEmail */}
                   </DropdownMenuLabel>
 
                   <DropdownMenuSeparator className="bg-slate-700/50" />
@@ -258,7 +237,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                   <div className="text-sm text-cyan-400 font-mono">
                     {user.walletAddress ? formatWalletAddress(user.walletAddress) : "No Wallet"}
                   </div>
-                  <div className="text-xs text-gray-500">{user.email}</div>
+                  <div className="text-xs text-gray-500">{maskEmail(user.email)}</div> {/* ✅ NEW: Use maskEmail */}
                 </div>
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               </div>

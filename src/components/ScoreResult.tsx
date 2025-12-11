@@ -113,9 +113,13 @@ function ScoreResultComponent({
   const [currentPage, setCurrentPage] = useState(1);
   const TOKENS_PER_PAGE = 5;
 
-  // --- Sửa đoạn này: tính diversity khớp thực tế ---
-  const diversity = (Array.isArray(tokenBalances) && tokenBalances.length > 0)
-    ? tokenBalances.length : (tokenDiversity ?? 0); // Ưu tiên lấy tokenBalances.length thực tế
+  // ✅ FIX: Filter spam tokens FIRST, then calculate diversity
+  const displayedTokens = tokenBalances.filter(token => !token.possible_spam);
+  const totalValue = displayedTokens.reduce((sum, t) => sum + (t.value ?? 0), 0);
+
+  // ✅ FIX: Calculate diversity from displayedTokens (after spam filter)
+  // This ensures the number shown in the card matches the actual token list
+  const diversity = displayedTokens.length > 0 ? displayedTokens.length : (tokenDiversity ?? 0);
 
   const chartData = useMemo(() => [
     { name: 'Score', value: percentage },
@@ -146,10 +150,6 @@ function ScoreResultComponent({
   const formatCurrency = (value: number) => {
     return formatCurrencyUtil(value);
   };
-
-  // Thay vì lọc theo balance_usd hay balance, chỉ filter spam:
-  const displayedTokens = tokenBalances.filter(token => !token.possible_spam);
-  const totalValue = displayedTokens.reduce((sum, t) => sum + (t.value ?? 0), 0);
 
   // ✅ PAGINATION LOGIC
   const totalPages = Math.ceil(displayedTokens.length / TOKENS_PER_PAGE);
@@ -251,8 +251,7 @@ function ScoreResultComponent({
 
                 <div className="relative inline-block">
                   <div className={`absolute -inset-1 md:-inset-1.5 lg:-inset-2 bg-gradient-to-r ${getRatingGradient(rating)} rounded-lg md:rounded-xl lg:rounded-2xl blur md:blur-md lg:blur-lg opacity-60 animate-pulse`} />
-                  <div className={`relative inline-flex items-center gap-1.5 md:gap-2.5 lg:gap-3 px-4 md:px-6 lg:px-8 py-2 md:py-3 lg:py-4 rounded-lg md:rounded-xl lg:rounded-2xl bg-gradient-to-r ${getRatingGradient(rating)} shadow-xl md:shadow-2xl`}>
-                    {getRatingIcon(rating)}
+                  <div className={`relative inline-flex items-center justify-center px-4 md:px-6 lg:px-8 py-2 md:py-3 lg:py-4 rounded-lg md:rounded-xl lg:rounded-2xl bg-gradient-to-r ${getRatingGradient(rating)} shadow-xl md:shadow-2xl`}>
                     <span className="text-white text-xl md:text-3xl lg:text-4xl tracking-wider">
                       {rating === "N/A" ? t.scoreResult.noRating : rating}
                     </span>
@@ -370,13 +369,10 @@ function ScoreResultComponent({
                         <Wallet className="w-7 h-7 md:w-9 md:h-9 lg:w-10 lg:h-10 text-teal-400" />
                       </div>
                     </div>
-                    <div className="flex items-center justify-center gap-1.5 md:gap-2">
+                    <div className="flex justify-center">
                       <CardTitle className="text-base md:text-lg lg:text-xl bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent tracking-wide uppercase">
                         {t.scoreResult.tokenDiversity}
                       </CardTitle>
-                      <Badge className="bg-teal-500/20 text-teal-300 border-teal-400/40 text-[10px] md:text-xs px-1.5 md:px-2 py-0.5">
-                        {language === 'vi' ? 'Chi Tiết' : 'Details'}
-                      </Badge>
                     </div>
                     <p className="text-gray-400 text-[10px] md:text-xs lg:text-sm">
                       {language === 'vi' ? 'Danh mục đa dạng giúp phân tán rủi ro' : 'Diversified portfolio helps spread risk'}
@@ -418,7 +414,7 @@ function ScoreResultComponent({
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm md:text-base lg:text-lg bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent flex items-center gap-1.5 md:gap-2">
                         <Wallet className="w-4 h-4 md:w-4.5 md:h-4.5 lg:w-5 lg:h-5 text-teal-400" />
-                        {language === 'vi' ? 'Danh Sách Token' : 'Tokens List'}
+                        {language === 'vi' ? 'Danh Sách Token' : 'Token List'}
                       </CardTitle>
                       <span className="text-[10px] md:text-xs lg:text-sm text-teal-400 font-medium">
                         {displayedTokens.length} {language === 'vi' ? 'tokens' : 'tokens'}

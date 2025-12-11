@@ -1,16 +1,25 @@
-import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Input } from "./ui/input";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Card, CardHeader, CardContent, CardTitle } from "./ui/card";
 import { Alert, AlertDescription } from "./ui/alert";
-import { Shield, Mail, Wallet, ArrowRight, Copy, CheckCircle2, Sparkles, Clock } from "lucide-react";
-import { type UserProfile } from "../services/api-real";
+import { Mail, CheckCircle2, ArrowRight, AlertCircle, LogIn, UserPlus, Clock, Lock, Copy, Shield } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { CaptchaDialog } from "./CaptchaDialog";
 import { toast } from "sonner";
+import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
 import logoIcon from "../components/images/logonhap.jpg";
+
+interface UserProfile {
+  id: string;
+  email: string;
+  walletAddress: string;
+  name: string;
+  createdAt: string;
+  lastLogin: string;
+}
 
 // Helper function để tạo địa chỉ ví Ethereum ngẫu nhiên
 const generateRandomWallet = (): string => {
@@ -25,13 +34,14 @@ const generateRandomWallet = (): string => {
 interface LoginProps {
   onRegisterSuccess?: (user: UserProfile) => void;
   onBackToCalculator?: () => void;
+  initialEmail?: string; // ✅ NEW: Pre-fill email from navigation
 }
 
-export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
+export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = "" }: LoginProps) {
   const { t } = useLanguage();
 
   // State quản lý form đăng ký
-  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerEmail, setRegisterEmail] = useState(initialEmail); // ✅ Use initialEmail
   const [registerWallet, setRegisterWallet] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -363,7 +373,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                   <p className="text-gray-300 text-xs mb-1">
                     {t.auth.emailSent.sentTo}
                   </p>
-                  <p className="text-cyan-400 text-sm">{registerEmail}</p>
+                  <p className="text-cyan-400 text-sm">{maskEmail(registerEmail)}</p>
                 </div>
 
                 {/* Instructions */}
@@ -371,8 +381,8 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                   <div className="text-xs text-blue-300 space-y-1">
                     <div className="mb-1.5">{t.auth.emailSent.nextSteps}</div>
                     <ol className="space-y-0.5 ml-3 list-decimal text-gray-300 text-[10px]">
-                      <li>{t.auth.emailSent.openEmail} <span className="text-cyan-400">{registerEmail}</span></li>
-                      <li>{t.auth.emailSent.findEmail} <span className="text-orange-400">ScorePage</span></li>
+                      <li>{t.auth.emailSent.openEmail} <span className="text-cyan-400">email của bạn</span></li>
+                      <li>{t.auth.emailSent.findEmail} <span className="text-orange-400">Migo</span></li>
                       <li>{t.auth.emailSent.clickButton} <span className="text-green-400">{t.auth.emailSent.confirmButton}</span></li>
                       <li>{t.auth.emailSent.autoRedirect}</li>
                     </ol>
@@ -386,30 +396,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
                   </Alert>
                 )}
 
-                {/* Demo Button */}
-                <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-2.5">
-                  <p className="text-xs text-purple-300 mb-2">
-                    {t.auth.emailSent.demoMode} <span className="">{t.auth.emailSent.demoLabel}</span> {t.auth.emailSent.demoDescription}
-                  </p>
-                  <Button
-                    onClick={handleVerifyDemo}
-                    disabled={isLoading}
-                    className="w-full h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-xs shadow-lg"
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>{t.auth.emailSent.verifying}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>{t.auth.emailSent.simulateClick}</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </div>
-                    )}
-                  </Button>
-                </div>
+                {/* ✅ REMOVED: Demo Button - production only */}
 
                 {/* Actions */}
                 <div className="flex gap-2">
@@ -455,4 +442,4 @@ export function Login({ onRegisterSuccess, onBackToCalculator }: LoginProps) {
       />
     </div>
   );
-}
+} 
