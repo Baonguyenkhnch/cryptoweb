@@ -3,7 +3,7 @@ import type { UserProfile } from "../services/api-real";
 import { formatWalletAddress } from "../services/api-real";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
-import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
+import { maskEmail } from "../utils/maskEmail";
 import { TrendingUp, User as UserIcon, Menu, X, LogOut, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,

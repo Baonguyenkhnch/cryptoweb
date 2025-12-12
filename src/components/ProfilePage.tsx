@@ -48,7 +48,7 @@ import { updateUserProfile, formatWalletAddress } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 import { copyToClipboard } from "./ui/utils";
 import { EmailChangeDialog } from "./EmailChangeDialog"; // ✅ NEW
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./ImageProcessing/ImageWithFallback";
 import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
 
 // ============================================

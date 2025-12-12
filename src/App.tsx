@@ -21,7 +21,7 @@ import { QuotaWarningBanner } from "./components/QuotaWarningBanner";
 import { VerifyPage } from "./pages/Verify";
 import { CaptchaDialog } from "./components/CaptchaDialog";
 import { useLanguage } from "./services/LanguageContext";
-import { ImageWithFallback } from "./components/figma/ImageWithFallback";
+import { ImageWithFallback } from "./components/ImageProcessing/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
 import logoImage from "../src/components/images/logonhap.jpg";
 import {
