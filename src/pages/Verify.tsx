@@ -119,10 +119,6 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     const verifyUser = localStorage.getItem("currentUser");
                     console.log("✅ Verified currentUser in localStorage:", verifyUser ? "exists" : "❌ NOT FOUND!");
 
-                    // ✅ CLEAR URL HASH to prevent re-verification on F5
-                    console.log("🧹 Clearing URL hash to prevent re-verify on reload");
-                    window.location.hash = "#/dashboard";
-
                     // ✅ SUCCESS - Let App.tsx handleLogin() do the rest
                     setStatus("success");
                     setMessage("Xác thực thành công! Đang chuyển đến Dashboard...");
@@ -135,21 +131,39 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     console.log("  - authToken:", finalToken ? finalToken.substring(0, 20) + "..." : "❌ NULL");
                     console.log("  - currentUser:", finalUser ? "exists" : "❌ NULL");
 
-                    // Redirect immediately after a brief moment to show success state
+                    // ✅ FIX: Call onVerifySuccess first, then clear hash
+                    // This ensures App.tsx receives the callback before hash changes
+                    onVerifySuccess(userProfile);
+
+                    // ✅ CLEAR URL HASH after callback to prevent re-verification on F5
+                    // Use setTimeout to ensure state updates complete first
                     setTimeout(() => {
-                        onVerifySuccess(userProfile);
-                    }, 500); // Just 500ms to show success animation
+                        console.log("🧹 Clearing URL hash to prevent re-verify on reload");
+                        window.location.hash = "#/dashboard";
+                    }, 100);
                 } else {
                     setStatus("error");
                     const errorMsg = result.message || "Xác thực thất bại. Vui lòng thử lại.";
                     setMessage(errorMsg);
                     setDebugInfo(`❌ Error: ${errorMsg}\n\nAPI Response: ${JSON.stringify(result, null, 2)}`);
+
+                    // ✅ FIX: Clear hash on error to allow retry
+                    console.log("🧹 Clearing URL hash due to verification error");
+                    setTimeout(() => {
+                        window.location.hash = "";
+                    }, 3000); // Clear after 3 seconds to show error message
                 }
             } catch (error) {
                 const errorMsg = error instanceof Error ? error.message : String(error);
                 setStatus("error");
                 setMessage(`Có lỗi xảy ra: ${errorMsg}`);
-                setDebugInfo(`❌ Exception: ${errorMsg}`);
+                setDebugInfo(`❌ Exception: ${errorMsg}\n\nStack: ${error instanceof Error ? error.stack : 'N/A'}`);
+
+                // ✅ FIX: Clear hash on exception to allow retry
+                console.log("🧹 Clearing URL hash due to exception");
+                setTimeout(() => {
+                    window.location.hash = "";
+                }, 3000); // Clear after 3 seconds to show error message
             }
         };
 
@@ -181,8 +195,8 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     {/* Message */}
                     <div className="text-center">
                         <p className={`text-sm ${status === "success" ? "text-green-300" :
-                                status === "error" ? "text-red-300" :
-                                    "text-gray-300"
+                            status === "error" ? "text-red-300" :
+                                "text-gray-300"
                             }`}>
                             {message}
                         </p>

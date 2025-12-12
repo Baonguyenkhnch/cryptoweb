@@ -1,8 +1,19 @@
+import { useState } from "react";
 import type { UserProfile } from "../services/api-real";
 import { formatWalletAddress } from "../services/api-real";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
 import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
+import { TrendingUp, User as UserIcon, Menu, X, LogOut } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import logoIcon from "../components/images/logonhap.jpg";
 import logoFull from "../components/images/logodash.jpg";
 

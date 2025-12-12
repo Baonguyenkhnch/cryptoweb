@@ -104,19 +104,11 @@ export default function App() {
     const handleHashChange = () => {
       const hash = window.location.hash;
 
-      // ✅ IMPORTANT: Don't show verify page if user is already logged in
-      const token = localStorage.getItem("authToken");
-      const savedUser = localStorage.getItem("currentUser");
-
-      if (token && savedUser) {
-        // User is already authenticated, don't show verify page even if hash contains /verify
-        console.log("🔒 User already authenticated, skipping verify page");
-        setShowVerifyPage(false);
-        return;
-      }
-
-      // ✅ SUPPORT BOTH /verify AND /verify-registration
+      // ✅ FIX: Always show verify page if URL contains /verify, regardless of localStorage
+      // This allows expired tokens to be re-verified via magic link
+      // The verify page will handle invalid/expired tokens and show appropriate error
       if (hash.startsWith("#/verify-registration") || hash.startsWith("#/verify")) {
+        console.log("🔍 Verify page detected in URL, showing verify page");
         setShowVerifyPage(true);
       } else {
         setShowVerifyPage(false);
@@ -1195,11 +1187,16 @@ export default function App() {
       {showVerifyPage && (
         <VerifyPage
           onVerifySuccess={(user) => {
+            console.log("✅ VerifyPage: onVerifySuccess called with user:", user);
+            // ✅ FIX: Clear hash first to hide verify page, then handle login
+            window.location.hash = "#/dashboard";
+            setShowVerifyPage(false); // Hide verify page immediately
+            // Then handle login (this will set currentUser and navigate to dashboard)
             handleLogin(user);
-            window.location.hash = ""; // Clear hash after success
           }}
           onBackToLogin={() => {
             window.location.hash = ""; // Clear hash
+            setShowVerifyPage(false); // Hide verify page
             setCurrentPage("login");
           }}
         />
