@@ -1,9 +1,6 @@
 import type { WalletAnalysis } from "./api-real";
 
-/**
- * Generate mock wallet data for demo mode
- * This allows users to test UI when backend is down
- */
+
 export function generateMockWalletData(walletAddress: string): WalletAnalysis {
     // Generate deterministic data based on wallet address
     const seed = walletAddress.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);

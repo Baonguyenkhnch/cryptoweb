@@ -1,7 +1,4 @@
-/**
- * Mask email address for privacy
- * Example: nguyencongphuc@gmail.com → nguye******huc@g***.com
- */
+
 export function maskEmail(email: string): string {
     if (!email || typeof email !== 'string') return email;
 
@@ -9,8 +6,7 @@ export function maskEmail(email: string): string {
 
     if (!localPart || !domain) return email;
 
-    // Mask local part (before @)
-    // Show first 5 chars, mask middle, show last 3 chars
+
     let maskedLocal = localPart;
     if (localPart.length > 8) {
         const firstPart = localPart.substring(0, 5);
@@ -22,8 +18,7 @@ export function maskEmail(email: string): string {
         maskedLocal = `${firstPart}***${lastPart}`;
     }
 
-    // Mask domain part (after @)
-    // Show first char, mask middle, show TLD
+
     const [domainName, tld] = domain.split('.');
     let maskedDomain = domain;
     if (domainName && tld) {

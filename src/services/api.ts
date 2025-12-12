@@ -1,5 +1,4 @@
-// File này chứa các hàm gọi API
-// Hiện tại dùng mock data để test, sau này sẽ thay bằng API thật
+
 
 export interface TokenBalance {
   symbol: string;

@@ -1,18 +1,4 @@
-/**
- * ============================================
- * TRANG PROFILE NGƯỜI DÙNG
- * ============================================
- * Component này cho phép người dùng:
- * - Xem thông tin cá nhân
- * - Chỉnh sửa profile (tên, email, avatar)
- * - Quản lý wallet addresses
- * - Xem thống kê tổng quan
- * 
- * CÁCH SỬ DỤNG:
- * import { ProfilePage } from './components/ProfilePage';
- * <ProfilePage user={currentUser} onUpdateProfile={handleUpdate} />
- * ============================================
- */
+
 
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";

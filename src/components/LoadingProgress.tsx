@@ -1,9 +1,4 @@
-/**
- * ============================================
- * LOADING PROGRESS COMPONENT
- * ============================================
- * Hiển thị loading state với progress bar và messages
- */
+
 
 import { useEffect, useState } from "react";
 import { Loader2, Database, TrendingUp, CheckCircle, Clock } from "lucide-react";
@@ -142,18 +137,18 @@ export function LoadingProgress({ isVisible, walletAddress, onCancel, onTryDemo 
                                     {/* Icon */}
                                     <div
                                         className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isActive
-                                                ? "bg-gradient-to-br from-cyan-500/30 to-blue-500/30 scale-110"
-                                                : isCompleted
-                                                    ? "bg-green-500/20"
-                                                    : "bg-slate-700/50"
+                                            ? "bg-gradient-to-br from-cyan-500/30 to-blue-500/30 scale-110"
+                                            : isCompleted
+                                                ? "bg-green-500/20"
+                                                : "bg-slate-700/50"
                                             }`}
                                     >
                                         <StepIcon
                                             className={`w-5 h-5 ${isActive
-                                                    ? "text-cyan-400 animate-pulse"
-                                                    : isCompleted
-                                                        ? "text-green-400"
-                                                        : "text-gray-500"
+                                                ? "text-cyan-400 animate-pulse"
+                                                : isCompleted
+                                                    ? "text-green-400"
+                                                    : "text-gray-500"
                                                 }`}
                                         />
                                     </div>

@@ -1,15 +1,4 @@
-// =====================================================
-// FILE NÀY CHỨA API THẬT - SỬ DỤNG KHI ĐÃ SẴN SÀNG
-// =====================================================
-// 
-// CÁCH SỬ DỤNG:
-// 1. Đổi tên file này thành api.ts (backup file cũ trước)
-// 2. Hoặc copy nội dung này vào file api.ts
-// 3. Test bằng test-api.html
-//
-// =====================================================
 
-// Giữ nguyên các interfaces với các field mở rộng
 export interface TokenBalance {
     symbol: string;
     balance: number;

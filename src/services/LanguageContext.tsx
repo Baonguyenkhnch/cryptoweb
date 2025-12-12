@@ -1,9 +1,3 @@
-/**
- * ============================================
- * LANGUAGE CONTEXT
- * ============================================
- * Context để quản lý ngôn ngữ toàn ứng dụng
- */
 
 import { createContext, useContext, useState, ReactNode, useMemo } from "react";
 import { translations, Language, TranslationKeys } from "./translations";
