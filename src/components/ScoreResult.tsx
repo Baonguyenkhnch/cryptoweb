@@ -48,8 +48,7 @@ const getRating = (score: number): string => {
   if (score >= 650) return "A";
   if (score >= 600) return "BBB";
   if (score >= 550) return "BB";
-  if (score >= 500) return "B";
-  return "C";
+  return "B-C"; // ✅ Unified: Show "B-C" for scores < 550 instead of separate "B" or "C"
 };
 
 
@@ -61,7 +60,8 @@ const getRatingColor = (rating: string): string => {
     case "A": return "text-blue-400";
     case "BBB": return "text-yellow-400";
     case "BB": return "text-orange-400";
-    case "B": return "text-red-400";
+    case "B-C": return "text-red-400"; // ✅ Updated: Support "B-C" rating
+    case "B": return "text-red-400"; // Keep for backward compatibility
     default: return "text-red-500";
   }
 };
@@ -75,7 +75,8 @@ const getRatingGradient = (rating: string): string => {
     case "A": return "from-blue-400 to-purple-400";
     case "BBB": return "from-yellow-400 to-amber-400";
     case "BB": return "from-orange-400 to-red-400";
-    case "B": return "from-red-400 to-pink-400";
+    case "B-C": return "from-red-500 to-red-600"; // ✅ Updated: Support "B-C" rating
+    case "B": return "from-red-500 to-red-600"; // Keep for backward compatibility
     default: return "from-red-500 to-red-600";
   }
 };

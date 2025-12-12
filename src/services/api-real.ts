@@ -1721,8 +1721,7 @@ function getRating(score: number): string {
     if (score >= 650) return "A";
     if (score >= 600) return "BBB";
     if (score >= 550) return "BB";
-    if (score >= 500) return "B";
-    return "C";
+    return "B-C"; // ✅ Unified: Show "B-C" for scores < 550 instead of separate "B" or "C"
 }
 
 export const isValidWalletAddress = (address: string): boolean => {

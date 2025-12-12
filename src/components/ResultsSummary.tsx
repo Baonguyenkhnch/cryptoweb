@@ -218,7 +218,7 @@ export function ResultsSummary({
     { rating: 'A', range: '650-699', label: language === 'vi' ? 'Tốt' : 'Good', color: 'from-cyan-500 to-blue-500', bgColor: 'bg-cyan-500/20', textColor: 'text-cyan-400', borderColor: 'border-cyan-500/30' },
     { rating: 'BBB', range: '600-649', label: language === 'vi' ? 'Khá' : 'Fair', color: 'from-yellow-500 to-amber-500', bgColor: 'bg-yellow-500/20', textColor: 'text-yellow-400', borderColor: 'border-yellow-500/30' },
     { rating: 'BB', range: '550-599', label: language === 'vi' ? 'Trung Bình' : 'Average', color: 'from-orange-500 to-red-500', bgColor: 'bg-orange-500/20', textColor: 'text-orange-400', borderColor: 'border-orange-500/30' },
-    { rating: 'B-C', range: '< 550', label: language === 'vi' ? 'Cần Cải Thi��n' : 'Needs Improvement', color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/20', textColor: 'text-red-400', borderColor: 'border-red-500/30' },
+    { rating: 'B-C', range: '< 550', label: language === 'vi' ? 'Cần Cải Thiện' : 'Needs Improvement', color: 'from-red-500 to-red-600', bgColor: 'bg-red-500/20', textColor: 'text-red-400', borderColor: 'border-red-500/30' },
   ];
 
 
@@ -258,7 +258,7 @@ export function ResultsSummary({
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle className="flex items-center gap-2 text-cyan-400">
             <TrendingUp className="w-5 h-5" />
-            📊 {language === 'vi' ? 'Tng Quan Nhanh' : 'Quick Overview'}
+            {language === 'vi' ? 'Tổng Quan Nhanh' : 'Quick Overview'}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
