@@ -1771,24 +1771,88 @@ export const registerWalletWithEmail = async (data: {
     return { success: true };
 };
 
+/**
+ * Get wallet address by email - GET /api/get-wallet-by-email?email=xxx
+ * @param email - User email address
+ */
 export const getWalletByEmail = async (email: string): Promise<{
     success: boolean;
     walletAddress?: string;
     message?: string;
 }> => {
-    console.log("🔍 Tìm kiếm ví từ email:", email);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    debugLog(`🔍 Getting wallet by email: ${email}`);
 
-    const walletAddress = mockUserDatabase[email.toLowerCase()];
+    try {
+        if (!email || !email.includes("@")) {
+            return {
+                success: false,
+                message: "Email không hợp lệ",
+            };
+        }
 
-    if (walletAddress) {
-        console.log("✅ Tìm thấy ví:", walletAddress);
-        return { success: true, walletAddress };
-    } else {
-        console.log("❌ Không tìm thấy ví cho email:", email);
+        // ✅ GỌI API THẬT TỪ BACKEND
+        const url = `${API_BASE_URL}/api/get-wallet-by-email?email=${encodeURIComponent(email)}`;
+
+        debugLog(`📡 Calling getWalletByEmail API: ${url}`);
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                // ✅ Optional: Add auth token if available
+                ...(localStorage.getItem("authToken") && {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                }),
+            },
+        });
+
+        const data = await response.json();
+
+        console.log("🔍 getWalletByEmail() - Backend Response:");
+        console.log("  - Status:", response.status, response.statusText);
+        console.log("  - Response body:", JSON.stringify(data, null, 2));
+
+        if (response.ok && data.success) {
+            debugLog(`✅ Wallet found:`, data.walletAddress);
+            return {
+                success: true,
+                walletAddress: data.walletAddress || data.wallet_address,
+            };
+        }
+
+        // ✅ Handle error response from backend
+        if (response.status === 404 || data.message?.includes("not found") || data.message?.includes("chưa được đăng ký")) {
+            debugLog(`❌ Email not found in backend`);
+            return {
+                success: false,
+                message: data.message || "Email này chưa được đăng ký hoặc chưa liên kết ví.",
+            };
+        }
+
+        // ✅ Other errors
+        debugLog(`❌ getWalletByEmail error: ${response.status}`, data);
         return {
             success: false,
-            message: "Email này chưa được đăng ký hoặc chưa liên kết ví.",
+            message: data.message || data.error || `Lỗi khi tìm kiếm ví (${response.status})`,
+        };
+
+    } catch (error: any) {
+        debugLog(`❌ getWalletByEmail exception:`, error.message);
+
+        // ✅ FALLBACK: Use mock data if backend is offline
+        console.warn("⚠️ Backend offline, falling back to mock data");
+        const walletAddress = mockUserDatabase[email.toLowerCase()];
+
+        if (walletAddress) {
+            console.log("✅ Found in mock database:", walletAddress);
+            return { success: true, walletAddress };
+        }
+
+        return {
+            success: false,
+            message: error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")
+                ? "Không thể kết nối đến server. Vui lòng thử lại sau."
+                : "Email này chưa được đăng ký hoặc chưa liên kết ví.",
         };
     }
 };
