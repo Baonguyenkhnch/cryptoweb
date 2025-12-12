@@ -4,7 +4,7 @@ import { formatWalletAddress } from "../services/api-real";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
 import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
-import { TrendingUp, User as UserIcon, Menu, X, LogOut } from "lucide-react";
+import { TrendingUp, User as UserIcon, Menu, X, LogOut, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -182,7 +182,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                       Online
                     </div>
-                    <div className="text-xs text-gray-500 font-normal">{maskEmail(user.email)}</div> {/* ✅ NEW: Use maskEmail */}
+                    <div className="text-xs text-gray-500 font-normal">{user.email ? maskEmail(user.email) : "No Email"}</div> {/* ✅ NEW: Use maskEmail */}
                   </DropdownMenuLabel>
 
                   <DropdownMenuSeparator className="bg-slate-700/50" />
@@ -248,7 +248,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                   <div className="text-sm text-cyan-400 font-mono">
                     {user.walletAddress ? formatWalletAddress(user.walletAddress) : "No Wallet"}
                   </div>
-                  <div className="text-xs text-gray-500">{maskEmail(user.email)}</div> {/* ✅ NEW: Use maskEmail */}
+                  <div className="text-xs text-gray-500">{user.email ? maskEmail(user.email) : "No Email"}</div> {/* ✅ NEW: Use maskEmail */}
                 </div>
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               </div>
