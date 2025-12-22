@@ -969,7 +969,9 @@ export default function App() {
                           </span>
                         </>
                       ) : (
-                        <span className="text-gray-500">💡 Email hoặc 0x...</span>
+                        <span className="text-gray-500">
+                          {t.calculator.input.invalidFormat}
+                        </span>
                       )}
                     </p>
                   )}

@@ -26,6 +26,7 @@ export const translations = {
         emailFound: "Tìm thấy ví! Đang phân tích...",
         validWallet: "✓ Hợp lệ",
         validEmail: "✓ Email hợp lệ",
+        invalidFormat: "Định dạng không hợp lệ!",
       },
       idwallet: {
         place: "Nhập địa chỉ ví (0x + 40 ký tự)",
@@ -572,6 +573,7 @@ export const translations = {
         emailFound: "Wallet found! Analyzing...",
         validWallet: "✓ Valid",
         validEmail: "✓ Valid Email",
+          invalidFormat: "Invalid format!",
       },
       idwallet: {
         place: "Enter wallet address (0x + 40 characters)",
