@@ -1,357 +1,213 @@
 /**
  * ============================================
- * TRANG PROFILE NGƯỜI DÙNG
+ * PROFILE PAGE COMPONENT
  * ============================================
- * Component này cho phép người dùng:
- * - Xem thông tin cá nhân
- * - Chỉnh sửa profile (tên, email, avatar)
- * - Quản lý wallet addresses
- * - Xem thống kê tổng quan
- * 
- * CÁCH SỬ DỤNG:
- * import { ProfilePage } from './components/ProfilePage';
- * <ProfilePage user={currentUser} onUpdateProfile={handleUpdate} />
+ * Trang profile với 3 tabs:
+ * - Personal Info
+ * - Wallet & Security
+ * - QR Code (hiển thị khi verified + NFT minted)
  * ============================================
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
-import { Separator } from "./ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Alert, AlertDescription } from "./ui/alert";
 import {
   User,
   Mail,
-  Wallet,
   Calendar,
-  Shield,
-  Edit,
+  Edit2,
   Save,
   X,
-  Copy,
-  Check,
+  Shield,
+  CheckCircle2,
+  Wallet,
   TrendingUp,
-  Award,
   Activity,
-  Clock,
-  ArrowLeft,
-  Home,
-  QrCode,
-  Download
+  QrCode
 } from "lucide-react";
-import type { UserProfile } from "../services/api-real";
-import type { WalletAnalysis } from "../services/api-real"; // ✅ NEW: Import WalletAnalysis type
-import { updateUserProfile, formatWalletAddress } from "../services/api-real";
-import { useLanguage } from "../services/LanguageContext";
-import { copyToClipboard } from "./ui/utils";
-import { EmailChangeDialog } from "./EmailChangeDialog"; // ✅ NEW
-import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
-import QRCodeStyling from "qrcode"; // ✅ NEW: QR Code library
-import { VerifiedQRCode } from "./VerifiedQRCode"; // ✅ NEW: QR Code component
-
-// ============================================
-// TYPES
-// ============================================
+import type { UserProfile, WalletAnalysis } from "../services/api-real";
+import { VerifiedQRCode } from "./VerifiedQRCode";
 
 interface ProfilePageProps {
   user: UserProfile;
-  walletData?: WalletAnalysis | null; // ✅ NEW: Add walletData prop
-  onUpdateProfile?: (updatedUser: UserProfile) => void;
-  onBack?: () => void;
+  walletData: WalletAnalysis | null;
+  onUpdateProfile?: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
-// ============================================
-// MOCK STATS DATA
-// ============================================
-
-const MOCK_PROFILE_STATS = {
-  totalScoreChecks: 47,
-  averageScore: 765,
-  highestScore: 820,
-  daysActive: 89,
-  lastScoreCheck: "2 giờ trước"
+// Translations
+const translations = {
+  en: {
+    profile: {
+      title: "My Profile",
+      subtitle: "Manage your account information",
+      editing: "Editing mode enabled",
+      details: {
+        title: "Profile Details",
+        viewandfix: "View and update your information"
+      },
+      tabs: {
+        personal: "Personal Info",
+        wallet: "Wallet & Security"
+      },
+      fields: {
+        name: "Full Name",
+        email: "Email Address",
+        wallet: "Wallet Address",
+        createdAt: "Account Created",
+        lastLogin: "Last Login"
+      },
+      buttons: {
+        edit: "Edit Profile",
+        save: "Save Changes",
+        cancel: "Cancel"
+      },
+      stats: {
+        title: "Quick Stats",
+        score: "Credit Score",
+        rating: "Rating",
+        walletAge: "Wallet Age",
+        transactions: "Total Transactions"
+      },
+      security: {
+        title: "Security Status",
+        verified: "Verified Account",
+        notVerified: "Not Verified"
+      }
+    }
+  },
+  vi: {
+    profile: {
+      title: "Hồ Sơ Của Tôi",
+      subtitle: "Quản lý thông tin tài khoản",
+      editing: "Đang chỉnh sửa",
+      details: {
+        title: "Thông Tin Chi Tiết",
+        viewandfix: "Xem và cập nhật thông tin của bạn"
+      },
+      tabs: {
+        personal: "Cá Nhân",
+        wallet: "Ví & Bảo Mật"
+      },
+      fields: {
+        name: "Họ và Tên",
+        email: "Địa Chỉ Email",
+        wallet: "Địa Chỉ Ví",
+        createdAt: "Ngày Tạo Tài Khoản",
+        lastLogin: "Lần Đăng Nhập Cuối"
+      },
+      buttons: {
+        edit: "Chỉnh Sửa",
+        save: "Lưu Thay Đổi",
+        cancel: "Hủy"
+      },
+      stats: {
+        title: "Thống Kê Nhanh",
+        score: "Điểm Tín Dụng",
+        rating: "Xếp Hạng",
+        walletAge: "Tuổi Ví",
+        transactions: "Tổng Giao Dịch"
+      },
+      security: {
+        title: "Trạng Thái Bảo Mật",
+        verified: "Đã Xác Thực",
+        notVerified: "Chưa Xác Thực"
+      }
+    }
+  }
 };
 
-// ============================================
-// MAIN COMPONENT
-// ============================================
-
-export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: ProfilePageProps) {
-  // Language context
-  const { t, language } = useLanguage();
-
-  // Edit mode state
+export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePageProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Form state (wallet address không cho edit)
   const [formData, setFormData] = useState({
     name: user.name || "",
-    email: user.email || "",
+    email: user.email || ""
   });
+  const [isSaving, setIsSaving] = useState(false);
 
-  // UI state
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [copiedWallet, setCopiedWallet] = useState(false);
+  // Use Vietnamese translations
+  const t = translations.vi;
 
-  // ✅ NEW: Email change verification
-  const [showEmailChangeDialog, setShowEmailChangeDialog] = useState(false);
-  const [pendingEmailChange, setPendingEmailChange] = useState("");
+  useEffect(() => {
+    setFormData({
+      name: user.name || "",
+      email: user.email || ""
+    });
+  }, [user]);
 
-  // ============================================
-  // HANDLERS
-  // ============================================
-
-  // Handle form input changes
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Copy wallet address to clipboard
-  const handleCopyWallet = async () => {
-    const success = await copyToClipboard(user.walletAddress);
-    // Show copied state regardless of success for better UX
-    // (the fallback methods usually work even if modern API is blocked)
-    setCopiedWallet(true);
-    setTimeout(() => setCopiedWallet(false), 2000);
+  const handleSave = async () => {
+    if (!onUpdateProfile) return;
+
+    setIsSaving(true);
+    try {
+      await onUpdateProfile(formData);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  // Cancel editing
   const handleCancel = () => {
     setFormData({
       name: user.name || "",
-      email: user.email || "",
+      email: user.email || ""
     });
     setIsEditing(false);
-    setShowError(false);
   };
 
-  // Save profile changes
-  const handleSave = async () => {
-    setShowError(false);
-    setShowSuccess(false);
-
-    // Validation
-    if (!formData.name.trim()) {
-      setErrorMessage(t.profile.messages.nameRequired);
-      setShowError(true);
-      return;
-    }
-
-    if (!formData.email.trim() || !formData.email.includes("@")) {
-      setErrorMessage(t.profile.messages.emailInvalid);
-      setShowError(true);
-      return;
-    }
-
-    // ✅ CHECK: Email đã thay đổi? → Yêu cầu verification
-    const emailChanged = formData.email !== user.email;
-
-    if (emailChanged) {
-      console.log("📧 Email change detected! Opening verification dialog...");
-      setPendingEmailChange(formData.email);
-      setShowEmailChangeDialog(true);
-      return; // Stop here - Wait for verification
-    }
-
-    // ✅ NO EMAIL CHANGE: Save name only
-    setIsSaving(true);
-
-    try {
-      // Gọi API để update profile (chỉ name vì email không đổi)
-      const updatedUser = await updateUserProfile(user.id, {
-        name: formData.name,
-        email: user.email, // Keep original email
-      });
-
-      // Success
-      setShowSuccess(true);
-      setIsEditing(false);
-      onUpdateProfile?.(updatedUser);
-
-      // Hide success message after 2s (shorter duration)
-      setTimeout(() => setShowSuccess(false), 2000);
-    } catch (error) {
-      setErrorMessage(t.profile.messages.updateError);
-      setShowError(true);
-      console.error("Update profile error:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // ✅ NEW: Handle email verification success
-  const handleEmailVerified = async () => {
-    console.log("✅ Email verified! Updating profile with new email...");
-    setIsSaving(true);
-
-    try {
-      // Now update with the new verified email
-      const updatedUser = await updateUserProfile(user.id, {
-        name: formData.name,
-        email: pendingEmailChange,
-      });
-
-      // Success
-      setShowSuccess(true);
-      setIsEditing(false);
-      setPendingEmailChange("");
-      onUpdateProfile?.(updatedUser);
-
-      // Hide success message after 2s
-      setTimeout(() => setShowSuccess(false), 2000);
-    } catch (error) {
-      setErrorMessage(t.profile.messages.updateError);
-      setShowError(true);
-      console.error("Update profile with new email error:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Format date based on language
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const locale = language === 'vi' ? 'vi-VN' : 'en-US';
-    return date.toLocaleDateString(locale, {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("vi-VN", {
       year: "numeric",
       month: "long",
       day: "numeric"
     });
   };
 
-  // Get user initials for avatar
-  const getUserInitials = () => {
-    if (user.name) {
-      return user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
-    }
-    if (user.email) {
-      return user.email[0].toUpperCase();
-    }
-    // Use first and last char of wallet address
-    if (user.walletAddress && user.walletAddress.length > 2) {
-      return (user.walletAddress.slice(2, 4)).toUpperCase();
-    }
-    return "W";
-  };
-
-  // ============================================
-  // RENDER UI
-  // ============================================
-
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0f1419]">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0f1419] via-[#1a2332] to-[#0f1419]" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-cyan-500/15 to-blue-500/15 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-4 md:py-8 max-w-5xl">
-        {/* Back Button - Prominent on mobile */}
-        {onBack && (
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="mb-4 bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400 w-full md:w-auto shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 text-sm md:text-base"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            <Home className="w-4 h-4 mr-1.5" />
-            {t.profile.back}
-          </Button>
-        )}
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 pt-24 pb-12 px-4">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6 md:mb-8">
-          <div>
-            <h1 className="text-2xl md:text-4xl mb-1 md:mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent leading-tight">
-              {t.profile.title}
-            </h1>
-            <p className="text-gray-400 text-sm md:text-base">{t.profile.subtitle}</p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+            {t.profile.title}
+          </h1>
+          <p className="text-gray-400">
+            {t.profile.subtitle}
+          </p>
         </div>
 
-        {/* REMOVED: Large Alert notifications - Now using inline verification */}
-
-        {/* Error Alert - Keep as fallback for critical errors */}
-        {showError && (
-          <Alert className="mb-6 bg-red-500/10 border-red-500/30 text-red-400">
-            <X className="w-4 h-4" />
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
-
+        {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Profile Card */}
-          <div className="lg:col-span-1 space-y-6">
+          {/* Left Column - Profile Card & Stats */}
+          <div className="space-y-6">
+            {/* Profile Card */}
             <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-2xl overflow-hidden">
-              <div className="h-24 bg-gradient-to-r from-cyan-600 to-blue-600" />
-
-              <CardContent className="relative pt-0 pb-6">
-                {/* Avatar */}
-                <div className="flex justify-center -mt-12 mb-4">
-                  <div className="relative">
-                    <Avatar className="w-24 h-24 border-4 border-slate-800 shadow-xl">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-2xl">
-                        {getUserInitials()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-4 border-slate-800" />
-                  </div>
+              <div className="h-24 bg-gradient-to-r from-cyan-600 to-blue-600"></div>
+              <CardContent className="pt-0 -mt-12 text-center">
+                <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white text-3xl shadow-2xl border-4 border-slate-800 mb-4">
+                  {user.name ? user.name.charAt(0).toUpperCase() : <User className="w-12 h-12" />}
                 </div>
-
-                {/* User Info */}
-                <div className="text-center space-y-3">
-                  <div>
-                    <h2 className="text-2xl text-white font-mono">{formatWalletAddress(user.walletAddress)}</h2>
-                    <p className="text-gray-400 text-sm">{user.email ? maskEmail(user.email) : t.profile.fields.noEmail}</p>
-                  </div>
-
-                  <Badge className="bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-400 border-emerald-500/30">
-                    <Award className="w-3 h-3 mr-1" />
-                    {t.profile.badges.member}
-                  </Badge>
-                </div>
-
-                <Separator className="my-4 bg-slate-700/50" />
-
-                {/* Quick Stats */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400 flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {t.profile.stats.joined}
-                    </span>
-                    <span className="text-gray-300">{formatDate(user.createdAt)}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400 flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {t.profile.stats.active}
-                    </span>
-                    <span className="text-gray-300">{MOCK_PROFILE_STATS.daysActive} {t.profile.stats.days}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400 flex items-center gap-2">
-                      <Activity className="w-4 h-4" />
-                      {t.profile.stats.totalChecks}
-                    </span>
-                    <span className="text-gray-300">{MOCK_PROFILE_STATS.totalScoreChecks} {t.profile.stats.times}</span>
-                  </div>
-                </div>
+                <h2 className="text-2xl text-white mb-1">
+                  {user.name || "Anonymous"}
+                </h2>
+                <p className="text-gray-400 text-sm mb-4">
+                  {user.email || "No email provided"}
+                </p>
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  {t.profile.security.verified}
+                </Badge>
               </CardContent>
             </Card>
 
@@ -359,21 +215,33 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
             <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-lg text-cyan-400 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
+                  <Activity className="w-5 h-5" />
                   {t.profile.stats.title}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="p-3 bg-slate-900/50 rounded-lg border border-cyan-500/20">
-                  <div className="text-gray-400 text-xs mb-1">{t.profile.stats.averageScore}</div>
-                  <div className="text-2xl text-cyan-400">
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">{t.profile.stats.score}</span>
+                  <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                     {walletData ? walletData.score : "---"}
                   </div>
                 </div>
-                <div className="p-3 bg-slate-900/50 rounded-lg border border-blue-500/20">
-                  <div className="text-gray-400 text-xs mb-1">{t.profile.stats.highestScore}</div>
-                  <div className="text-2xl text-emerald-400">
-                    {walletData ? walletData.score : "---"}
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">{t.profile.stats.rating}</span>
+                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                    {walletData ? walletData.rating : "N/A"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">{t.profile.stats.walletAge}</span>
+                  <div className="text-white">
+                    {walletData ? `${walletData.walletAge} days` : "---"}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">{t.profile.stats.transactions}</span>
+                  <div className="text-white">
+                    {walletData ? walletData.totalTransactions : "---"}
                   </div>
                 </div>
               </CardContent>
@@ -394,15 +262,34 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
                       {isEditing ? t.profile.editing : t.profile.details.viewandfix}
                     </CardDescription>
                   </div>
-
-                  {!isEditing && (
+                  {!isEditing ? (
                     <Button
                       onClick={() => setIsEditing(true)}
-                      className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
+                      variant="outline"
+                      className="bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
                     >
-                      <Edit className="w-4 h-4 mr-2" />
-                      {t.profile.edit}
+                      <Edit2 className="w-4 h-4 mr-2" />
+                      {t.profile.buttons.edit}
                     </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/50"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        {t.profile.buttons.save}
+                      </Button>
+                      <Button
+                        onClick={handleCancel}
+                        variant="outline"
+                        className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        {t.profile.buttons.cancel}
+                      </Button>
+                    </div>
                   )}
                 </div>
               </CardHeader>
@@ -467,136 +354,98 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
                         />
                       </div>
 
-                      {/* Account Created */}
-                      <div className="space-y-2">
-                        <Label className="text-gray-300 flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-teal-400" />
-                          {t.profile.fields.createdAt}
-                        </Label>
-                        <div className="p-3 bg-slate-900/30 rounded-lg border border-slate-700/30 text-gray-400 cursor-not-allowed">
-                          {formatDate(user.createdAt)}
+                      {/* Account Info (Read-only) */}
+                      <div className="pt-4 border-t border-cyan-500/20 space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-gray-300 flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-purple-400" />
+                            {t.profile.fields.createdAt}
+                          </Label>
+                          <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
+                            {formatDate(user.createdAt)}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Last Login */}
-                      <div className="space-y-2">
-                        <Label className="text-gray-300 flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-purple-400" />
-                          {t.profile.fields.lastLogin}
-                        </Label>
-                        <div className="p-3 bg-slate-900/30 rounded-lg border border-slate-700/30 text-gray-400 cursor-not-allowed">
-                          {formatDate(user.lastLogin)}
+                        <div className="space-y-2">
+                          <Label className="text-gray-300 flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-green-400" />
+                            {t.profile.fields.lastLogin}
+                          </Label>
+                          <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
+                            {formatDate(user.lastLogin)}
+                          </div>
                         </div>
                       </div>
                     </div>
-
-                    {/* Action Buttons */}
-                    {isEditing && (
-                      <div className="space-y-3 pt-4">
-                        <div className="flex gap-3">
-                          <Button
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-                          >
-                            {isSaving ? (
-                              <>
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                                {t.profile.saving}
-                              </>
-                            ) : (
-                              <>
-                                <Save className="w-4 h-4 mr-2" />
-                                {t.profile.save}
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            onClick={handleCancel}
-                            disabled={isSaving}
-                            variant="outline"
-                            className="flex-1 bg-slate-900/50 border-red-500/30 text-red-400 hover:bg-red-500/20"
-                          >
-                            <X className="w-4 h-4 mr-2" />
-                            {t.navigation.cancel || "Hủy"}
-                          </Button>
-                        </div>
-
-                        {/* Inline Success Message - Compact verification */}
-                        {showSuccess && (
-                          <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                            <Check className="w-4 h-4" />
-                            <span>✓ Đã lưu thành công</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </TabsContent>
 
                   {/* Tab: Wallet & Security */}
                   <TabsContent value="wallet" className="space-y-6 mt-6">
-                    {/* Wallet Address - READ ONLY */}
-                    <div className="space-y-2">
-                      <Label className="text-gray-300 flex items-center gap-2">
-                        <Wallet className="w-4 h-4 text-cyan-400" />
-                        {t.profile.fields.wallet}
-                      </Label>
-                      <div className="flex gap-2">
-                        <div className="flex-1 p-3 bg-slate-900/50 rounded-lg border border-cyan-500/30 text-cyan-400 font-mono break-all">
-                          {user.walletAddress || t.profile.messages.walletSavedAddress}
+                    <div className="space-y-4">
+                      {/* Wallet Address */}
+                      <div className="space-y-2">
+                        <Label className="text-gray-300 flex items-center gap-2">
+                          <Wallet className="w-4 h-4 text-cyan-400" />
+                          {t.profile.fields.wallet}
+                        </Label>
+                        <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-3 text-white font-mono text-sm break-all">
+                          {user.walletAddress}
                         </div>
-                        <Button
-                          onClick={handleCopyWallet}
-                          variant="outline"
-                          className="bg-slate-900/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
-                          disabled={!user.walletAddress}
-                        >
-                          {copiedWallet ? (
-                            <Check className="w-4 h-4" />
-                          ) : (
-                            <Copy className="w-4 h-4" />
-                          )}
-                        </Button>
                       </div>
-                      <p className="text-gray-500 text-xs">
-                        {copiedWallet ? t.profile.wallet.copied : t.profile.security.autosave}
-                      </p>
-                    </div>
 
-                    {/* Security Badge */}
-                    <div className="p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/30">
-                      <div className="flex items-center gap-3">
-                        <div className="p-3 bg-green-500/20 rounded-lg">
-                          <Shield className="w-6 h-6 text-green-400" />
+                      {/* Security Badge */}
+                      <div className="p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/30">
+                        <div className="flex items-start gap-3">
+                          <Shield className="w-5 h-5 text-green-400 mt-0.5" />
+                          <div className="flex-1">
+                            <div className="text-green-400 mb-1">
+                              {t.profile.security.title}
+                            </div>
+                            <div className="text-gray-400 text-sm">
+                              Tài khoản của bạn đã được xác thực và bảo mật
+                            </div>
+                          </div>
+                          <CheckCircle2 className="w-6 h-6 text-green-400" />
                         </div>
-                        <div className="flex-1">
-                          <div className="text-green-400 mb-1">{t.profile.security.title}</div>
-                          <div className="text-gray-400 text-sm">
-                            {t.profile.security.description}
+                      </div>
+
+                      {/* Wallet Stats */}
+                      {walletData && (
+                        <div className="pt-4 border-t border-cyan-500/20 grid grid-cols-2 gap-4">
+                          <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
+                            <div className="text-gray-400 text-sm mb-1">Tổng Tài Sản</div>
+                            <div className="text-2xl text-white font-bold">
+                              ${walletData.totalAssets.toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
+                            <div className="text-gray-400 text-sm mb-1">Đa Dạng Token</div>
+                            <div className="text-2xl text-white font-bold">
+                              {walletData.tokenDiversity}
+                            </div>
+                          </div>
+                          <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
+                            <div className="text-gray-400 text-sm mb-1">Tương Tác DeFi</div>
+                            <div className="text-2xl text-white font-bold">
+                              {walletData.defiInteraction}
+                            </div>
+                          </div>
+                          <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
+                            <div className="text-gray-400 text-sm mb-1">NFT Holdings</div>
+                            <div className="text-2xl text-white font-bold">
+                              {walletData.nftHoldings}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Wallet Stats */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                        <div className="text-gray-400 text-sm mb-2">{t.profile.stats.checks}</div>
-                        <div className="text-3xl text-cyan-400">{MOCK_PROFILE_STATS.totalScoreChecks}</div>
-                      </div>
-                      <div className="p-4 bg-slate-900/50 rounded-xl border border-blue-500/20">
-                        <div className="text-gray-400 text-sm mb-2">{t.profile.stats.lastCheck}</div>
-                        <div className="text-lg text-blue-400">{MOCK_PROFILE_STATS.lastScoreCheck}</div>
-                      </div>
+                      )}
                     </div>
                   </TabsContent>
 
                   {/* Tab: QR Code */}
-                  <TabsContent value="qrcode" className="space-y-6 mt-6">
-                    {/* QR Code Card */}
+                  <TabsContent value="qrcode" className="mt-6">
                     <VerifiedQRCode
                       user={user}
-                      walletData={walletData ?? null}
+                      walletData={walletData}
                       isVerified={true}
                       hasNFT={true}
                     />
@@ -606,15 +455,6 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
             </Card>
           </div>
         </div>
-
-        {/* ✅ Email Change Verification Dialog */}
-        <EmailChangeDialog
-          open={showEmailChangeDialog}
-          onOpenChange={setShowEmailChangeDialog}
-          currentEmail={user.email}
-          newEmail={pendingEmailChange}
-          onVerifySuccess={handleEmailVerified}
-        />
       </div>
     </div>
   );

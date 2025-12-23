@@ -15,9 +15,10 @@ import { useRef, useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { QrCode, Download, Shield, CheckCircle2 } from "lucide-react";
+import { QrCode, Download, CheckCircle2 } from "lucide-react";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
 import QRCode from "qrcode";
+import { useLanguage } from "../services/LanguageContext";
 
 interface VerifiedQRCodeProps {
     user: UserProfile;
@@ -26,9 +27,45 @@ interface VerifiedQRCodeProps {
     hasNFT?: boolean; // User đã mint NFT
 }
 
+// Translations
+const translations = {
+    en: {
+        title: "Verification QR Code",
+        subtitle: "Scan to view full credit information",
+        verified: "Verified",
+        download: "Download QR Code",
+        infoTitle: "Information in QR Code:",
+        nftVerified: "NFT verified ownership",
+        creditScore: "Credit score",
+        onchainData: "On-chain data (transactions, assets, DeFi...)",
+        offchainData: "Off-chain data (email verified, profile...)",
+        requirementTitle: "Requirements to receive QR code:",
+        requireVerify: "Wallet Verification",
+        requireNFT: "Mint verification NFT",
+        requirementNote: "Complete the steps above to receive QR code for use at Banks, Fintech..."
+    },
+    vi: {
+        title: "Mã QR Xác Thực",
+        subtitle: "Quét để xem thông tin tín dụng đầy đủ",
+        verified: "Đã xác thực",
+        download: "Tải xuống QR Code",
+        infoTitle: "Thông tin trong QR Code:",
+        nftVerified: "NFT xác thực chính chủ",
+        creditScore: "Điểm tín dụng",
+        onchainData: "Dữ liệu on-chain (transactions, assets, DeFi...)",
+        offchainData: "Dữ liệu off-chain (email verified, profile...)",
+        requirementTitle: "Yêu cầu để nhận mã QR:",
+        requireVerify: "Xác thực ví (Wallet Verification)",
+        requireNFT: "Mint NFT xác thực chính chủ",
+        requirementNote: "Hoàn thành các bước trên để nhận mã QR và sử dụng tại Bank, Fintech..."
+    }
+};
+
 export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = false }: VerifiedQRCodeProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [qrGenerated, setQrGenerated] = useState(false);
+    const { language } = useLanguage();
+    const t = translations[language];
 
     // ✅ CONDITION: Only show QR if verified AND has NFT
     const showQR = isVerified && hasNFT;

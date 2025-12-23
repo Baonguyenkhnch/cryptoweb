@@ -1,6 +1,5 @@
 export const translations = {
   vi: {
-    // Navigation
     navigation: {
       calculator: "Tính Điểm",
       dashboard: "Trang Chủ",
@@ -11,7 +10,6 @@ export const translations = {
       cancel: "Hủy",
     },
 
-    // Calculator Page
     calculator: {
       title: "Tính Điểm Tín Dụng Crypto",
       subtitle: "Đánh giá độ tin cậy của ví blockchain",
@@ -573,7 +571,7 @@ export const translations = {
         emailFound: "Wallet found! Analyzing...",
         validWallet: "✓ Valid",
         validEmail: "✓ Valid Email",
-          invalidFormat: "Invalid format!",
+        invalidFormat: "Invalid format!",
       },
       idwallet: {
         place: "Enter wallet address (0x + 40 characters)",
