@@ -239,7 +239,7 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                             <div className="text-cyan-400 mb-1">{t.infoTitle}</div>
                             <ul className="text-gray-400 text-sm space-y-1">
                                 <li>• {t.nftVerified}</li>
-                                <li>• {t.creditScore} <span className="text-cyan-400">{walletData?.score || 0}</span></li>
+                                <li>• {t.creditScore}: <span className="text-cyan-400">{walletData?.score || 0}</span></li>
                                 <li>• {t.onchainData}</li>
                                 <li>• {t.offchainData}</li>
                             </ul>
@@ -256,3 +256,4 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
         </Card>
     );
 }
+
