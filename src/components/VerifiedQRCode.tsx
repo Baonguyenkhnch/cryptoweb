@@ -248,10 +248,10 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                 </div>
 
                 {/* Usage Guide */}
-                <div className="text-center text-gray-500 text-xs">
+                {/* <div className="text-center text-gray-500 text-xs">
                     Xuất trình mã QR này tại Bank, Fintech để họ xác minh<br />
                     thông tin tín dụng on-chain của bạn
-                </div>
+                </div> */}
             </CardContent>
         </Card>
     );
