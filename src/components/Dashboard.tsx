@@ -337,9 +337,9 @@ export function Dashboard({
               <h2 className="text-2xl text-white flex items-center gap-2 mb-1">
                 {t.statsLabels.detailedAnalysis}
               </h2>
-              <p className="text-gray-400 text-sm">
+              {/* <p className="text-gray-400 text-sm">
                 {t.statsLabels.chartDescription} {formatWalletAddress(user.walletAddress)}
-              </p>
+              </p> */}
             </div>
           </div>
 
