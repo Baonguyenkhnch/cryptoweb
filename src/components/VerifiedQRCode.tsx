@@ -78,8 +78,8 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                 width: 280,
                 margin: 2,
                 color: {
-                    dark: "#06b6d4", // Cyan color
-                    light: "#1e293b"  // Dark background
+                    dark: "#000000",  // Black QR code
+                    light: "#FFFFFF"  // White background
                 },
                 errorCorrectionLevel: "H"
             },
