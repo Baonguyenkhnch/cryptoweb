@@ -235,7 +235,6 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                 {/* Information */}
                 <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/30">
                     <div className="flex items-start gap-3">
-                        <Shield className="w-5 h-5 text-cyan-400 mt-0.5" />
                         <div className="flex-1">
                             <div className="text-cyan-400 mb-1">Thông tin trong QR Code:</div>
                             <ul className="text-gray-400 text-sm space-y-1">
