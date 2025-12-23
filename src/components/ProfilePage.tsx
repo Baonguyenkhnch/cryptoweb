@@ -1,13 +1,3 @@
-/**
- * ============================================
- * PROFILE PAGE COMPONENT
- * ============================================
- * Trang profile với 3 tabs:
- * - Personal Info
- * - Wallet & Security
- * - QR Code (hiển thị khi verified + NFT minted)
- * ============================================
- */
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -32,7 +22,7 @@ import {
 } from "lucide-react";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
 import { VerifiedQRCode } from "./VerifiedQRCode";
-
+import { useLanguage } from "../services/LanguageContext";
 interface ProfilePageProps {
   user: UserProfile;
   walletData: WalletAnalysis | null;
@@ -130,8 +120,8 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
   const [isSaving, setIsSaving] = useState(false);
 
   // Use Vietnamese translations
-  const t = translations.vi;
-
+  const { language } = useLanguage();
+  const t = translations[language];
   useEffect(() => {
     setFormData({
       name: user.name || "",
