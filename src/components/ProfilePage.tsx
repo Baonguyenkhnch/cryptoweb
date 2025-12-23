@@ -1,4 +1,18 @@
-
+/**
+ * ============================================
+ * TRANG PROFILE NGƯỜI DÙNG
+ * ============================================
+ * Component này cho phép người dùng:
+ * - Xem thông tin cá nhân
+ * - Chỉnh sửa profile (tên, email, avatar)
+ * - Quản lý wallet addresses
+ * - Xem thống kê tổng quan
+ * 
+ * CÁCH SỬ DỤNG:
+ * import { ProfilePage } from './components/ProfilePage';
+ * <ProfilePage user={currentUser} onUpdateProfile={handleUpdate} />
+ * ============================================
+ */
 
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -26,20 +40,22 @@ import {
   Activity,
   Clock,
   ArrowLeft,
-  Home
+  Home,
+  QrCode,
+  Download
 } from "lucide-react";
 import type { UserProfile } from "../services/api-real";
-import type { WalletAnalysis } from "../services/api-real"; // ✅ NEW: Import WalletAnalysis type
+import type { WalletAnalysis } from "../services/api-real";
 import { updateUserProfile, formatWalletAddress } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 import { copyToClipboard } from "./ui/utils";
-import { EmailChangeDialog } from "./EmailChangeDialog"; // ✅ NEW
+import { EmailChangeDialog } from "./EmailChangeDialog";
 import { ImageWithFallback } from "./ImageProcessing/ImageWithFallback";
-import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
+import { maskEmail } from "../utils/maskEmail";
+import QRCodeStyling from "qrcode";
+import { VerifiedQRCode } from "../components/VerifiedQRCode";
 
-// ============================================
-// TYPES
-// ============================================
+
 
 interface ProfilePageProps {
   user: UserProfile;
@@ -48,9 +64,7 @@ interface ProfilePageProps {
   onBack?: () => void;
 }
 
-// ============================================
-// MOCK STATS DATA
-// ============================================
+
 
 const MOCK_PROFILE_STATS = {
   totalScoreChecks: 47,
@@ -60,25 +74,19 @@ const MOCK_PROFILE_STATS = {
   lastScoreCheck: "2 giờ trước"
 };
 
-// ============================================
-// MAIN COMPONENT
-// ============================================
+
 
 export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: ProfilePageProps) {
-  // Language context
   const { t, language } = useLanguage();
 
-  // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form state (wallet address không cho edit)
   const [formData, setFormData] = useState({
     name: user.name || "",
     email: user.email || "",
   });
 
-  // UI state
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -88,20 +96,14 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
   const [showEmailChangeDialog, setShowEmailChangeDialog] = useState(false);
   const [pendingEmailChange, setPendingEmailChange] = useState("");
 
-  // ============================================
-  // HANDLERS
-  // ============================================
 
-  // Handle form input changes
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Copy wallet address to clipboard
   const handleCopyWallet = async () => {
     const success = await copyToClipboard(user.walletAddress);
-    // Show copied state regardless of success for better UX
-    // (the fallback methods usually work even if modern API is blocked)
     setCopiedWallet(true);
     setTimeout(() => setCopiedWallet(false), 2000);
   };
@@ -144,11 +146,9 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
       return; // Stop here - Wait for verification
     }
 
-    // ✅ NO EMAIL CHANGE: Save name only
     setIsSaving(true);
 
     try {
-      // Gọi API để update profile (chỉ name vì email không đổi)
       const updatedUser = await updateUserProfile(user.id, {
         name: formData.name,
         email: user.email, // Keep original email
@@ -170,7 +170,6 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
     }
   };
 
-  // ✅ NEW: Handle email verification success
   const handleEmailVerified = async () => {
     console.log("✅ Email verified! Updating profile with new email...");
     setIsSaving(true);
@@ -187,8 +186,6 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
       setIsEditing(false);
       setPendingEmailChange("");
       onUpdateProfile?.(updatedUser);
-
-      // Hide success message after 2s
       setTimeout(() => setShowSuccess(false), 2000);
     } catch (error) {
       setErrorMessage(t.profile.messages.updateError);
@@ -199,7 +196,6 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
     }
   };
 
-  // Format date based on language
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const locale = language === 'vi' ? 'vi-VN' : 'en-US';
@@ -210,7 +206,6 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
     });
   };
 
-  // Get user initials for avatar
   const getUserInitials = () => {
     if (user.name) {
       return user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -225,9 +220,6 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
     return "W";
   };
 
-  // ============================================
-  // RENDER UI
-  // ============================================
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#0f1419]">
@@ -360,6 +352,14 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
                 </div>
               </CardContent>
             </Card>
+
+            {/* ✅ QR Code Card */}
+            <VerifiedQRCode
+              user={user}
+              walletData={walletData ?? null}
+              isVerified={true}
+              hasNFT={true}
+            />
           </div>
 
           {/* Right Column - Profile Details */}
