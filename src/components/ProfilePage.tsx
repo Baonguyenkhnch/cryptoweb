@@ -380,12 +380,12 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
             </Card>
 
             {/* ✅ QR Code Card */}
-            <VerifiedQRCode
+            {/* <VerifiedQRCode
               user={user}
               walletData={walletData ?? null}
               isVerified={true}
               hasNFT={true}
-            />
+            /> */}
           </div>
 
           {/* Right Column - Profile Details */}
