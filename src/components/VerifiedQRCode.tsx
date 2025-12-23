@@ -150,7 +150,7 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                 <CardHeader>
                     <CardTitle className="text-lg text-yellow-400 flex items-center gap-2">
                         <QrCode className="w-5 h-5" />
-                        Mã QR Xác Thực
+                        {t.title}
                     </CardTitle>
                     <CardDescription className="text-gray-400">
                         Yêu cầu xác thực để nhận mã QR
@@ -161,19 +161,19 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                         <div className="flex items-start gap-3">
                             <Shield className="w-5 h-5 text-yellow-400 mt-0.5" />
                             <div className="flex-1">
-                                <div className="text-yellow-400 mb-2">Yêu cầu để nhận mã QR:</div>
+                                <div className="text-yellow-400 mb-2">{t.requirementTitle}</div>
                                 <ul className="text-gray-400 text-sm space-y-2">
                                     <li className="flex items-center gap-2">
                                         <div className={`w-4 h-4 rounded-full flex items-center justify-center ${isVerified ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
                                             {isVerified ? '✓' : '○'}
                                         </div>
-                                        Xác thực ví (Wallet Verification)
+                                        {t.requireVerify}
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <div className={`w-4 h-4 rounded-full flex items-center justify-center ${hasNFT ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
                                             {hasNFT ? '✓' : '○'}
                                         </div>
-                                        Mint NFT xác thực chính chủ
+                                        {t.requireNFT}
                                     </li>
                                 </ul>
                             </div>
@@ -181,7 +181,7 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                     </div>
 
                     <div className="text-center text-gray-500 text-sm">
-                        Hoàn thành các bước trên để nhận mã QR và sử dụng tại Bank, Fintech,...
+                        {t.requirementNote}
                     </div>
                 </CardContent>
             </Card>
@@ -199,12 +199,12 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                             Mã QR Xác Thực
                         </CardTitle>
                         <CardDescription className="text-gray-400 mt-1">
-                            Quét để xem thông tin tín dụng đầy đủ
+                            {t.subtitle}
                         </CardDescription>
                     </div>
                     <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                         <CheckCircle2 className="w-3 h-3 mr-1" />
-                        Đã xác thực
+                        {t.verified}
                     </Badge>
                 </div>
             </CardHeader>
@@ -227,7 +227,7 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                             className="mt-4 bg-slate-900/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
                         >
                             <Download className="w-4 h-4 mr-2" />
-                            Tải xuống QR Code
+                            {t.download}
                         </Button>
                     )}
                 </div>
@@ -236,12 +236,12 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                 <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/30">
                     <div className="flex items-start gap-3">
                         <div className="flex-1">
-                            <div className="text-cyan-400 mb-1">Thông tin trong QR Code:</div>
+                            <div className="text-cyan-400 mb-1">{t.infoTitle}</div>
                             <ul className="text-gray-400 text-sm space-y-1">
-                                <li>• NFT xác thực chính chủ</li>
-                                <li>• Điểm tín dụng: <span className="text-cyan-400">{walletData?.score || 0}</span></li>
-                                <li>• Dữ liệu on-chain (transactions, assets, DeFi...)</li>
-                                <li>• Dữ liệu off-chain (email verified, profile...)</li>
+                                <li>• {t.nftVerified}</li>
+                                <li>• {t.creditScore} <span className="text-cyan-400">{walletData?.score || 0}</span></li>
+                                <li>• {t.onchainData}</li>
+                                <li>• {t.offchainData}</li>
                             </ul>
                         </div>
                     </div>
