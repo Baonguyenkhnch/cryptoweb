@@ -45,17 +45,19 @@ import {
   Download
 } from "lucide-react";
 import type { UserProfile } from "../services/api-real";
-import type { WalletAnalysis } from "../services/api-real";
+import type { WalletAnalysis } from "../services/api-real"; // ✅ NEW: Import WalletAnalysis type
 import { updateUserProfile, formatWalletAddress } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 import { copyToClipboard } from "./ui/utils";
-import { EmailChangeDialog } from "./EmailChangeDialog";
-import { ImageWithFallback } from "./ImageProcessing/ImageWithFallback";
-import { maskEmail } from "../utils/maskEmail";
-import QRCodeStyling from "qrcode";
-import { VerifiedQRCode } from "../components/VerifiedQRCode";
+import { EmailChangeDialog } from "./EmailChangeDialog"; // ✅ NEW
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
+import QRCodeStyling from "qrcode"; // ✅ NEW: QR Code library
+import { VerifiedQRCode } from "./VerifiedQRCode"; // ✅ NEW: QR Code component
 
-
+// ============================================
+// TYPES
+// ============================================
 
 interface ProfilePageProps {
   user: UserProfile;
@@ -64,7 +66,9 @@ interface ProfilePageProps {
   onBack?: () => void;
 }
 
-
+// ============================================
+// MOCK STATS DATA
+// ============================================
 
 const MOCK_PROFILE_STATS = {
   totalScoreChecks: 47,
@@ -74,19 +78,25 @@ const MOCK_PROFILE_STATS = {
   lastScoreCheck: "2 giờ trước"
 };
 
-
+// ============================================
+// MAIN COMPONENT
+// ============================================
 
 export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: ProfilePageProps) {
+  // Language context
   const { t, language } = useLanguage();
 
+  // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Form state (wallet address không cho edit)
   const [formData, setFormData] = useState({
     name: user.name || "",
     email: user.email || "",
   });
 
+  // UI state
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -96,14 +106,20 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
   const [showEmailChangeDialog, setShowEmailChangeDialog] = useState(false);
   const [pendingEmailChange, setPendingEmailChange] = useState("");
 
+  // ============================================
+  // HANDLERS
+  // ============================================
 
-
+  // Handle form input changes
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Copy wallet address to clipboard
   const handleCopyWallet = async () => {
     const success = await copyToClipboard(user.walletAddress);
+    // Show copied state regardless of success for better UX
+    // (the fallback methods usually work even if modern API is blocked)
     setCopiedWallet(true);
     setTimeout(() => setCopiedWallet(false), 2000);
   };
@@ -146,9 +162,11 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
       return; // Stop here - Wait for verification
     }
 
+    // ✅ NO EMAIL CHANGE: Save name only
     setIsSaving(true);
 
     try {
+      // Gọi API để update profile (chỉ name vì email không đổi)
       const updatedUser = await updateUserProfile(user.id, {
         name: formData.name,
         email: user.email, // Keep original email
@@ -170,6 +188,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
     }
   };
 
+  // ✅ NEW: Handle email verification success
   const handleEmailVerified = async () => {
     console.log("✅ Email verified! Updating profile with new email...");
     setIsSaving(true);
@@ -186,6 +205,8 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
       setIsEditing(false);
       setPendingEmailChange("");
       onUpdateProfile?.(updatedUser);
+
+      // Hide success message after 2s
       setTimeout(() => setShowSuccess(false), 2000);
     } catch (error) {
       setErrorMessage(t.profile.messages.updateError);
@@ -196,6 +217,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
     }
   };
 
+  // Format date based on language
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const locale = language === 'vi' ? 'vi-VN' : 'en-US';
@@ -206,6 +228,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
     });
   };
 
+  // Get user initials for avatar
   const getUserInitials = () => {
     if (user.name) {
       return user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -220,6 +243,9 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
     return "W";
   };
 
+  // ============================================
+  // RENDER UI
+  // ============================================
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#0f1419]">
@@ -391,7 +417,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
 
               <CardContent>
                 <Tabs defaultValue="personal" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 p-1">
+                  <TabsList className="grid w-full grid-cols-3 bg-slate-900/50 p-1">
                     <TabsTrigger
                       value="personal"
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
@@ -403,6 +429,13 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
                       {t.profile.tabs.wallet}
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="qrcode"
+                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
+                    >
+                      <QrCode className="w-4 h-4 mr-1.5" />
+                      Mã QR
                     </TabsTrigger>
                   </TabsList>
 
@@ -564,6 +597,17 @@ export function ProfilePage({ user, walletData, onUpdateProfile, onBack }: Profi
                         <div className="text-lg text-blue-400">{MOCK_PROFILE_STATS.lastScoreCheck}</div>
                       </div>
                     </div>
+                  </TabsContent>
+
+                  {/* Tab: QR Code */}
+                  <TabsContent value="qrcode" className="space-y-6 mt-6">
+                    {/* QR Code Card */}
+                    <VerifiedQRCode
+                      user={user}
+                      walletData={walletData ?? null}
+                      isVerified={true}
+                      hasNFT={true}
+                    />
                   </TabsContent>
                 </Tabs>
               </CardContent>
