@@ -1,13 +1,4 @@
-/**
- * ============================================
- * PROFILE PAGE COMPONENT
- * ============================================
- * Trang profile với 3 tabs:
- * - Personal Info
- * - Wallet & Security
- * - QR Code (hiển thị khi verified + NFT minted)
- * ============================================
- */
+
 
 import { useState, useEffect } from "react";
 import { useLanguage } from "../services/LanguageContext";
@@ -53,7 +44,8 @@ const translations = {
       },
       tabs: {
         personal: "Personal Info",
-        wallet: "Wallet & Security"
+        wallet: "Wallet & Security",
+        qr: "QR Code"
       },
       fields: {
         name: "Full Name",
@@ -99,7 +91,8 @@ const translations = {
       },
       tabs: {
         personal: "Cá Nhân",
-        wallet: "Ví & Bảo Mật"
+        wallet: "Ví & Bảo Mật",
+        qr: "Mã QR"
       },
       fields: {
         name: "Họ và Tên",
@@ -338,7 +331,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
                       <QrCode className="w-4 h-4 mr-1.5" />
-                      Mã QR
+                      {t.profile.tabs.qr}
                     </TabsTrigger>
                   </TabsList>
 
