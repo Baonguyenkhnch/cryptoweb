@@ -196,7 +196,7 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
                     <div>
                         <CardTitle className="text-lg text-cyan-400 flex items-center gap-2">
                             <QrCode className="w-5 h-5" />
-                            Mã QR Xác Thực
+                            {t.title}
                         </CardTitle>
                         <CardDescription className="text-gray-400 mt-1">
                             {t.subtitle}
