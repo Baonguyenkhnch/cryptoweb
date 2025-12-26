@@ -18,8 +18,8 @@ import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { LoadingProgress } from "./components/LoadingProgress";
 import { ErrorDialog } from "./components/ErrorDialog";
 import { QuotaWarningBanner } from "./components/QuotaWarningBanner";
-import { VerifyPage } from "./pages/Verify";
-import { CaptchaDialog } from "./components/CaptchaDialog";
+import { VerifyPage } from "./pages/Verify"; // ✅ Import VerifyPage
+import { CaptchaDialog } from "./components/CaptchaDialog"; // ✅ Import CaptchaDialog
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/ImageProcessing/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
@@ -61,7 +61,8 @@ const getRatingFromScore = (score: number): string => {
   if (score >= 650) return "A";
   if (score >= 600) return "BBB";
   if (score >= 550) return "BB";
-  return "B-C"; // ✅ Unified: Show "B-C" for scores < 550 instead of separate "B" or "C"
+  if (score >= 500) return "B";
+  return "C";
 };
 
 export default function App() {
@@ -104,11 +105,19 @@ export default function App() {
     const handleHashChange = () => {
       const hash = window.location.hash;
 
-      // ✅ FIX: Always show verify page if URL contains /verify, regardless of localStorage
-      // This allows expired tokens to be re-verified via magic link
-      // The verify page will handle invalid/expired tokens and show appropriate error
+      // ✅ IMPORTANT: Don't show verify page if user is already logged in
+      const token = localStorage.getItem("authToken");
+      const savedUser = localStorage.getItem("currentUser");
+
+      if (token && savedUser) {
+        // User is already authenticated, don't show verify page even if hash contains /verify
+        console.log("🔒 User already authenticated, skipping verify page");
+        setShowVerifyPage(false);
+        return;
+      }
+
+      // ✅ SUPPORT BOTH /verify AND /verify-registration
       if (hash.startsWith("#/verify-registration") || hash.startsWith("#/verify")) {
-        console.log("🔍 Verify page detected in URL, showing verify page");
         setShowVerifyPage(true);
       } else {
         setShowVerifyPage(false);
@@ -969,9 +978,7 @@ export default function App() {
                           </span>
                         </>
                       ) : (
-                        <span className="text-gray-500">
-                          {t.calculator.input.invalidFormat}
-                        </span>
+                        <span className="text-gray-500">💡 Email hoặc 0x...</span>
                       )}
                     </p>
                   )}
@@ -1068,7 +1075,7 @@ export default function App() {
                 ← {t.calculator.buttons.tryAnother}
               </Button>
 
-              {/* ��� REMOVED: Demo Mode Banner - No longer needed */}
+              {/*  REMOVED: Demo Mode Banner - No longer needed */}
             </div>
 
             {walletData ? (
@@ -1143,10 +1150,10 @@ export default function App() {
         }}
       />
 
-      {/* Floating Feedback Button - REMOVED */}
-      {/* <FloatingFeedbackButton
+      {/* Floating Feedback Button - Show on all pages */}
+      <FloatingFeedbackButton
         onClick={() => setShowFeedbackDialog(true)}
-      /> */}
+      />
 
       {/* Feature Feedback Dialog */}
       <FeatureFeedbackDialog
@@ -1189,16 +1196,11 @@ export default function App() {
       {showVerifyPage && (
         <VerifyPage
           onVerifySuccess={(user) => {
-            console.log("✅ VerifyPage: onVerifySuccess called with user:", user);
-            // ✅ FIX: Clear hash first to hide verify page, then handle login
-            window.location.hash = "#/dashboard";
-            setShowVerifyPage(false); // Hide verify page immediately
-            // Then handle login (this will set currentUser and navigate to dashboard)
             handleLogin(user);
+            window.location.hash = ""; // Clear hash after success
           }}
           onBackToLogin={() => {
             window.location.hash = ""; // Clear hash
-            setShowVerifyPage(false); // Hide verify page
             setCurrentPage("login");
           }}
         />
@@ -1245,8 +1247,8 @@ export default function App() {
             />
           )}
 
-          {/* Floating Feedback Button - Show on all pages - REMOVED */}
-          {/* <FloatingFeedbackButton onClick={() => setShowFeedbackDialog(true)} /> */}
+          {/* Floating Feedback Button - Show on all pages */}
+          <FloatingFeedbackButton onClick={() => setShowFeedbackDialog(true)} />
 
           {/* Feature Feedback Dialog */}
           <FeatureFeedbackDialog

@@ -1,7 +1,15 @@
-
+/**
+ * ============================================
+ * PROFILE PAGE COMPONENT
+ * ============================================
+ * Trang profile với 3 tabs:
+ * - Personal Info
+ * - Wallet & Security
+ * - QR Code (hiển thị khi verified + NFT minted)
+ * ============================================
+ */
 
 import { useState, useEffect } from "react";
-import { useLanguage } from "../services/LanguageContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -44,8 +52,7 @@ const translations = {
       },
       tabs: {
         personal: "Personal Info",
-        wallet: "Wallet & Security",
-        qr: "QR Code"
+        wallet: "Wallet & Security"
       },
       fields: {
         name: "Full Name",
@@ -69,14 +76,7 @@ const translations = {
       security: {
         title: "Security Status",
         verified: "Verified Account",
-        notVerified: "Not Verified",
-        verifiedMsg: "Your account has been verified and secured."
-      },
-      walletStats: {
-        totalAssets: "Total Assets",
-        tokenDiversity: "Token Diversity",
-        defiInteraction: "DeFi Interaction",
-        nftHoldings: "NFT Holdings"
+        notVerified: "Not Verified"
       }
     }
   },
@@ -91,8 +91,7 @@ const translations = {
       },
       tabs: {
         personal: "Cá Nhân",
-        wallet: "Ví & Bảo Mật",
-        qr: "Mã QR"
+        wallet: "Ví & Bảo Mật"
       },
       fields: {
         name: "Họ và Tên",
@@ -116,14 +115,7 @@ const translations = {
       security: {
         title: "Trạng Thái Bảo Mật",
         verified: "Đã Xác Thực",
-        notVerified: "Chưa Xác Thực",
-        verifiedMsg: "Tài khoản của bạn đã được xác thực và bảo mật"
-      },
-      walletStats: {
-        totalAssets: "Tổng Tài Sản",
-        tokenDiversity: "Đa Dạng Token",
-        defiInteraction: "Tương Tác DeFi",
-        nftHoldings: "NFT Holdings"
+        notVerified: "Chưa Xác Thực"
       }
     }
   }
@@ -137,9 +129,8 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Lấy ngôn ngữ và object dịch từ context toàn cục
-  const { language } = useLanguage();
-  const t = translations[language];
+  // Use Vietnamese translations
+  const t = translations.vi;
 
   useEffect(() => {
     setFormData({
@@ -331,7 +322,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
                       <QrCode className="w-4 h-4 mr-1.5" />
-                      {t.profile.tabs.qr}
+                      Mã QR
                     </TabsTrigger>
                   </TabsList>
 
@@ -430,25 +421,25 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                       {walletData && (
                         <div className="pt-4 border-t border-cyan-500/20 grid grid-cols-2 gap-4">
                           <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                            <div className="text-gray-400 text-sm mb-1">{t.profile.walletStats.totalAssets}</div>
+                            <div className="text-gray-400 text-sm mb-1">Tổng Tài Sản</div>
                             <div className="text-2xl text-white font-bold">
                               ${walletData.totalAssets.toLocaleString()}
                             </div>
                           </div>
                           <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                            <div className="text-gray-400 text-sm mb-1">{t.profile.walletStats.tokenDiversity}</div>
+                            <div className="text-gray-400 text-sm mb-1">Đa Dạng Token</div>
                             <div className="text-2xl text-white font-bold">
                               {walletData.tokenDiversity}
                             </div>
                           </div>
                           <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                            <div className="text-gray-400 text-sm mb-1">{t.profile.walletStats.defiInteraction}</div>
+                            <div className="text-gray-400 text-sm mb-1">Tương Tác DeFi</div>
                             <div className="text-2xl text-white font-bold">
                               {walletData.defiInteraction}
                             </div>
                           </div>
                           <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                            <div className="text-gray-400 text-sm mb-1">{t.profile.walletStats.nftHoldings}</div>
+                            <div className="text-gray-400 text-sm mb-1">NFT Holdings</div>
                             <div className="text-2xl text-white font-bold">
                               {walletData.nftHoldings}
                             </div>
@@ -476,4 +467,3 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
     </div>
   );
 }
-
