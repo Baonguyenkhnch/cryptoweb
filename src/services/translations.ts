@@ -1,3 +1,5 @@
+import { before } from "node:test";
+
 export const translations = {
   vi: {
     navigation: {
@@ -148,7 +150,6 @@ export const translations = {
       },
     },
 
-    // Login/Auth
     auth: {
       login: "Đăng Nhập",
       register: "Đăng Ký",
@@ -186,6 +187,7 @@ export const translations = {
         step3: "Click vào link trong email",
         step4: "Tự động đăng nhập vào Dashboard ",
       },
+      beforeLogin: "Xác Minh Trước Khi Đăng Ký",
       sendMagicLink: "Gửi Link Xác Nhận",
       sending: "Đang gửi...",
       decentralizedFooter: " Phi tập trung - Không lưu mật khẩu",
@@ -230,10 +232,8 @@ export const translations = {
         registerSuccess: "Đăng ký thành công! Đang chuyển hướng...",
       },
       placeholders: {
-        // email: "email@cua-ban.com",
         password: "••••••••",
         wallet: "0x742d35Cc6231e4a8F5b2FaC6E9B4F9D2E5A7B8C9D1",
-        // walletShort: "0x742d35Cc...",
       },
       magicLink: {
         title: "Đăng Nhập Không Mật Khẩu",
@@ -244,14 +244,12 @@ export const translations = {
       },
     },
 
-    // Email Login Dialog
     emailLogin: {
       title: "Đăng Nhập Để Xem Chi Tiết",
       subtitle: "Mở khóa phân tích sâu và lịch sử giao dịch",
       description:
         "Nhập email để nhận mã xác minh - không cần mật khẩu, hoàn toàn phi tập trung",
       emailLabel: "Địa Chỉ Email",
-      // emailPlaceholder: "ten@email.com",
       sendOtp: "Gửi Mã OTP",
       sendButton: "Gửi Magic Link",
       sending: "Đang gửi...",
@@ -302,7 +300,6 @@ export const translations = {
         "Chúng tôi chỉ sử dụng email để gửi thông tin cập nhật khi bạn yêu cầu. Không lưu trữ dữ liệu cá nhân.",
     },
 
-    // OTP Verification Dialog
     otpVerification: {
       title: "Đăng Ký Nhận Thông Báo",
       description:
@@ -365,19 +362,18 @@ export const translations = {
       wallet: "Ví",
     },
 
-    // Score Result Page
     scoreResult: {
       title: "Điểm Tín Dụng",
       subtitle: "Phân tích độ tin cậy ví blockchain",
       score: "Điểm",
       creditScore: "Điểm Tín Dụng",
-      noScoreLabel: "Không Có Điểm", // ✅ NEW: When score = 0, show this instead of "Điểm Tín Dụng"
-      noRating: "Chưa Có Hạng", // ✅ NEW: When score = 0, show this instead of rating codes
+      noScoreLabel: "Không Có Điểm",
+      noRating: "Chưa Có Hạng",
       maxProgress: "trên tối đa",
       maxScore: "Tối đa 850",
       excellent: "Xuất Sắc",
       verified: "Đã Xác Minh",
-      noScore: "Chưa Có Điểm", // ✅ NEW: For score = 0
+      noScore: "Chưa Có Điểm",
       walletAge: "Tuổi Ví",
       daysActive: "Ngày Hoạt Động",
       transactions: "Giao Dịch",
@@ -385,14 +381,14 @@ export const translations = {
       tokenDiversity: "Đa Dạng Tokens",
       typesOfTokens: "Loại Tokens",
       totalAssets: "Tổng Tài Sản",
-      portfolioValue: "Tổng Tài Sản", // ✅ CHANGED: Was "Giá Trị Danh Mục"
+      portfolioValue: "Tổng Tài Sản",
       scoreTrend: "Xu Hướng Điểm",
       last30Days: "30 ngày qua",
       tokenDistribution: "Phân Bổ Token",
       portfolioComposition: "Cấu Thành Danh Mục",
       activityTimeline: "Dòng Thời Gian Hoạt Động",
       recentTransactions: "Giao Dịch Gần Đây",
-      viewTokenDetails: "Xem Chi Tiết Tokens", // ✅ NEW
+      viewTokenDetails: "Xem Chi Tiết Tokens",
       type: "Loại",
       token: "Token",
       amount: "Số Lượng",
@@ -403,7 +399,6 @@ export const translations = {
       transactionsCount: "giao dịch",
     },
 
-    // Results Summary
     resultsSummary: {
       yourScore: "Điểm Của Bạn",
       creditScore: "Điểm Tín Dụng Crypto",
@@ -727,6 +722,7 @@ export const translations = {
       showPassword: "Show password",
       hidePassword: "Hide password",
       howItWorks: "📬 How it works:",
+      beforeLogin: "Verification Before Sign-up",
       howItWorksSteps: {
         step1: "Enter email + wallet address",
         step2: "Receive confirmation link via email",

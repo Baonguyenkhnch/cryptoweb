@@ -514,7 +514,7 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
         open={showCaptchaRegister}
         onOpenChange={setShowCaptchaRegister}
         onVerified={handleCaptchaVerifiedRegister}
-        title="Xác Minh Trước Khi Đăng Ký"
+        title={t.auth.beforeLogin}
       />
     </div>
   );
