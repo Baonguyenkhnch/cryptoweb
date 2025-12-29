@@ -2,7 +2,9 @@
  * ============================================
  * PROFILE PAGE COMPONENT
  * ============================================
- * Trang profile đơn giản với thông tin cá nhân
+ * Trang profile với 2 tabs:
+ * - Cá Nhân (Personal Info)
+ * - Ví & Bảo Mật (Wallet & Security) - KHÔNG có QR Code
  * ============================================
  */
 
@@ -12,6 +14,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
   User,
   Mail,
@@ -19,9 +22,13 @@ import {
   Edit2,
   Save,
   X,
+  Shield,
   CheckCircle2,
   Wallet,
-  Activity
+  Activity,
+  Lock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
 
@@ -42,6 +49,10 @@ const translations = {
         title: "Thông Tin Chi Tiết",
         viewandfix: "Xem và cập nhật thông tin của bạn"
       },
+      tabs: {
+        personal: "Cá Nhân",
+        wallet: "Ví & Bảo Mật"
+      },
       fields: {
         name: "Họ và Tên",
         email: "Địa Chỉ Email",
@@ -52,7 +63,9 @@ const translations = {
       buttons: {
         edit: "Chỉnh Sửa",
         save: "Lưu Thay Đổi",
-        cancel: "Hủy"
+        cancel: "Hủy",
+        show: "Hiện",
+        hide: "Ẩn"
       },
       stats: {
         title: "Thống Kê Nhanh",
@@ -62,7 +75,18 @@ const translations = {
         transactions: "Tổng Giao Dịch"
       },
       security: {
-        verified: "Đã Xác Thực"
+        verified: "Đã Xác Thực",
+        title: "Bảo Mật",
+        status: "Trạng Thái Bảo Mật",
+        twoFactor: "Xác Thực 2 Yếu Tố (2FA)",
+        enabled: "Đã Bật",
+        disabled: "Chưa Bật"
+      },
+      wallet: {
+        title: "Thông Tin Ví",
+        address: "Địa Chỉ Ví",
+        balance: "Số Dư",
+        network: "Mạng Blockchain"
       }
     }
   }
@@ -75,6 +99,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
     email: user.email || ""
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [showWalletAddress, setShowWalletAddress] = useState(false);
 
   // Use Vietnamese translations
   const t = translations.vi;
@@ -119,6 +144,11 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
       month: "long",
       day: "numeric"
     });
+  };
+
+  const maskWalletAddress = (address: string) => {
+    if (!address || address.length < 10) return address;
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   return (
@@ -203,122 +233,218 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
             </Card>
           </div>
 
-          {/* Right Column - Profile Details (Full Width) */}
+          {/* Right Column - Tabs with Profile Details */}
           <div className="lg:col-span-2">
             <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-2xl">
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-2xl text-white flex items-center gap-2">
-                      <User className="w-6 h-6 text-cyan-400" />
-                      {t.profile.details.title}
-                    </CardTitle>
-                    <CardDescription className="text-gray-400 mt-1">
-                      {isEditing ? t.profile.editing : t.profile.details.viewandfix}
-                    </CardDescription>
-                  </div>
-                  {!isEditing ? (
-                    <Button
-                      onClick={() => setIsEditing(true)}
-                      variant="outline"
-                      className="bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
-                    >
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      {t.profile.buttons.edit}
-                    </Button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/50"
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        {t.profile.buttons.save}
-                      </Button>
-                      <Button
-                        onClick={handleCancel}
-                        variant="outline"
-                        className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        {t.profile.buttons.cancel}
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                <CardTitle className="text-2xl text-white flex items-center gap-2">
+                  <User className="w-6 h-6 text-cyan-400" />
+                  {t.profile.details.title}
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  {t.profile.details.viewandfix}
+                </CardDescription>
               </CardHeader>
 
-              <CardContent className="space-y-6">
-                {/* Personal Info Fields */}
-                <div className="space-y-4">
-                  {/* Name Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-gray-300 flex items-center gap-2">
-                      <User className="w-4 h-4 text-cyan-400" />
-                      {t.profile.fields.name}
-                    </Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
-                      disabled={!isEditing}
-                      className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
-                        }`}
-                    />
-                  </div>
+              <CardContent>
+                <Tabs defaultValue="personal" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 p-1 rounded-xl mb-6">
+                    <TabsTrigger
+                      value="personal"
+                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-300"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {t.profile.tabs.personal}
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="wallet"
+                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-300"
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      {t.profile.tabs.wallet}
+                    </TabsTrigger>
+                  </TabsList>
 
-                  {/* Email Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-blue-400" />
-                      {t.profile.fields.email}
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      disabled={!isEditing}
-                      className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
-                        }`}
-                    />
-                  </div>
-
-                  {/* Wallet Address (Read-only) */}
-                  <div className="space-y-2">
-                    <Label className="text-gray-300 flex items-center gap-2">
-                      <Wallet className="w-4 h-4 text-cyan-400" />
-                      {t.profile.fields.wallet}
-                    </Label>
-                    <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-3 text-white font-mono text-sm break-all">
-                      {user.walletAddress}
+                  {/* Tab: Cá Nhân */}
+                  <TabsContent value="personal" className="space-y-6">
+                    {/* Edit Button */}
+                    <div className="flex justify-end">
+                      {!isEditing ? (
+                        <Button
+                          onClick={() => setIsEditing(true)}
+                          variant="outline"
+                          className="bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
+                        >
+                          <Edit2 className="w-4 h-4 mr-2" />
+                          {t.profile.buttons.edit}
+                        </Button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/50"
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            {t.profile.buttons.save}
+                          </Button>
+                          <Button
+                            onClick={handleCancel}
+                            variant="outline"
+                            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            {t.profile.buttons.cancel}
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                  </div>
 
-                  {/* Account Info (Read-only) */}
-                  <div className="pt-4 border-t border-cyan-500/20 space-y-4">
+                    {/* Personal Info Fields */}
+                    <div className="space-y-4">
+                      {/* Name Field */}
+                      <div className="space-y-2">
+                        <Label htmlFor="name" className="text-gray-300 flex items-center gap-2">
+                          <User className="w-4 h-4 text-cyan-400" />
+                          {t.profile.fields.name}
+                        </Label>
+                        <Input
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange("name", e.target.value)}
+                          disabled={!isEditing}
+                          className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
+                            }`}
+                        />
+                      </div>
+
+                      {/* Email Field */}
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-blue-400" />
+                          {t.profile.fields.email}
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange("email", e.target.value)}
+                          disabled={!isEditing}
+                          className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
+                            }`}
+                        />
+                      </div>
+
+                      {/* Account Info (Read-only) */}
+                      <div className="pt-4 border-t border-cyan-500/20 space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-gray-300 flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-purple-400" />
+                            {t.profile.fields.createdAt}
+                          </Label>
+                          <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
+                            {formatDate(user.createdAt)}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-gray-300 flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-green-400" />
+                            {t.profile.fields.lastLogin}
+                          </Label>
+                          <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
+                            {formatDate(user.lastLogin)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* Tab: Ví & Bảo Mật */}
+                  <TabsContent value="wallet" className="space-y-6">
+                    {/* Wallet Address */}
                     <div className="space-y-2">
                       <Label className="text-gray-300 flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-purple-400" />
-                        {t.profile.fields.createdAt}
+                        <Wallet className="w-4 h-4 text-cyan-400" />
+                        {t.profile.wallet.address}
                       </Label>
-                      <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
-                        {formatDate(user.createdAt)}
+                      <div className="flex gap-2">
+                        <div className="flex-1 bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-3 text-white font-mono text-sm break-all">
+                          {showWalletAddress ? user.walletAddress : maskWalletAddress(user.walletAddress)}
+                        </div>
+                        <Button
+                          onClick={() => setShowWalletAddress(!showWalletAddress)}
+                          variant="outline"
+                          size="icon"
+                          className="bg-slate-900/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
+                        >
+                          {showWalletAddress ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </Button>
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-gray-300 flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-green-400" />
-                        {t.profile.fields.lastLogin}
-                      </Label>
-                      <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
-                        {formatDate(user.lastLogin)}
+                    {/* Security Status */}
+                    <div className="space-y-4 pt-4 border-t border-cyan-500/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-5 h-5 text-green-400" />
+                          <span className="text-gray-300">{t.profile.security.status}</span>
+                        </div>
+                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                          {t.profile.security.verified}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Lock className="w-5 h-5 text-blue-400" />
+                          <span className="text-gray-300">{t.profile.security.twoFactor}</span>
+                        </div>
+                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                          {t.profile.security.enabled}
+                        </Badge>
                       </div>
                     </div>
-                  </div>
-                </div>
+
+                    {/* Wallet Stats from walletData */}
+                    {walletData && (
+                      <div className="space-y-4 pt-4 border-t border-cyan-500/20">
+                        <h3 className="text-lg text-white font-semibold">{t.profile.wallet.title}</h3>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg p-4">
+                            <div className="text-xs text-gray-400 mb-1">{t.profile.stats.score}</div>
+                            <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                              {walletData.score}
+                            </div>
+                          </div>
+
+                          <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg p-4">
+                            <div className="text-xs text-gray-400 mb-1">{t.profile.stats.rating}</div>
+                            <div className="text-xl font-bold text-white">
+                              {walletData.rating}
+                            </div>
+                          </div>
+
+                          <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg p-4">
+                            <div className="text-xs text-gray-400 mb-1">{t.profile.stats.walletAge}</div>
+                            <div className="text-xl font-bold text-white">
+                              {walletData.walletAge} days
+                            </div>
+                          </div>
+
+                          <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg p-4">
+                            <div className="text-xs text-gray-400 mb-1">{t.profile.stats.transactions}</div>
+                            <div className="text-xl font-bold text-white">
+                              {walletData.totalTransactions}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>
