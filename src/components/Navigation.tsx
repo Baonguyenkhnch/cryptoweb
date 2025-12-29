@@ -154,7 +154,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout, onConnectW
             {onConnectWallet && (
               <Button
                 onClick={onConnectWallet}
-                className="hidden md:flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0 shadow-lg hover:shadow-green-500/50 transition-all duration-300"
+                className="hidden md:flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold border-0 shadow-lg hover:shadow-green-500/50 transition-all duration-300"
                 size="sm"
               >
                 <Wallet className="w-4 h-4" />
