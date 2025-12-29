@@ -76,7 +76,7 @@ const translations = {
         },
         step2: {
             title: "Bước 2: Nhập Mã Xác Nhận",
-            description: "Kiểm tra hộp thư và nhập mã 6 chữ số chúng tôi đã gửi đến",
+            description: "Ki��m tra hộp thư và nhập mã 6 chữ số chúng tôi đã gửi đến",
             label: "Mã Xác Nhận",
             placeholder: "Nhập mã 6 chữ số",
             button: "Xác Minh & Cập Nhật Email",
@@ -270,8 +270,7 @@ export function EmailChangeModal({
                             <div className="flex gap-3 pt-2">
                                 <Button
                                     onClick={handleClose}
-                                    variant="outline"
-                                    className="flex-1 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-400/50"
+                                    className="flex-1 bg-transparent border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-400/50 hover:text-cyan-200"
                                 >
                                     {t.buttons.cancel}
                                 </Button>
