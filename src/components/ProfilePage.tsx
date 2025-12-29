@@ -27,10 +27,12 @@ import {
   Wallet,
   Activity,
   Eye,
-  EyeOff
+  EyeOff,
+  KeyRound
 } from "lucide-react";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
+import { EmailChangeModal } from "./EmailChangeModal";
 
 interface ProfilePageProps {
   user: UserProfile;
