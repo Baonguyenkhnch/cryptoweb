@@ -23,6 +23,7 @@ import { useLanguage } from "../services/LanguageContext";
 interface VerifiedQRCodeProps {
     user: UserProfile;
     walletData: WalletAnalysis | null;
+    type?: "credit-score" | "wallet-verification"; // ✅ NEW: Type of QR code
     isVerified?: boolean; // User đã verify wallet
     hasNFT?: boolean; // User đã mint NFT
 }
@@ -61,14 +62,16 @@ const translations = {
     }
 };
 
-export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = false }: VerifiedQRCodeProps) {
+export function VerifiedQRCode({ user, walletData, type = "credit-score", isVerified = false, hasNFT = false }: VerifiedQRCodeProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [qrGenerated, setQrGenerated] = useState(false);
     const { language } = useLanguage();
     const t = translations[language];
 
-    // ✅ CONDITION: Only show QR if verified AND has NFT
-    const showQR = isVerified && hasNFT;
+    // ✅ Different condition based on type
+    const showQR = type === "wallet-verification"
+        ? false // Wallet verification QR - Coming soon
+        : (isVerified && hasNFT); // Credit score QR - Requires verification + NFT
 
     useEffect(() => {
         if (!showQR || !canvasRef.current) return;
@@ -143,117 +146,93 @@ export function VerifiedQRCode({ user, walletData, isVerified = false, hasNFT = 
         link.click();
     };
 
-    // ✅ If not verified or no NFT, show requirement message
+    // ✅ If not verified or no NFT, show different messages based on type
     if (!showQR) {
-        return (
-            <Card className="bg-slate-800/50 backdrop-blur-xl border border-yellow-500/20 shadow-2xl rounded-2xl">
-                <CardHeader>
-                    <CardTitle className="text-lg text-yellow-400 flex items-center gap-2">
-                        <QrCode className="w-5 h-5" />
-                        {t.title}
-                    </CardTitle>
-                    <CardDescription className="text-gray-400">
-                        Yêu cầu xác thực để nhận mã QR
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="p-4 bg-yellow-500/10 rounded-xl border border-yellow-500/30">
-                        <div className="flex items-start gap-3">
-                            <Shield className="w-5 h-5 text-yellow-400 mt-0.5" />
-                            <div className="flex-1">
-                                <div className="text-yellow-400 mb-2">{t.requirementTitle}</div>
-                                <ul className="text-gray-400 text-sm space-y-2">
-                                    <li className="flex items-center gap-2">
-                                        <div className={`w-4 h-4 rounded-full flex items-center justify-center ${isVerified ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
-                                            {isVerified ? '✓' : '○'}
-                                        </div>
-                                        {t.requireVerify}
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <div className={`w-4 h-4 rounded-full flex items-center justify-center ${hasNFT ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
-                                            {hasNFT ? '✓' : '○'}
-                                        </div>
-                                        {t.requireNFT}
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
+        // ✅ Wallet Verification QR - Coming Soon
+        if (type === "wallet-verification") {
+            return (
+                <div className="text-center py-8 space-y-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-500/20 mb-4">
+                        <QrCode className="w-8 h-8 text-purple-400" />
                     </div>
+                    <h3 className="text-lg text-white">Mã QR Xác Thực Ví</h3>
+                    <p className="text-gray-400 text-sm max-w-md mx-auto">
+                        Tính năng này sẽ cho phép bạn xác minh quyền sở hữu ví thông qua MetaMask hoặc WalletConnect để mint NFT Credit Score.
+                    </p>
+                    <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
+                        🚧 Đang phát triển
+                    </Badge>
+                </div>
+            );
+        }
 
-                    <div className="text-center text-gray-500 text-sm">
-                        {t.requirementNote}
+        // ✅ Credit Score QR - Requirements
+        return (
+            <div className="text-center py-8 space-y-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-500/20 mb-4">
+                    <QrCode className="w-8 h-8 text-yellow-400" />
+                </div>
+                <h3 className="text-lg text-white">Mã QR Điểm Tín Dụng</h3>
+                <p className="text-gray-400 text-sm max-w-md mx-auto">
+                    {t.requirementNote}
+                </p>
+                <div className="max-w-sm mx-auto space-y-2">
+                    <div className={`flex items-center gap-3 p-3 rounded-lg ${isVerified ? 'bg-green-500/10' : 'bg-slate-800/50'}`}>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${isVerified ? 'bg-green-500/30 text-green-400' : 'bg-gray-600/30 text-gray-500'}`}>
+                            {isVerified ? '✓' : '1'}
+                        </div>
+                        <span className="text-sm text-gray-300">{t.requireVerify}</span>
                     </div>
-                </CardContent>
-            </Card>
+                    <div className={`flex items-center gap-3 p-3 rounded-lg ${hasNFT ? 'bg-green-500/10' : 'bg-slate-800/50'}`}>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${hasNFT ? 'bg-green-500/30 text-green-400' : 'bg-gray-600/30 text-gray-500'}`}>
+                            {hasNFT ? '✓' : '2'}
+                        </div>
+                        <span className="text-sm text-gray-300">{t.requireNFT}</span>
+                    </div>
+                </div>
+            </div>
         );
     }
 
-    // ✅ Show QR Code when verified
+    // ✅ Show QR Code when verified (Credit Score QR only)
     return (
-        <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-2xl">
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <CardTitle className="text-lg text-cyan-400 flex items-center gap-2">
-                            <QrCode className="w-5 h-5" />
-                            {t.title}
-                        </CardTitle>
-                        <CardDescription className="text-gray-400 mt-1">
-                            {t.subtitle}
-                        </CardDescription>
-                    </div>
-                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                        <CheckCircle2 className="w-3 h-3 mr-1" />
-                        {t.verified}
-                    </Badge>
+        <div className="space-y-4">
+            {/* Verified Badge at top */}
+            <div className="flex items-center justify-center">
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 px-4 py-1.5">
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Đã Xác Thực
+                </Badge>
+            </div>
+
+            {/* Subtitle */}
+            <p className="text-center text-gray-400 text-sm">
+                Quét để xem thông tin tín dụng đầy đủ
+            </p>
+
+            {/* QR Code Display - Clean white background like in image */}
+            <div className="flex justify-center">
+                <div className="p-6 bg-white rounded-2xl shadow-2xl">
+                    <canvas
+                        ref={canvasRef}
+                        className="rounded-lg"
+                    />
                 </div>
-            </CardHeader>
+            </div>
 
-            <CardContent className="space-y-4">
-                {/* QR Code Display */}
-                <div className="flex flex-col items-center">
-                    <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                        <canvas
-                            ref={canvasRef}
-                            className="rounded-lg"
-                        />
-                    </div>
-
-                    {/* Download Button */}
-                    {qrGenerated && (
-                        <Button
-                            onClick={handleDownloadQR}
-                            variant="outline"
-                            className="mt-4 bg-slate-900/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
-                        >
-                            <Download className="w-4 h-4 mr-2" />
-                            {t.download}
-                        </Button>
-                    )}
+            {/* Download Button - Centered */}
+            {qrGenerated && (
+                <div className="flex justify-center">
+                    <Button
+                        onClick={handleDownloadQR}
+                        variant="outline"
+                        className="bg-slate-900/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-400"
+                    >
+                        <Download className="w-4 h-4 mr-2" />
+                        Tải xuống QR Code
+                    </Button>
                 </div>
-
-                {/* Information */}
-                <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/30">
-                    <div className="flex items-start gap-3">
-                        <div className="flex-1">
-                            <div className="text-cyan-400 mb-1">{t.infoTitle}</div>
-                            <ul className="text-gray-400 text-sm space-y-1">
-                                <li>• {t.nftVerified}</li>
-                                <li>• {t.creditScore}: <span className="text-cyan-400">{walletData?.score || 0}</span></li>
-                                <li>• {t.onchainData}</li>
-                                <li>• {t.offchainData}</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Usage Guide */}
-                {/* <div className="text-center text-gray-500 text-xs">
-                    Xuất trình mã QR này tại Bank, Fintech để họ xác minh<br />
-                    thông tin tín dụng on-chain của bạn
-                </div> */}
-            </CardContent>
-        </Card>
+            )}
+        </div>
     );
 }
-

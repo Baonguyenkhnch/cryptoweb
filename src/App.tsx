@@ -1088,7 +1088,6 @@ export default function App() {
                   totalAssets={walletData.totalAssets}
                   tokenBalances={walletData.tokenBalances}
                   recentTransactions={walletData.recentTransactions}
-                  // ✅ NEW: Pass feature importance & recommendations from API
                   featureImportance={walletData.featureImportance}
                   recommendations={walletData.recommendations}
                 />

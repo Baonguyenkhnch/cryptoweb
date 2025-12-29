@@ -304,7 +304,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
 
               <CardContent>
                 <Tabs defaultValue="personal" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 bg-slate-900/50 p-1">
+                  <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 p-1">
                     <TabsTrigger
                       value="personal"
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
@@ -316,13 +316,6 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
                     >
                       {t.profile.tabs.wallet}
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="qrcode"
-                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
-                    >
-                      <QrCode className="w-4 h-4 mr-1.5" />
-                      Mã QR
                     </TabsTrigger>
                   </TabsList>
 
@@ -417,6 +410,50 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                         </div>
                       </div>
 
+                      {/* QR Code Section - 2 Buttons */}
+                      <div className="pt-4 border-t border-cyan-500/20">
+                        <Tabs defaultValue="credit-qr" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 p-1">
+                            <TabsTrigger
+                              value="verify-qr"
+                              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-gray-400 hover:text-gray-300 transition-all duration-300 text-sm"
+                            >
+                              <QrCode className="w-3.5 h-3.5 mr-1.5" />
+                              Mã QR Xác Thực
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="credit-qr"
+                              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white text-gray-400 hover:text-gray-300 transition-all duration-300 text-sm"
+                            >
+                              <QrCode className="w-3.5 h-3.5 mr-1.5" />
+                              Mã QR
+                            </TabsTrigger>
+                          </TabsList>
+
+                          {/* Wallet Verification QR */}
+                          <TabsContent value="verify-qr" className="mt-4">
+                            <VerifiedQRCode
+                              user={user}
+                              walletData={walletData}
+                              type="wallet-verification"
+                              isVerified={false}
+                              hasNFT={false}
+                            />
+                          </TabsContent>
+
+                          {/* Credit Score QR */}
+                          <TabsContent value="credit-qr" className="mt-4">
+                            <VerifiedQRCode
+                              user={user}
+                              walletData={walletData}
+                              type="credit-score"
+                              isVerified={true}
+                              hasNFT={true}
+                            />
+                          </TabsContent>
+                        </Tabs>
+                      </div>
+
                       {/* Wallet Stats */}
                       {walletData && (
                         <div className="pt-4 border-t border-cyan-500/20 grid grid-cols-2 gap-4">
@@ -447,16 +484,6 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                         </div>
                       )}
                     </div>
-                  </TabsContent>
-
-                  {/* Tab: QR Code */}
-                  <TabsContent value="qrcode" className="mt-6">
-                    <VerifiedQRCode
-                      user={user}
-                      walletData={walletData}
-                      isVerified={true}
-                      hasNFT={true}
-                    />
                   </TabsContent>
                 </Tabs>
               </CardContent>
