@@ -69,27 +69,22 @@
   }
 }
 
-/* ✅ Custom Scrollbar for token list */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(20, 184, 166, 0.5);
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(20, 184, 166, 0.7);
-}
-
 /* Firefox scrollbar */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(20, 184, 166, 0.5) rgba(15, 23, 42, 0.5);
+}
+
+/* ✅ Shimmer Animation for Connect Wallet Card */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s infinite;
 }

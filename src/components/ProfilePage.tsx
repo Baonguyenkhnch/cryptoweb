@@ -28,10 +28,13 @@ import {
   Wallet,
   TrendingUp,
   Activity,
-  QrCode
+  QrCode,
+  Zap,
+  ArrowRight
 } from "lucide-react";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
 import { VerifiedQRCode } from "./VerifiedQRCode";
+import { ConnectWalletModal } from "./ConnectWalletModal";
 
 interface ProfilePageProps {
   user: UserProfile;
@@ -128,6 +131,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
     email: user.email || ""
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   // Use Vietnamese translations
   const t = translations.vi;
@@ -196,7 +200,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
         </div>
 
         {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Column - Profile Card & Stats */}
           <div className="space-y-6">
             {/* Profile Card */}
@@ -256,7 +260,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
             </Card>
           </div>
 
-          {/* Right Column - Profile Details */}
+          {/* Middle Column - Profile Details */}
           <div className="lg:col-span-2">
             <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-2xl">
               <CardHeader>
@@ -489,8 +493,43 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
               </CardContent>
             </Card>
           </div>
+
+          {/* Right Column - Connect Wallet Card */}
+          <div className="space-y-6">
+            <Card className="bg-slate-800/50 backdrop-blur-xl border border-green-500/20 shadow-2xl rounded-2xl overflow-hidden">
+              <div className="h-32 bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-600 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+              </div>
+              <CardContent className="pt-6">
+                <div className="text-center space-y-4">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-cyan-400 mb-2">
+                    <Zap className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl text-white mb-2">
+                    CREDIT SCORE
+                  </h3>
+                  <Button
+                    onClick={() => setIsWalletModalOpen(true)}
+                    className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white shadow-lg hover:shadow-green-500/50 transition-all duration-300 group"
+                  >
+                    <span className="mr-2">CONNECT WALLET</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  <p className="text-gray-400 text-sm">
+                    Kết nối ví để xác thực quyền sở hữu và mint NFT
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
+
+      {/* Connect Wallet Modal */}
+      <ConnectWalletModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+      />
     </div>
   );
 }
