@@ -15,8 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import logoIcon from "./images/logonhap.jpg";
-import logoFull from "./images/logodash.jpg";
+import logoIcon from "../components/images/logonhap.jpg";
+import logoFull from "../components/images/logodash.jpg";
 import {
   TrendingUp,
   User as UserIcon,
@@ -72,7 +72,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout, onConnectW
   };
 
   return (
-    <nav className="sticky top-0 z-50 backdrop-blur-2xl bg-[#1a2332]/95 border-b border-cyan-500/10 shadow-lg shadow-cyan-500/5">
+    <nav className="sticky top-0 z-50 backdrop-blur-2xl bg-gradient-to-r from-[#5B4FE9] to-[#7B3FE4] border-b border-white/10 shadow-lg shadow-purple-500/20">
       <div className="container mx-auto px-3 md:px-4">
         <div className="flex items-center justify-between h-14 md:h-20">
           {/* Logo Section */}
@@ -127,12 +127,12 @@ export function Navigation({ currentPage, user, onNavigate, onLogout, onConnectW
                     {/* Content */}
                     <div className="relative flex items-center gap-2">
                       <Icon className={`w-4 h-4 transition-all duration-300 ${isActive
-                          ? "text-cyan-400 scale-110"
-                          : "text-gray-400 group-hover:text-cyan-400 group-hover:scale-110"
+                        ? "text-cyan-400 scale-110"
+                        : "text-gray-400 group-hover:text-cyan-400 group-hover:scale-110"
                         }`} />
                       <span className={`transition-all duration-300 ${isActive
-                          ? "text-cyan-300"
-                          : "text-gray-400 group-hover:text-cyan-300"
+                        ? "text-cyan-300"
+                        : "text-gray-400 group-hover:text-cyan-300"
                         }`}>
                         {item.label}
                       </span>
@@ -285,8 +285,8 @@ export function Navigation({ currentPage, user, onNavigate, onLogout, onConnectW
                     key={item.id}
                     onClick={() => handleNavigate(item.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${isActive
-                        ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300"
-                        : "bg-slate-800/30 border border-slate-700/30 text-gray-400 hover:bg-slate-800/50 hover:text-cyan-400 hover:border-cyan-500/30"
+                      ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300"
+                      : "bg-slate-800/30 border border-slate-700/30 text-gray-400 hover:bg-slate-800/50 hover:text-cyan-400 hover:border-cyan-500/30"
                       }`}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? "text-cyan-400" : ""}`} />
