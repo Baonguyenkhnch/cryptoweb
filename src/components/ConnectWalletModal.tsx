@@ -8,7 +8,7 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Copy, Check } from "lucide-react";
 import { Button } from "./ui/button";
 import QRCode from "qrcode";
 
@@ -19,19 +19,22 @@ interface ConnectWalletModalProps {
 
 export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps) {
     const [step, setStep] = useState<"select" | "qrcode">("select");
+    const [walletConnectURI, setWalletConnectURI] = useState("");
+    const [isCopied, setIsCopied] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     // Generate WalletConnect QR Code
     useEffect(() => {
         if (step === "qrcode" && canvasRef.current) {
             // Mock WalletConnect URI (in production, this would be from WalletConnect SDK)
-            const walletConnectURI = `wc:${generateRandomString()}@2?relay-protocol=irn&symKey=${generateRandomString()}`;
+            const uri = `wc:${generateRandomString()}@2?relay-protocol=irn&symKey=${generateRandomString()}`;
+            setWalletConnectURI(uri);
 
             QRCode.toCanvas(
                 canvasRef.current,
-                walletConnectURI,
+                uri,
                 {
-                    width: 320,
+                    width: 280,
                     margin: 2,
                     color: {
                         dark: "#000000",
@@ -51,6 +54,16 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
         return Array.from({ length: 32 }, () =>
             Math.floor(Math.random() * 16).toString(16)
         ).join('');
+    };
+
+    const handleCopyURI = async () => {
+        try {
+            await navigator.clipboard.writeText(walletConnectURI);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch (error) {
+            console.error("Failed to copy:", error);
+        }
     };
 
     const handleWalletConnectClick = () => {
@@ -74,17 +87,17 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
 
             {/* Modal Content */}
             <div className="relative z-10 w-full max-w-md mx-4">
-                {/* Close Button */}
-                <button
-                    onClick={handleClose}
-                    className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-slate-700/50 transition-all"
-                >
-                    <X className="w-5 h-5" />
-                </button>
-
                 {/* Step 1: Select Wallet */}
                 {step === "select" && (
-                    <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl p-8 border border-cyan-500/20 shadow-2xl">
+                    <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl p-8 border border-cyan-500/20 shadow-2xl relative">
+                        {/* Close Button - Inside Modal */}
+                        <button
+                            onClick={handleClose}
+                            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-slate-700/50 transition-all z-10"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
                         {/* Title */}
                         <h2 className="text-3xl font-bold text-white text-center mb-8">
                             CONNECT WALLET
@@ -124,9 +137,17 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
 
                 {/* Step 2: QR Code */}
                 {step === "qrcode" && (
-                    <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl p-8 border border-purple-500/20 shadow-2xl">
+                    <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl p-8 border border-purple-500/20 shadow-2xl relative">
+                        {/* Close Button - Top Right Corner */}
+                        <button
+                            onClick={handleClose}
+                            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center text-gray-400 hover:text-white hover:bg-slate-700/50 transition-all z-10"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
                         {/* WalletConnect Header */}
-                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700">
+                        <div className="flex items-center justify-start mb-6 pb-4 border-b border-slate-700">
                             <div className="flex items-center gap-3">
                                 {/* WalletConnect Icon */}
                                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
@@ -145,12 +166,6 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                                 </div>
                                 <span className="text-white font-medium">WalletConnect</span>
                             </div>
-                            <button
-                                onClick={handleClose}
-                                className="w-8 h-8 rounded-lg bg-green-500 hover:bg-green-600 flex items-center justify-center transition-colors"
-                            >
-                                <X className="w-5 h-5 text-white" />
-                            </button>
                         </div>
 
                         {/* Title */}
@@ -171,6 +186,23 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                             <div className="p-6 bg-white rounded-3xl shadow-2xl">
                                 <canvas ref={canvasRef} className="rounded-xl" />
                             </div>
+                        </div>
+
+                        {/* Copy URI Button */}
+                        <div className="flex justify-center mb-4">
+                            <button
+                                onClick={handleCopyURI}
+                                className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-full text-gray-400 hover:text-white hover:bg-slate-700/50 transition-all"
+                            >
+                                {isCopied ? (
+                                    <Check className="w-5 h-5" />
+                                ) : (
+                                    <Copy className="w-5 h-5" />
+                                )}
+                                <span className="text-sm">
+                                    {isCopied ? "Copied" : "Copy URI"}
+                                </span>
+                            </button>
                         </div>
 
                         {/* Footer Text */}

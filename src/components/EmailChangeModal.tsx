@@ -254,8 +254,8 @@ export function EmailChangeModal({
                             {message && (
                                 <div
                                     className={`flex items-center gap-2 p-3 rounded-lg ${message.type === "success"
-                                            ? "bg-green-500/20 border border-green-500/30 text-green-400"
-                                            : "bg-red-500/20 border border-red-500/30 text-red-400"
+                                        ? "bg-green-500/20 border border-green-500/30 text-green-400"
+                                        : "bg-red-500/20 border border-red-500/30 text-red-400"
                                         }`}
                                 >
                                     {message.type === "success" ? (
@@ -348,8 +348,8 @@ export function EmailChangeModal({
                             {message && (
                                 <div
                                     className={`flex items-center gap-2 p-3 rounded-lg ${message.type === "success"
-                                            ? "bg-green-500/20 border border-green-500/30 text-green-400"
-                                            : "bg-red-500/20 border border-red-500/30 text-red-400"
+                                        ? "bg-green-500/20 border border-green-500/30 text-green-400"
+                                        : "bg-red-500/20 border border-red-500/30 text-red-400"
                                         }`}
                                 >
                                     {message.type === "success" ? (
