@@ -3,8 +3,9 @@ import type { UserProfile } from "../services/api-real";
 import { formatWalletAddress } from "../services/api-real";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "../services/LanguageContext";
-import { maskEmail } from "../utils/maskEmail";
-import { TrendingUp, User as UserIcon, Menu, X, LogOut, ChevronDown } from "lucide-react";
+import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail utility
+import { Button } from "./ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,9 +14,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import logoIcon from "../components/images/logonhap.jpg";
-import logoFull from "../components/images/logodash.jpg";
+import { ChevronDown } from "lucide-react";
+import logoIcon from "./images/logonhap.jpg";
+import logoFull from "./images/logodash.jpg";
+import {
+  TrendingUp,
+  User as UserIcon,
+  LogOut,
+  Menu,
+  X as CloseIcon,
+  Wallet
+} from "lucide-react";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -24,9 +33,10 @@ interface NavigationProps {
   user: UserProfile;
   onNavigate: (page: Page) => void;
   onLogout: () => void;
+  onConnectWallet?: () => void; // ✅ NEW: Connect wallet callback
 }
 
-export function Navigation({ currentPage, user, onNavigate, onLogout }: NavigationProps) {
+export function Navigation({ currentPage, user, onNavigate, onLogout, onConnectWallet }: NavigationProps) {
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -140,6 +150,18 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
 
           {/* Right Section */}
           <div className="flex items-center gap-2 md:gap-3">
+            {/* Connect Wallet Button - Desktop */}
+            {onConnectWallet && (
+              <Button
+                onClick={onConnectWallet}
+                className="hidden md:flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0 shadow-lg hover:shadow-green-500/50 transition-all duration-300"
+                size="sm"
+              >
+                <Wallet className="w-4 h-4" />
+                <span className="hidden lg:inline">CONNECT WALLET</span>
+              </Button>
+            )}
+
             {/* Language Switcher - Hidden on mobile, visible on desktop */}
             <div className="hidden md:block">
               <LanguageSwitcher size="sm" />
@@ -182,7 +204,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                       Online
                     </div>
-                    <div className="text-xs text-gray-500 font-normal">{user.email ? maskEmail(user.email) : "No Email"}</div> {/* ✅ NEW: Use maskEmail */}
+                    <div className="text-xs text-gray-500 font-normal">{maskEmail(user.email)}</div> {/* ✅ NEW: Use maskEmail */}
                   </DropdownMenuLabel>
 
                   <DropdownMenuSeparator className="bg-slate-700/50" />
@@ -224,7 +246,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
               className="md:hidden relative p-2 rounded-xl bg-slate-800/50 border border-cyan-500/20 text-gray-400 hover:text-cyan-400 hover:border-cyan-400/40 transition-all duration-300"
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
+                <CloseIcon className="w-6 h-6" />
               ) : (
                 <Menu className="w-6 h-6" />
               )}
@@ -248,7 +270,7 @@ export function Navigation({ currentPage, user, onNavigate, onLogout }: Navigati
                   <div className="text-sm text-cyan-400 font-mono">
                     {user.walletAddress ? formatWalletAddress(user.walletAddress) : "No Wallet"}
                   </div>
-                  <div className="text-xs text-gray-500">{user.email ? maskEmail(user.email) : "No Email"}</div> {/* ✅ NEW: Use maskEmail */}
+                  <div className="text-xs text-gray-500">{maskEmail(user.email)}</div> {/* ✅ NEW: Use maskEmail */}
                 </div>
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               </div>

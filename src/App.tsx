@@ -20,6 +20,7 @@ import { ErrorDialog } from "./components/ErrorDialog";
 import { QuotaWarningBanner } from "./components/QuotaWarningBanner";
 import { VerifyPage } from "./pages/Verify"; // ✅ Import VerifyPage
 import { CaptchaDialog } from "./components/CaptchaDialog"; // ✅ Import CaptchaDialog
+import { ConnectWalletModal } from "./components/ConnectWalletModal"; // ✅ Import ConnectWalletModal
 import { useLanguage } from "./services/LanguageContext";
 import { ImageWithFallback } from "./components/ImageProcessing/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
@@ -99,6 +100,7 @@ export default function App() {
   const [showVerifyPage, setShowVerifyPage] = useState(false); // ✅ Verify page state
   const [showCaptchaCalculator, setShowCaptchaCalculator] = useState(false); // ✅ CAPTCHA for calculator
   const [prefilledEmail, setPrefilledEmail] = useState(""); // ✅ NEW: Email pre-filled from EmailLoginDialog
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false); // ✅ NEW: Connect Wallet Modal state
 
   // ✅ Check URL hash for verify page
   useEffect(() => {
@@ -978,7 +980,7 @@ export default function App() {
                           </span>
                         </>
                       ) : (
-                        <span className="text-gray-500"></span>
+                        <span className="text-gray-500">💡 Email hoặc 0x...</span>
                       )}
                     </p>
                   )}
@@ -1088,6 +1090,7 @@ export default function App() {
                   totalAssets={walletData.totalAssets}
                   tokenBalances={walletData.tokenBalances}
                   recentTransactions={walletData.recentTransactions}
+                  // ✅ NEW: Pass feature importance & recommendations from API
                   featureImportance={walletData.featureImportance}
                   recommendations={walletData.recommendations}
                 />
@@ -1215,6 +1218,7 @@ export default function App() {
               user={currentUser}
               onNavigate={setCurrentPage}
               onLogout={handleLogout}
+              onConnectWallet={() => setIsWalletModalOpen(true)} // ✅ NEW: Open wallet modal
             />
           )}
 
@@ -1258,6 +1262,14 @@ export default function App() {
           {/* Toast Notifications */}
           <Toaster position="top-right" richColors />
         </>
+      )}
+
+      {/* Connect Wallet Modal - Show on all pages when logged in */}
+      {currentUser && (
+        <ConnectWalletModal
+          isOpen={isWalletModalOpen}
+          onClose={() => setIsWalletModalOpen(false)}
+        />
       )}
     </div>
   );
