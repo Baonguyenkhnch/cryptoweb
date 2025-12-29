@@ -271,7 +271,7 @@ export function EmailChangeModal({
                                 <Button
                                     onClick={handleClose}
                                     variant="outline"
-                                    className="flex-1 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 hover:border-cyan-400/50"
+                                    className="flex-1 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-400/50"
                                 >
                                     {t.buttons.cancel}
                                 </Button>
