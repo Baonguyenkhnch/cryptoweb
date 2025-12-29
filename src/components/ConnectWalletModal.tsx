@@ -188,23 +188,6 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                             </div>
                         </div>
 
-                        {/* Copy URI Button */}
-                        <div className="flex justify-center mb-4">
-                            <button
-                                onClick={handleCopyURI}
-                                className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-full text-gray-400 hover:text-white hover:bg-slate-700/50 transition-all"
-                            >
-                                {isCopied ? (
-                                    <Check className="w-5 h-5" />
-                                ) : (
-                                    <Copy className="w-5 h-5" />
-                                )}
-                                <span className="text-sm">
-                                    {isCopied ? "Copied" : "Copy URI"}
-                                </span>
-                            </button>
-                        </div>
-
                         {/* Footer Text */}
                         <p className="text-gray-400 text-xs text-center">
                             By connecting your wallet to this app, you agree to the app's{" "}
