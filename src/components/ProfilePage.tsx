@@ -26,11 +26,11 @@ import {
   CheckCircle2,
   Wallet,
   Activity,
-  Lock,
   Eye,
   EyeOff
 } from "lucide-react";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
+import { useLanguage } from "../services/LanguageContext";
 
 interface ProfilePageProps {
   user: UserProfile;
@@ -40,6 +40,49 @@ interface ProfilePageProps {
 
 // Translations
 const translations = {
+  en: {
+    profile: {
+      title: "My Profile",
+      subtitle: "Manage your account information",
+      editing: "Editing mode",
+      details: {
+        title: "Profile Details",
+        viewandfix: "View and update your information"
+      },
+      tabs: {
+        personal: "Personal",
+        wallet: "Wallet & Security"
+      },
+      fields: {
+        name: "Full Name",
+        email: "Email Address",
+        wallet: "Wallet Address",
+        createdAt: "Account Created",
+        lastLogin: "Last Login"
+      },
+      buttons: {
+        edit: "Edit Profile",
+        save: "Save Changes",
+        cancel: "Cancel",
+        show: "Show",
+        hide: "Hide"
+      },
+      stats: {
+        title: "Quick Stats",
+        score: "Credit Score",
+        rating: "Rating",
+        walletAge: "Wallet Age",
+        transactions: "Total Transactions"
+      },
+      security: {
+        verified: "Verified"
+      },
+      wallet: {
+        title: "Wallet Information",
+        address: "Wallet Address"
+      }
+    }
+  },
   vi: {
     profile: {
       title: "Hồ Sơ Của Tôi",
@@ -75,18 +118,11 @@ const translations = {
         transactions: "Tổng Giao Dịch"
       },
       security: {
-        verified: "Đã Xác Thực",
-        title: "Bảo Mật",
-        status: "Trạng Thái Bảo Mật",
-        twoFactor: "Xác Thực 2 Yếu Tố (2FA)",
-        enabled: "Đã Bật",
-        disabled: "Chưa Bật"
+        verified: "Đã Xác Thực"
       },
       wallet: {
         title: "Thông Tin Ví",
-        address: "Địa Chỉ Ví",
-        balance: "Số Dư",
-        network: "Mạng Blockchain"
+        address: "Địa Chỉ Ví"
       }
     }
   }
@@ -101,8 +137,9 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
   const [isSaving, setIsSaving] = useState(false);
   const [showWalletAddress, setShowWalletAddress] = useState(false);
 
-  // Use Vietnamese translations
-  const t = translations.vi;
+  // Get language from context
+  const { language } = useLanguage();
+  const t = translations[language].profile;
 
   useEffect(() => {
     setFormData({
@@ -165,10 +202,10 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-            {t.profile.title}
+            {t.title}
           </h1>
           <p className="text-gray-400">
-            {t.profile.subtitle}
+            {t.subtitle}
           </p>
         </div>
 
@@ -191,7 +228,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                 </p>
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                   <CheckCircle2 className="w-3 h-3 mr-1" />
-                  {t.profile.security.verified}
+                  {t.security.verified}
                 </Badge>
               </CardContent>
             </Card>
@@ -201,30 +238,30 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
               <CardHeader>
                 <CardTitle className="text-lg text-cyan-400 flex items-center gap-2">
                   <Activity className="w-5 h-5" />
-                  {t.profile.stats.title}
+                  {t.stats.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">{t.profile.stats.score}</span>
+                  <span className="text-gray-400">{t.stats.score}</span>
                   <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                     {walletData ? walletData.score : "---"}
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">{t.profile.stats.rating}</span>
+                  <span className="text-gray-400">{t.stats.rating}</span>
                   <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
                     {walletData ? walletData.rating : "N/A"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">{t.profile.stats.walletAge}</span>
+                  <span className="text-gray-400">{t.stats.walletAge}</span>
                   <div className="text-white">
                     {walletData ? `${walletData.walletAge} days` : "---"}
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">{t.profile.stats.transactions}</span>
+                  <span className="text-gray-400">{t.stats.transactions}</span>
                   <div className="text-white">
                     {walletData ? walletData.totalTransactions : "---"}
                   </div>
@@ -239,10 +276,10 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
               <CardHeader>
                 <CardTitle className="text-2xl text-white flex items-center gap-2">
                   <User className="w-6 h-6 text-cyan-400" />
-                  {t.profile.details.title}
+                  {t.details.title}
                 </CardTitle>
                 <CardDescription className="text-gray-400">
-                  {t.profile.details.viewandfix}
+                  {t.details.viewandfix}
                 </CardDescription>
               </CardHeader>
 
@@ -254,14 +291,14 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-300"
                     >
                       <User className="w-4 h-4 mr-2" />
-                      {t.profile.tabs.personal}
+                      {t.tabs.personal}
                     </TabsTrigger>
                     <TabsTrigger
                       value="wallet"
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-300"
                     >
                       <Shield className="w-4 h-4 mr-2" />
-                      {t.profile.tabs.wallet}
+                      {t.tabs.wallet}
                     </TabsTrigger>
                   </TabsList>
 
@@ -276,7 +313,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                           className="bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
                         >
                           <Edit2 className="w-4 h-4 mr-2" />
-                          {t.profile.buttons.edit}
+                          {t.buttons.edit}
                         </Button>
                       ) : (
                         <div className="flex gap-2">
@@ -286,7 +323,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                             className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/50"
                           >
                             <Save className="w-4 h-4 mr-2" />
-                            {t.profile.buttons.save}
+                            {t.buttons.save}
                           </Button>
                           <Button
                             onClick={handleCancel}
@@ -294,7 +331,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                             className="border-red-500/30 text-red-400 hover:bg-red-500/10"
                           >
                             <X className="w-4 h-4 mr-2" />
-                            {t.profile.buttons.cancel}
+                            {t.buttons.cancel}
                           </Button>
                         </div>
                       )}
@@ -306,7 +343,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                       <div className="space-y-2">
                         <Label htmlFor="name" className="text-gray-300 flex items-center gap-2">
                           <User className="w-4 h-4 text-cyan-400" />
-                          {t.profile.fields.name}
+                          {t.fields.name}
                         </Label>
                         <Input
                           id="name"
@@ -322,7 +359,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
                           <Mail className="w-4 h-4 text-blue-400" />
-                          {t.profile.fields.email}
+                          {t.fields.email}
                         </Label>
                         <Input
                           id="email"
@@ -340,7 +377,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                         <div className="space-y-2">
                           <Label className="text-gray-300 flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-purple-400" />
-                            {t.profile.fields.createdAt}
+                            {t.fields.createdAt}
                           </Label>
                           <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
                             {formatDate(user.createdAt)}
@@ -350,7 +387,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                         <div className="space-y-2">
                           <Label className="text-gray-300 flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-green-400" />
-                            {t.profile.fields.lastLogin}
+                            {t.fields.lastLogin}
                           </Label>
                           <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
                             {formatDate(user.lastLogin)}
@@ -366,7 +403,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                     <div className="space-y-2">
                       <Label className="text-gray-300 flex items-center gap-2">
                         <Wallet className="w-4 h-4 text-cyan-400" />
-                        {t.profile.wallet.address}
+                        {t.wallet.address}
                       </Label>
                       <div className="flex gap-2">
                         <div className="flex-1 bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-3 text-white font-mono text-sm break-all">
@@ -383,59 +420,35 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                       </div>
                     </div>
 
-                    {/* Security Status */}
-                    <div className="space-y-4 pt-4 border-t border-cyan-500/20">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Shield className="w-5 h-5 text-green-400" />
-                          <span className="text-gray-300">{t.profile.security.status}</span>
-                        </div>
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                          <CheckCircle2 className="w-3 h-3 mr-1" />
-                          {t.profile.security.verified}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Lock className="w-5 h-5 text-blue-400" />
-                          <span className="text-gray-300">{t.profile.security.twoFactor}</span>
-                        </div>
-                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                          {t.profile.security.enabled}
-                        </Badge>
-                      </div>
-                    </div>
-
                     {/* Wallet Stats from walletData */}
                     {walletData && (
                       <div className="space-y-4 pt-4 border-t border-cyan-500/20">
-                        <h3 className="text-lg text-white font-semibold">{t.profile.wallet.title}</h3>
+                        <h3 className="text-lg text-white font-semibold">{t.wallet.title}</h3>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg p-4">
-                            <div className="text-xs text-gray-400 mb-1">{t.profile.stats.score}</div>
+                            <div className="text-xs text-gray-400 mb-1">{t.stats.score}</div>
                             <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                               {walletData.score}
                             </div>
                           </div>
 
                           <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg p-4">
-                            <div className="text-xs text-gray-400 mb-1">{t.profile.stats.rating}</div>
+                            <div className="text-xs text-gray-400 mb-1">{t.stats.rating}</div>
                             <div className="text-xl font-bold text-white">
                               {walletData.rating}
                             </div>
                           </div>
 
                           <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg p-4">
-                            <div className="text-xs text-gray-400 mb-1">{t.profile.stats.walletAge}</div>
+                            <div className="text-xs text-gray-400 mb-1">{t.stats.walletAge}</div>
                             <div className="text-xl font-bold text-white">
                               {walletData.walletAge} days
                             </div>
                           </div>
 
                           <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg p-4">
-                            <div className="text-xs text-gray-400 mb-1">{t.profile.stats.transactions}</div>
+                            <div className="text-xs text-gray-400 mb-1">{t.stats.transactions}</div>
                             <div className="text-xl font-bold text-white">
                               {walletData.totalTransactions}
                             </div>
