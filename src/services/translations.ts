@@ -10,6 +10,8 @@ export const translations = {
       logout: "Đăng Xuất",
       language: "Ngôn ngữ",
       cancel: "Hủy",
+      page: "Trang Chủ",
+
     },
 
     calculator: {
@@ -549,6 +551,7 @@ export const translations = {
       logout: "Logout",
       language: "Language",
       cancel: "Cancel",
+      page: "Dashboard"
     },
 
     // Calculator Page
