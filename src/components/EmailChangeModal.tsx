@@ -254,8 +254,8 @@ export function EmailChangeModal({
                             {message && (
                                 <div
                                     className={`flex items-center gap-2 p-3 rounded-lg ${message.type === "success"
-                                        ? "bg-green-500/20 border border-green-500/30 text-green-400"
-                                        : "bg-red-500/20 border border-red-500/30 text-red-400"
+                                            ? "bg-green-500/20 border border-green-500/30 text-green-400"
+                                            : "bg-red-500/20 border border-red-500/30 text-red-400"
                                         }`}
                                 >
                                     {message.type === "success" ? (
@@ -271,7 +271,7 @@ export function EmailChangeModal({
                                 <Button
                                     onClick={handleClose}
                                     variant="outline"
-                                    className="flex-1 border-gray-500/30 text-gray-300 hover:bg-gray-500/10"
+                                    className="flex-1 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 hover:border-cyan-400/50"
                                 >
                                     {t.buttons.cancel}
                                 </Button>
@@ -349,8 +349,8 @@ export function EmailChangeModal({
                             {message && (
                                 <div
                                     className={`flex items-center gap-2 p-3 rounded-lg ${message.type === "success"
-                                        ? "bg-green-500/20 border border-green-500/30 text-green-400"
-                                        : "bg-red-500/20 border border-red-500/30 text-red-400"
+                                            ? "bg-green-500/20 border border-green-500/30 text-green-400"
+                                            : "bg-red-500/20 border border-red-500/30 text-red-400"
                                         }`}
                                 >
                                     {message.type === "success" ? (
@@ -369,7 +369,7 @@ export function EmailChangeModal({
                                         setVerificationCode("");
                                         setMessage(null);
                                     }}
-                                    // variant="outline"
+                                    variant="outline"
                                     className="flex-1 border-gray-500/30 text-gray-300 hover:bg-gray-500/10"
                                 >
                                     {t.buttons.cancel}

@@ -19,9 +19,9 @@ interface EmailLoginDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   onMagicLinkSuccess?: (email: string) => void;
-  walletAddress?: string; // Wallet address để gắn với email
-  onRegisterClick?: (email: string) => void; // ✅ DEPRECATED: Dùng onNavigateToRegister thay thế
-  onNavigateToRegister?: (email: string) => void; // ✅ NEW: Navigate to auth page with register tab
+  walletAddress?: string;
+  onRegisterClick?: (email: string) => void;
+  onNavigateToRegister?: (email: string) => void;
 }
 
 export function EmailLoginDialog({
@@ -38,7 +38,7 @@ export function EmailLoginDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [emailNotFound, setEmailNotFound] = useState(false); // ✅ NEW: Track nếu email chưa được đăng ký
+  const [emailNotFound, setEmailNotFound] = useState(false);
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -60,15 +60,12 @@ export function EmailLoginDialog({
     setIsLoading(true);
 
     try {
-      // ✅ GỌI API THẬT - Gửi Magic Link
-      // Backend endpoint: POST /api/auth/send-magic-link
+
       const result = await sendMagicLink(email, walletAddress);
 
       if (result.success) {
         console.log("✅ Magic link đã gửi:", result.message);
         setShowSuccess(true);
-
-        // Tự động đóng sau 5s
         setTimeout(() => {
           handleClose();
           if (onSuccess) {
@@ -82,8 +79,6 @@ export function EmailLoginDialog({
       const errorMsg = err instanceof Error ? err.message : t.emailLogin.errors.generalError;
       console.error("❌ Lỗi gửi magic link:", errorMsg);
 
-      // ✅ FIX: Đổi thứ tự check - Ưu tiên check "not found" trước
-      // Check for email not found (chưa được đăng ký)
       if (errorMsg.includes("not found") ||
         errorMsg.includes("not registered") ||
         errorMsg.includes("chưa được đăng ký") ||
@@ -94,20 +89,16 @@ export function EmailLoginDialog({
         setEmailNotFound(true);
         setError("📧 Email này chưa được đăng ký. Vui lòng đăng ký.");
       }
-      // Check for email already exists (đã đăng ký)
       else if (errorMsg.includes("already exists") ||
         errorMsg.includes("đã tồn tại") ||
         errorMsg.includes("already registered")) {
         setEmailNotFound(false);
         setError("📧 Email này đã được đăng ký. Vui lòng đăng nhập.");
       }
-      // Nếu backend offline, hiển thị demo mode
       else if (errorMsg.includes('DEMO')) {
         setShowSuccess(true);
       }
-      // ✅ FIX: Default case - Giả định email chưa được đăng ký
       else {
-        // Nếu không match pattern nào, giả định email chưa được đăng ký
         console.warn("⚠️ Unknown error pattern, assuming email not found:", errorMsg);
         setEmailNotFound(true);
         setError("📧 Email này chưa được đăng ký. Vui lòng đăng ký.");
@@ -121,12 +112,11 @@ export function EmailLoginDialog({
     setEmail("");
     setError("");
     setShowSuccess(false);
-    setEmailNotFound(false); // ✅ Reset email not found state
+    setEmailNotFound(false);
     onOpenChange(false);
   };
 
   const handleMagicLinkClick = () => {
-    // Giả lập việc click vào magic link trong email
     if (onMagicLinkSuccess) {
       onMagicLinkSuccess(email);
     }
@@ -134,7 +124,6 @@ export function EmailLoginDialog({
   };
 
   const handleRegisterClick = () => {
-    // ✅ NEW: Chuyển sang QuickRegisterDialog khi email chưa được đăng ký
     if (onRegisterClick) {
       onRegisterClick(email);
       handleClose();
@@ -142,7 +131,6 @@ export function EmailLoginDialog({
   };
 
   const handleNavigateToRegister = () => {
-    // ✅ NEW: Navigate to auth page with register tab
     if (onNavigateToRegister) {
       onNavigateToRegister(email);
       handleClose();
@@ -253,7 +241,6 @@ export function EmailLoginDialog({
                 {t.emailLogin.cancel}
               </Button>
 
-              {/* ✅ NEW: Đổi button thành "Đăng ký" nếu email chưa được đăng ký */}
               {emailNotFound ? (
                 <Button
                   onClick={handleNavigateToRegister}
@@ -287,7 +274,6 @@ export function EmailLoginDialog({
             </div>
           </>
         ) : (
-          // Success state
           <div className="py-8 text-center space-y-4">
             <div className="flex justify-center">
               <div className="relative">
@@ -323,7 +309,6 @@ export function EmailLoginDialog({
               </div>
             </div>
 
-            {/* Close button only */}
             <div className="pt-2">
               <Button
                 onClick={handleClose}

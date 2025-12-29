@@ -1,16 +1,4 @@
-/**
- * ============================================
- * EMAIL CHANGE VERIFICATION DIALOG
- * ============================================
- * Component này xử lý flow verification khi user muốn đổi email:
- * 1. Hiển thị email mới user muốn đổi
- * 2. Gửi magic link đến email mới
- * 3. User xác nhận qua email
- * 4. Callback success để update email
- * 
- * SECURITY: Ngăn chặn việc đổi email tùy tiện mà không xác minh
- * ============================================
- */
+
 
 import { useState } from "react";
 import {
@@ -111,16 +99,12 @@ export function EmailChangeDialog({
     };
 
     const handleClose = () => {
-        // Reset state when closing
         setStep("confirm");
         setVerificationCode("");
         setError("");
         onOpenChange(false);
     };
 
-    // ============================================
-    // RENDER UI
-    // ============================================
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
