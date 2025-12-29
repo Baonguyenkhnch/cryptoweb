@@ -57,6 +57,7 @@ type Page = "login" | "calculator" | "dashboard" | "profile";
 
 // Helper function to get rating from score
 const getRatingFromScore = (score: number): string => {
+  if (score === 0) return "N/A"; // ✅ No score = No rating
   if (score >= 750) return "AAA";
   if (score >= 700) return "AA";
   if (score >= 650) return "A";

@@ -1,4 +1,15 @@
+// =====================================================
+// FILE NÀY CHỨA API THẬT - SỬ DỤNG KHI ĐÃ SẴN SÀNG
+// =====================================================
+// 
+// CÁCH SỬ DỤNG:
+// 1. Đổi tên file này thành api.ts (backup file cũ trước)
+// 2. Hoặc copy nội dung này vào file api.ts
+// 3. Test bằng test-api.html
+//
+// =====================================================
 
+// Giữ nguyên các interfaces với các field mở rộng
 export interface TokenBalance {
     symbol: string;
     balance: number;
@@ -162,10 +173,6 @@ const debugLog = (...args: any[]) => {
  * @param email - User email address
  * @param walletAddress - User wallet address (0x...)
  * @returns Success status and verification token
- * 
- * ⚠️ BACKEND REQUIREMENT:
- * Email template phải hiển thị button với text "Xác nhận và Đăng nhập" 
- * thay vì hiển thị link trực tiếp. Button này sẽ link đến verification URL.
  */
 export const registerUser = async (
     email: string,
@@ -204,7 +211,6 @@ export const registerUser = async (
                 email: email.toLowerCase().trim(),
                 wallet_address: walletAddress.trim(),
                 password: "DefaultPassword@123", // ✅ Backend yêu cầu password field (passwordless auth nhưng vẫn cần field này)
-                buttonText: "Xác nhận và Đăng nhập", // ✅ Backend cần hiển thị button text này thay vì link trong email
             }),
         });
 
@@ -456,10 +462,6 @@ export const verifyRegistration = async (
  * Send Magic Link for passwordless login - POST /api/send-magic-link
  * @param email - User email
  * @param walletAddress - Optional wallet address to link
- * 
- * ⚠️ BACKEND REQUIREMENT:
- * Email template phải hiển thị button với text "Xác nhận và Đăng nhập" 
- * thay vì hiển thị link trực tiếp. Button này sẽ link đến verification URL.
  */
 export const sendMagicLinkReal = async (
     email: string,
@@ -483,7 +485,6 @@ export const sendMagicLinkReal = async (
         const url = `${API_BASE_URL}/api/send-magic-link`;
         const requestBody: any = {
             email: email.toLowerCase().trim(),
-            buttonText: "Xác nhận và Đăng nhập", // ✅ Backend cần hiển thị button text này thay vì link trong email
         };
 
         // Add wallet address if provided
@@ -1705,12 +1706,14 @@ export const sendWeeklyReport = async (email: string, walletAddress: string): Pr
 
 // Helper functions
 function getRating(score: number): string {
+    if (score === 0) return "N/A"; // ✅ No score = No rating
     if (score >= 750) return "AAA";
     if (score >= 700) return "AA";
     if (score >= 650) return "A";
     if (score >= 600) return "BBB";
     if (score >= 550) return "BB";
-    return "B-C"; // ✅ Unified: Show "B-C" for scores < 550 instead of separate "B" or "C"
+    if (score >= 500) return "B";
+    return "C";
 }
 
 export const isValidWalletAddress = (address: string): boolean => {
@@ -1771,88 +1774,24 @@ export const registerWalletWithEmail = async (data: {
     return { success: true };
 };
 
-/**
- * Get wallet address by email - GET /api/get-wallet-by-email?email=xxx
- * @param email - User email address
- */
 export const getWalletByEmail = async (email: string): Promise<{
     success: boolean;
     walletAddress?: string;
     message?: string;
 }> => {
-    debugLog(`🔍 Getting wallet by email: ${email}`);
+    console.log("🔍 Tìm kiếm ví từ email:", email);
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    try {
-        if (!email || !email.includes("@")) {
-            return {
-                success: false,
-                message: "Email không hợp lệ",
-            };
-        }
+    const walletAddress = mockUserDatabase[email.toLowerCase()];
 
-        // ✅ GỌI API THẬT TỪ BACKEND
-        const url = `${API_BASE_URL}/api/get-wallet-by-email?email=${encodeURIComponent(email)}`;
-
-        debugLog(`📡 Calling getWalletByEmail API: ${url}`);
-
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-                // ✅ Optional: Add auth token if available
-                ...(localStorage.getItem("authToken") && {
-                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                }),
-            },
-        });
-
-        const data = await response.json();
-
-        console.log("🔍 getWalletByEmail() - Backend Response:");
-        console.log("  - Status:", response.status, response.statusText);
-        console.log("  - Response body:", JSON.stringify(data, null, 2));
-
-        if (response.ok && data.success) {
-            debugLog(`✅ Wallet found:`, data.walletAddress);
-            return {
-                success: true,
-                walletAddress: data.walletAddress || data.wallet_address,
-            };
-        }
-
-        // ✅ Handle error response from backend
-        if (response.status === 404 || data.message?.includes("not found") || data.message?.includes("chưa được đăng ký")) {
-            debugLog(`❌ Email not found in backend`);
-            return {
-                success: false,
-                message: data.message || "Email này chưa được đăng ký hoặc chưa liên kết ví.",
-            };
-        }
-
-        // ✅ Other errors
-        debugLog(`❌ getWalletByEmail error: ${response.status}`, data);
+    if (walletAddress) {
+        console.log("✅ Tìm thấy ví:", walletAddress);
+        return { success: true, walletAddress };
+    } else {
+        console.log("❌ Không tìm thấy ví cho email:", email);
         return {
             success: false,
-            message: data.message || data.error || `Lỗi khi tìm kiếm ví (${response.status})`,
-        };
-
-    } catch (error: any) {
-        debugLog(`❌ getWalletByEmail exception:`, error.message);
-
-        // ✅ FALLBACK: Use mock data if backend is offline
-        console.warn("⚠️ Backend offline, falling back to mock data");
-        const walletAddress = mockUserDatabase[email.toLowerCase()];
-
-        if (walletAddress) {
-            console.log("✅ Found in mock database:", walletAddress);
-            return { success: true, walletAddress };
-        }
-
-        return {
-            success: false,
-            message: error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")
-                ? "Không thể kết nối đến server. Vui lòng thử lại sau."
-                : "Email này chưa được đăng ký hoặc chưa liên kết ví.",
+            message: "Email này chưa được đăng ký hoặc chưa liên kết ví.",
         };
     }
 };
@@ -1944,4 +1883,3 @@ export default {
 
 export const sendMagicLink = sendMagicLinkReal;
 export const verifyToken = verifyMagicLink;
-

@@ -67,7 +67,8 @@ const translations = {
         save: "Save Changes",
         cancel: "Cancel",
         show: "Show",
-        hide: "Hide"
+        hide: "Hide",
+        changeEmail: "Change Email"
       },
       stats: {
         title: "Quick Stats",
@@ -110,7 +111,8 @@ const translations = {
         save: "Lưu Thay Đổi",
         cancel: "Hủy",
         show: "Hiện",
-        hide: "Ẩn"
+        hide: "Ẩn",
+        changeEmail: "Thay Đổi Email"
       },
       stats: {
         title: "Thống Kê Nhanh",
@@ -138,6 +140,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
   });
   const [isSaving, setIsSaving] = useState(false);
   const [showWalletAddress, setShowWalletAddress] = useState(false);
+  const [isEmailChangeModalOpen, setIsEmailChangeModalOpen] = useState(false);
 
   // Get language from context
   const { language } = useLanguage();
@@ -188,6 +191,24 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
   const maskWalletAddress = (address: string) => {
     if (!address || address.length < 10) return address;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  const handleEmailChange = async (newEmail: string, verificationCode: string) => {
+    if (!onUpdateProfile) {
+      throw new Error("Update profile function not available");
+    }
+
+    // TODO: Call API to verify code and update email
+    // For now, we'll simulate the API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Simulate random verification code validation
+    if (verificationCode !== "123456") {
+      throw new Error("Invalid code");
+    }
+
+    // Update profile with new email
+    await onUpdateProfile({ email: newEmail });
   };
 
   return (
@@ -253,7 +274,10 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                 <div className="flex items-center justify-between">
                   <span className="text-gray-400">{t.stats.rating}</span>
                   <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                    {walletData ? walletData.rating : "N/A"}
+                    {walletData
+                      ? (walletData.rating === "N/A" ? (language === "vi" ? "Chưa Có Hạng" : "No Rating") : walletData.rating)
+                      : "N/A"
+                    }
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
@@ -359,19 +383,24 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
 
                       {/* Email Field */}
                       <div className="space-y-2">
-                        <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-blue-400" />
-                          {t.fields.email}
-                        </Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
-                          disabled={!isEditing}
-                          className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
-                            }`}
-                        />
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
+                            <Mail className="w-4 h-4 text-blue-400" />
+                            {t.fields.email}
+                          </Label>
+                          <Button
+                            onClick={() => setIsEmailChangeModalOpen(true)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300"
+                          >
+                            <KeyRound className="w-3.5 h-3.5 mr-1.5" />
+                            {t.buttons.changeEmail}
+                          </Button>
+                        </div>
+                        <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2.5 opacity-70">
+                          {user.email || "No email provided"}
+                        </div>
                       </div>
 
                       {/* Account Info (Read-only) */}
@@ -438,7 +467,10 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                           <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg p-4">
                             <div className="text-xs text-gray-400 mb-1">{t.stats.rating}</div>
                             <div className="text-xl font-bold text-white">
-                              {walletData.rating}
+                              {walletData.rating === "N/A"
+                                ? (language === "vi" ? "Chưa Có Hạng" : "No Rating")
+                                : walletData.rating
+                              }
                             </div>
                           </div>
 
@@ -465,6 +497,14 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
           </div>
         </div>
       </div>
+
+      {/* Email Change Modal */}
+      <EmailChangeModal
+        isOpen={isEmailChangeModalOpen}
+        onClose={() => setIsEmailChangeModalOpen(false)}
+        currentEmail={user.email}
+        onEmailChange={handleEmailChange}
+      />
     </div>
   );
 }
