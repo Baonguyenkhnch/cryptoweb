@@ -2,10 +2,7 @@
  * ============================================
  * PROFILE PAGE COMPONENT
  * ============================================
- * Trang profile với 3 tabs:
- * - Personal Info
- * - Wallet & Security
- * - QR Code (hiển thị khi verified + NFT minted)
+ * Trang profile đơn giản với thông tin cá nhân
  * ============================================
  */
 
@@ -15,7 +12,6 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
   User,
   Mail,
@@ -23,18 +19,11 @@ import {
   Edit2,
   Save,
   X,
-  Shield,
   CheckCircle2,
   Wallet,
-  TrendingUp,
-  Activity,
-  QrCode,
-  Zap,
-  ArrowRight
+  Activity
 } from "lucide-react";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
-import { VerifiedQRCode } from "./VerifiedQRCode";
-import { ConnectWalletModal } from "./ConnectWalletModal";
 
 interface ProfilePageProps {
   user: UserProfile;
@@ -44,45 +33,6 @@ interface ProfilePageProps {
 
 // Translations
 const translations = {
-  en: {
-    profile: {
-      title: "My Profile",
-      subtitle: "Manage your account information",
-      editing: "Editing mode enabled",
-      details: {
-        title: "Profile Details",
-        viewandfix: "View and update your information"
-      },
-      tabs: {
-        personal: "Personal Info",
-        wallet: "Wallet & Security"
-      },
-      fields: {
-        name: "Full Name",
-        email: "Email Address",
-        wallet: "Wallet Address",
-        createdAt: "Account Created",
-        lastLogin: "Last Login"
-      },
-      buttons: {
-        edit: "Edit Profile",
-        save: "Save Changes",
-        cancel: "Cancel"
-      },
-      stats: {
-        title: "Quick Stats",
-        score: "Credit Score",
-        rating: "Rating",
-        walletAge: "Wallet Age",
-        transactions: "Total Transactions"
-      },
-      security: {
-        title: "Security Status",
-        verified: "Verified Account",
-        notVerified: "Not Verified"
-      }
-    }
-  },
   vi: {
     profile: {
       title: "Hồ Sơ Của Tôi",
@@ -91,10 +41,6 @@ const translations = {
       details: {
         title: "Thông Tin Chi Tiết",
         viewandfix: "Xem và cập nhật thông tin của bạn"
-      },
-      tabs: {
-        personal: "Cá Nhân",
-        wallet: "Ví & Bảo Mật"
       },
       fields: {
         name: "Họ và Tên",
@@ -116,9 +62,7 @@ const translations = {
         transactions: "Tổng Giao Dịch"
       },
       security: {
-        title: "Trạng Thái Bảo Mật",
-        verified: "Đã Xác Thực",
-        notVerified: "Chưa Xác Thực"
+        verified: "Đã Xác Thực"
       }
     }
   }
@@ -131,7 +75,6 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
     email: user.email || ""
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   // Use Vietnamese translations
   const t = translations.vi;
@@ -199,8 +142,8 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
           </p>
         </div>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Grid - 2 Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Profile Card & Stats */}
           <div className="space-y-6">
             {/* Profile Card */}
@@ -260,7 +203,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
             </Card>
           </div>
 
-          {/* Middle Column - Profile Details */}
+          {/* Right Column - Profile Details (Full Width) */}
           <div className="lg:col-span-2">
             <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-2xl">
               <CardHeader>
@@ -306,230 +249,81 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                 </div>
               </CardHeader>
 
-              <CardContent>
-                <Tabs defaultValue="personal" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 p-1">
-                    <TabsTrigger
-                      value="personal"
-                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
-                    >
-                      {t.profile.tabs.personal}
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="wallet"
-                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 text-gray-400 hover:text-gray-300 transition-all duration-300"
-                    >
-                      {t.profile.tabs.wallet}
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {/* Tab: Personal Info */}
-                  <TabsContent value="personal" className="space-y-6 mt-6">
-                    <div className="space-y-4">
-                      {/* Name Field */}
-                      <div className="space-y-2">
-                        <Label htmlFor="name" className="text-gray-300 flex items-center gap-2">
-                          <User className="w-4 h-4 text-cyan-400" />
-                          {t.profile.fields.name}
-                        </Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => handleInputChange("name", e.target.value)}
-                          disabled={!isEditing}
-                          className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
-                            }`}
-                        />
-                      </div>
-
-                      {/* Email Field */}
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-blue-400" />
-                          {t.profile.fields.email}
-                        </Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
-                          disabled={!isEditing}
-                          className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
-                            }`}
-                        />
-                      </div>
-
-                      {/* Account Info (Read-only) */}
-                      <div className="pt-4 border-t border-cyan-500/20 space-y-4">
-                        <div className="space-y-2">
-                          <Label className="text-gray-300 flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-purple-400" />
-                            {t.profile.fields.createdAt}
-                          </Label>
-                          <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
-                            {formatDate(user.createdAt)}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label className="text-gray-300 flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-green-400" />
-                            {t.profile.fields.lastLogin}
-                          </Label>
-                          <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
-                            {formatDate(user.lastLogin)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Tab: Wallet & Security */}
-                  <TabsContent value="wallet" className="space-y-6 mt-6">
-                    <div className="space-y-4">
-                      {/* Wallet Address */}
-                      <div className="space-y-2">
-                        <Label className="text-gray-300 flex items-center gap-2">
-                          <Wallet className="w-4 h-4 text-cyan-400" />
-                          {t.profile.fields.wallet}
-                        </Label>
-                        <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-3 text-white font-mono text-sm break-all">
-                          {user.walletAddress}
-                        </div>
-                      </div>
-
-                      {/* Security Badge */}
-                      <div className="p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/30">
-                        <div className="flex items-start gap-3">
-                          <Shield className="w-5 h-5 text-green-400 mt-0.5" />
-                          <div className="flex-1">
-                            <div className="text-green-400 mb-1">
-                              {t.profile.security.title}
-                            </div>
-                            <div className="text-gray-400 text-sm">
-                              Tài khoản của bạn đã được xác thực và bảo mật
-                            </div>
-                          </div>
-                          <CheckCircle2 className="w-6 h-6 text-green-400" />
-                        </div>
-                      </div>
-
-                      {/* QR Code Section - 2 Buttons */}
-                      <div className="pt-4 border-t border-cyan-500/20">
-                        <Tabs defaultValue="credit-qr" className="w-full">
-                          <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 p-1">
-                            <TabsTrigger
-                              value="verify-qr"
-                              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-gray-400 hover:text-gray-300 transition-all duration-300 text-sm"
-                            >
-                              <QrCode className="w-3.5 h-3.5 mr-1.5" />
-                              Mã QR Xác Thực
-                            </TabsTrigger>
-                            <TabsTrigger
-                              value="credit-qr"
-                              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white text-gray-400 hover:text-gray-300 transition-all duration-300 text-sm"
-                            >
-                              <QrCode className="w-3.5 h-3.5 mr-1.5" />
-                              Mã QR
-                            </TabsTrigger>
-                          </TabsList>
-
-                          {/* Wallet Verification QR */}
-                          <TabsContent value="verify-qr" className="mt-4">
-                            <VerifiedQRCode
-                              user={user}
-                              walletData={walletData}
-                              type="wallet-verification"
-                              isVerified={false}
-                              hasNFT={false}
-                            />
-                          </TabsContent>
-
-                          {/* Credit Score QR */}
-                          <TabsContent value="credit-qr" className="mt-4">
-                            <VerifiedQRCode
-                              user={user}
-                              walletData={walletData}
-                              type="credit-score"
-                              isVerified={true}
-                              hasNFT={true}
-                            />
-                          </TabsContent>
-                        </Tabs>
-                      </div>
-
-                      {/* Wallet Stats */}
-                      {walletData && (
-                        <div className="pt-4 border-t border-cyan-500/20 grid grid-cols-2 gap-4">
-                          <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                            <div className="text-gray-400 text-sm mb-1">Tổng Tài Sản</div>
-                            <div className="text-2xl text-white font-bold">
-                              ${walletData.totalAssets.toLocaleString()}
-                            </div>
-                          </div>
-                          <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                            <div className="text-gray-400 text-sm mb-1">Đa Dạng Token</div>
-                            <div className="text-2xl text-white font-bold">
-                              {walletData.tokenDiversity}
-                            </div>
-                          </div>
-                          <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                            <div className="text-gray-400 text-sm mb-1">Tương Tác DeFi</div>
-                            <div className="text-2xl text-white font-bold">
-                              {walletData.defiInteraction}
-                            </div>
-                          </div>
-                          <div className="p-4 bg-slate-900/50 rounded-xl border border-cyan-500/20">
-                            <div className="text-gray-400 text-sm mb-1">NFT Holdings</div>
-                            <div className="text-2xl text-white font-bold">
-                              {walletData.nftHoldings}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column - Connect Wallet Card */}
-          <div className="space-y-6">
-            <Card className="bg-slate-800/50 backdrop-blur-xl border border-green-500/20 shadow-2xl rounded-2xl overflow-hidden">
-              <div className="h-32 bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-600 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-              </div>
-              <CardContent className="pt-6">
-                <div className="text-center space-y-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-cyan-400 mb-2">
-                    <Zap className="w-8 h-8 text-white" />
+              <CardContent className="space-y-6">
+                {/* Personal Info Fields */}
+                <div className="space-y-4">
+                  {/* Name Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-gray-300 flex items-center gap-2">
+                      <User className="w-4 h-4 text-cyan-400" />
+                      {t.profile.fields.name}
+                    </Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      disabled={!isEditing}
+                      className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
+                        }`}
+                    />
                   </div>
-                  <h3 className="text-xl text-white mb-2">
-                    CREDIT SCORE
-                  </h3>
-                  <Button
-                    onClick={() => setIsWalletModalOpen(true)}
-                    className="w-full bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white shadow-lg hover:shadow-green-500/50 transition-all duration-300 group"
-                  >
-                    <span className="mr-2">CONNECT WALLET</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                  <p className="text-gray-400 text-sm">
-                    Kết nối ví để xác thực quyền sở hữu và mint NFT
-                  </p>
+
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-blue-400" />
+                      {t.profile.fields.email}
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      disabled={!isEditing}
+                      className={`bg-slate-900/50 border-cyan-500/30 text-white ${isEditing ? "focus:border-cyan-400" : "opacity-70"
+                        }`}
+                    />
+                  </div>
+
+                  {/* Wallet Address (Read-only) */}
+                  <div className="space-y-2">
+                    <Label className="text-gray-300 flex items-center gap-2">
+                      <Wallet className="w-4 h-4 text-cyan-400" />
+                      {t.profile.fields.wallet}
+                    </Label>
+                    <div className="bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-3 text-white font-mono text-sm break-all">
+                      {user.walletAddress}
+                    </div>
+                  </div>
+
+                  {/* Account Info (Read-only) */}
+                  <div className="pt-4 border-t border-cyan-500/20 space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-purple-400" />
+                        {t.profile.fields.createdAt}
+                      </Label>
+                      <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
+                        {formatDate(user.createdAt)}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-green-400" />
+                        {t.profile.fields.lastLogin}
+                      </Label>
+                      <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2">
+                        {formatDate(user.lastLogin)}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-
-      {/* Connect Wallet Modal */}
-      <ConnectWalletModal
-        isOpen={isWalletModalOpen}
-        onClose={() => setIsWalletModalOpen(false)}
-      />
     </div>
   );
 }
