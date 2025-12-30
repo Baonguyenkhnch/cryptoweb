@@ -1,5 +1,7 @@
 
 
+
+
 export interface TokenBalance {
   symbol: string;
   balance: number;
@@ -10,6 +12,7 @@ export interface TokenBalance {
   logo?: string;
   decimals?: number;
 }
+
 
 export interface Transaction {
   id: string;
@@ -24,6 +27,7 @@ export interface Transaction {
   category?: string;
   summary?: string;
 }
+
 
 export interface WalletAnalysis {
   score: number;
@@ -50,6 +54,7 @@ export interface WalletAnalysis {
   stablecoinInflow30d?: number;
 }
 
+
 export interface CreditScoreData {
   score: number;
   walletAge: number;
@@ -58,6 +63,7 @@ export interface CreditScoreData {
   totalAssets: number;
   rating: string;
 }
+
 
 export interface UserProfile {
   id: string;
@@ -69,10 +75,12 @@ export interface UserProfile {
   lastLogin: string;
 }
 
+
 export interface LoginCredentials {
   email: string;
   password: string;
 }
+
 
 export interface RegisterData {
   email: string;
@@ -80,12 +88,14 @@ export interface RegisterData {
   walletAddress: string;
 }
 
+
 export interface AuthResponse {
   success: boolean;
   token?: string;
   user?: UserProfile;
   message?: string;
 }
+
 
 export interface EmailSubscription {
   email: string;
@@ -95,6 +105,7 @@ export interface EmailSubscription {
   verified: boolean;
 }
 
+
 export interface FeatureFeedback {
   featureName: string;
   description: string;
@@ -102,14 +113,17 @@ export interface FeatureFeedback {
   timestamp: string;
 }
 
+
 const API_BASE_URL = "https://api.example.com/v1";
 const MOCK_DELAY = 1500;
+
 
 const simulateApiCall = <T,>(data: T, delay = MOCK_DELAY): Promise<T> => {
   return new Promise((resolve) => {
     setTimeout(() => resolve(data), delay);
   });
 };
+
 
 // Các hàm xử lý authentication
 export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
@@ -127,16 +141,20 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
     },
   };
 
+
   return simulateApiCall(mockResponse);
 };
+
 
 export const register = async (data: RegisterData): Promise<AuthResponse> => {
   // Lưu vào mock database để sau này có thể lookup bằng email
   mockUserDatabase[data.email.toLowerCase()] = data.walletAddress;
 
+
   console.log("✅ Đăng ký thành công! Email:", data.email);
   console.log("💼 Wallet được lưu:", data.walletAddress);
   console.log("📊 Database hiện tại:", mockUserDatabase);
+
 
   const mockResponse: AuthResponse = {
     success: true,
@@ -152,12 +170,15 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
     },
   };
 
+
   return simulateApiCall(mockResponse);
 };
+
 
 export const logout = async (): Promise<{ success: boolean }> => {
   return simulateApiCall({ success: true }, 500);
 };
+
 
 // Helper: Convert real API data to WalletAnalysis format
 export const convertRealApiDataToWalletAnalysis = (apiData: any): WalletAnalysis => {
@@ -173,11 +194,13 @@ export const convertRealApiDataToWalletAnalysis = (apiData: any): WalletAnalysis
     decimals: token.decimals,
   }));
 
+
   // Tính phần trăm cho mỗi token
   const totalValue = tokenBalances.reduce((sum, t) => sum + t.value, 0);
   tokenBalances.forEach(token => {
     token.percentage = totalValue > 0 ? (token.value / totalValue) * 100 : 0;
   });
+
 
   // Parse transaction history từ real API
   const recentTransactions: Transaction[] = (apiData.transaction_history || []).slice(0, 10).map((tx: any) => {
@@ -187,10 +210,12 @@ export const convertRealApiDataToWalletAnalysis = (apiData: any): WalletAnalysis
       type = "receive";
     }
 
+
     // Lấy token từ erc20_transfers hoặc native_transfers
     let token = "ETH";
     let amount = 0;
     let value = 0;
+
 
     if (tx.erc20_transfers && tx.erc20_transfers.length > 0) {
       const transfer = tx.erc20_transfers[0];
@@ -203,6 +228,7 @@ export const convertRealApiDataToWalletAnalysis = (apiData: any): WalletAnalysis
       amount = parseFloat(transfer.value_formatted || 0);
       value = parseFloat(transfer.value) || 0;
     }
+
 
     return {
       id: tx.hash,
@@ -219,11 +245,13 @@ export const convertRealApiDataToWalletAnalysis = (apiData: any): WalletAnalysis
     };
   });
 
+
   // Tính wallet age từ transaction đầu tiên
   const oldestTx = apiData.transaction_history?.[apiData.transaction_history.length - 1];
   const walletAge = oldestTx?.block_timestamp
     ? Math.floor((Date.now() - new Date(oldestTx.block_timestamp).getTime()) / (1000 * 60 * 60 * 24))
     : apiData.wallet_age_days || 0;
+
 
   // Tính điểm từ final_score hoặc on_chain_score
   const score = apiData.final_score
@@ -232,13 +260,16 @@ export const convertRealApiDataToWalletAnalysis = (apiData: any): WalletAnalysis
       ? Math.round(apiData.on_chain_score * 850)
       : 550;
 
+
+  const finalScore = Math.min(score, 850);
   return {
-    score: Math.min(score, 850),
+    score: finalScore,
     walletAge: walletAge,
     totalTransactions: apiData.total_transactions || 0,
     tokenDiversity: apiData.token_diversity || tokenBalances.length,
     totalAssets: apiData.total_assets_usd || totalValue,
-    rating: apiData.credit_level || getRating(score),
+    // ✅ FIX: If score is 0, always return "N/A" regardless of API's credit_level
+    rating: finalScore === 0 ? "N/A" : (apiData.credit_level || getRating(finalScore)),
     tokenBalances: tokenBalances,
     recentTransactions: recentTransactions,
     walletAddress: apiData.wallet_address,
@@ -255,10 +286,12 @@ export const convertRealApiDataToWalletAnalysis = (apiData: any): WalletAnalysis
   };
 };
 
+
 // Hàm phân tích ví đầy đủ (bao gồm tokens và transactions)
 export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalysis> => {
   const hash = walletAddress.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const score = 550 + (hash % 300); // Score từ 550-850
+
 
   // Tạo dữ liệu token balance
   const tokens = ["ETH", "USDT", "USDC", "DAI", "WBTC", "LINK", "UNI", "AAVE"];
@@ -273,11 +306,13 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
     };
   });
 
+
   // Tính phần trăm cho mỗi token
   const totalValue = tokenBalances.reduce((sum, t) => sum + t.value, 0);
   tokenBalances.forEach(token => {
     token.percentage = (token.value / totalValue) * 100;
   });
+
 
   // Tạo dữ liệu transaction history (10 giao dịch gần nhất)
   const recentTransactions: Transaction[] = [];
@@ -288,6 +323,7 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
     const type = Math.random() > 0.5 ? "receive" : "send";
     const amount = Math.random() * 10 + 0.1;
     const value = amount * (1000 + Math.random() * 1000);
+
 
     recentTransactions.push({
       id: `tx_${i}_${hash}`,
@@ -300,6 +336,7 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
     });
   }
 
+
   const mockData: WalletAnalysis = {
     score: Math.min(score, 850),
     walletAge: 200 + (hash % 400), // 200-600 ngày
@@ -311,8 +348,10 @@ export const analyzeWallet = async (walletAddress: string): Promise<WalletAnalys
     recentTransactions,
   };
 
+
   return simulateApiCall(mockData, 2000);
 };
+
 
 // Hàm tính credit score (giữ lại để backward compatible)
 export const calculateCreditScore = async (walletAddress: string): Promise<CreditScoreData> => {
@@ -327,14 +366,17 @@ export const calculateCreditScore = async (walletAddress: string): Promise<Credi
   };
 };
 
+
 export const getScoreHistory = async (walletAddress: string): Promise<Array<{ date: string; score: number }>> => {
   const history = [];
   const baseScore = 700;
+
 
   for (let i = 29; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     const variation = Math.random() * 50 - 25; // +/- 25 điểm
+
 
     history.push({
       date: date.toISOString().split("T")[0],
@@ -342,8 +384,10 @@ export const getScoreHistory = async (walletAddress: string): Promise<Array<{ da
     });
   }
 
+
   return simulateApiCall(history, 1000);
 };
+
 
 // Các hàm xử lý user profile
 export const getUserProfile = async (userId: string): Promise<UserProfile> => {
@@ -357,15 +401,19 @@ export const getUserProfile = async (userId: string): Promise<UserProfile> => {
     lastLogin: new Date().toISOString(),
   };
 
+
   return simulateApiCall(mockProfile);
 };
+
 
 export const updateUserProfile = async (userId: string, updates: Partial<UserProfile>): Promise<UserProfile> => {
   const currentProfile = await getUserProfile(userId);
   const updatedProfile = { ...currentProfile, ...updates };
 
+
   return simulateApiCall(updatedProfile, 1000);
 };
+
 
 // Đăng ký nhận email cập nhật
 export const subscribeToUpdates = async (
@@ -382,7 +430,9 @@ export const subscribeToUpdates = async (
     verified: false,
   };
 
+
   console.log("Đăng ký email thành công:", subscription);
+
 
   return simulateApiCall(
     {
@@ -393,9 +443,11 @@ export const subscribeToUpdates = async (
   );
 };
 
+
 // Gửi OTP đến email
 export const requestOTP = async (email: string, walletAddress: string): Promise<{ success: boolean; message: string }> => {
   console.log("Gửi OTP đến:", email, "cho ví:", walletAddress);
+
 
   return simulateApiCall(
     {
@@ -406,6 +458,7 @@ export const requestOTP = async (email: string, walletAddress: string): Promise<
   );
 };
 
+
 // Xác thực OTP
 export const verifyOTP = async (
   email: string,
@@ -413,6 +466,7 @@ export const verifyOTP = async (
   otp: string
 ): Promise<{ success: boolean; message: string; subscription?: EmailSubscription }> => {
   console.log("Xác thực OTP:", otp, "cho email:", email);
+
 
   // Mock verification - trong thực tế sẽ kiểm tra OTP từ backend
   const subscription: EmailSubscription = {
@@ -423,10 +477,12 @@ export const verifyOTP = async (
     verified: true,
   };
 
+
   // Lưu vào localStorage để kiểm tra subscription status
   const subscriptions = JSON.parse(localStorage.getItem("subscriptions") || "{}");
   subscriptions[walletAddress] = subscription;
   localStorage.setItem("subscriptions", JSON.stringify(subscriptions));
+
 
   return simulateApiCall(
     {
@@ -438,17 +494,20 @@ export const verifyOTP = async (
   );
 };
 
+
 // Kiểm tra subscription status cho một ví
 export const checkSubscriptionStatus = async (walletAddress: string): Promise<EmailSubscription | null> => {
   const subscriptions = JSON.parse(localStorage.getItem("subscriptions") || "{}");
   return subscriptions[walletAddress] || null;
 };
 
+
 // Hủy subscription
 export const unsubscribe = async (walletAddress: string): Promise<{ success: boolean; message: string }> => {
   const subscriptions = JSON.parse(localStorage.getItem("subscriptions") || "{}");
   delete subscriptions[walletAddress];
   localStorage.setItem("subscriptions", JSON.stringify(subscriptions));
+
 
   return simulateApiCall(
     {
@@ -458,6 +517,7 @@ export const unsubscribe = async (walletAddress: string): Promise<{ success: boo
     500
   );
 };
+
 
 // Gửi feedback tính năng
 export const submitFeatureFeedback = async (
@@ -472,7 +532,9 @@ export const submitFeatureFeedback = async (
     timestamp: new Date().toISOString(),
   };
 
+
   console.log("Gửi feedback:", feedback);
+
 
   // Mock API call - trong thực tế sẽ lưu vào database
   return simulateApiCall(
@@ -484,9 +546,11 @@ export const submitFeatureFeedback = async (
   );
 };
 
+
 // Gửi báo cáo tuần qua
 export const sendWeeklyReport = async (email: string, walletAddress: string): Promise<{ success: boolean; message: string }> => {
   console.log("Gửi báo cáo tuần qua cho:", email);
+
 
   return simulateApiCall(
     {
@@ -497,8 +561,10 @@ export const sendWeeklyReport = async (email: string, walletAddress: string): Pr
   );
 };
 
+
 // helper functions
 function getRating(score: number): string {
+  if (score === 0) return "N/A"; // ✅ No score = No rating
   if (score >= 750) return "AAA";
   if (score >= 700) return "AA";
   if (score >= 650) return "A";
@@ -507,21 +573,25 @@ function getRating(score: number): string {
   return "B-C"; // ✅ Unified: Show "B-C" for scores < 550 instead of separate "B" or "C"
 }
 
+
 export const isValidWalletAddress = (address: string): boolean => {
   const ethereumRegex = /^0x[a-fA-F0-9]{40}$/;
   return ethereumRegex.test(address);
 };
+
 
 export const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
+
 export const formatWalletAddress = (address: string): string => {
   if (!address) return "";
   if (address.length < 10) return address;
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
+
 
 // Mock database để lưu email-wallet mapping
 // Trong production, sẽ lưu vào database thật
@@ -534,6 +604,7 @@ const mockUserDatabase: Record<string, string> = {
   "bob@defi.io": "0x1111222233334444555566667777888899990000",
 };
 
+
 // Đăng ký email + wallet (Quick Register)
 export const registerWalletWithEmail = async (data: {
   email: string;
@@ -541,6 +612,7 @@ export const registerWalletWithEmail = async (data: {
   walletAddress: string;
 }): Promise<{ success: boolean; message?: string }> => {
   console.log("📝 Đăng ký email + wallet:", data.email, "→", data.walletAddress);
+
 
   // Validate
   if (!isValidEmail(data.email)) {
@@ -550,12 +622,14 @@ export const registerWalletWithEmail = async (data: {
     };
   }
 
+
   if (!isValidWalletAddress(data.walletAddress)) {
     return {
       success: false,
       message: "Địa chỉ ví không hợp lệ",
     };
   }
+
 
   if (data.password.length < 6) {
     return {
@@ -564,8 +638,10 @@ export const registerWalletWithEmail = async (data: {
     };
   }
 
+
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1500));
+
 
   // Kiểm tra email đã tồn tại chưa
   if (mockUserDatabase[data.email.toLowerCase()]) {
@@ -576,25 +652,32 @@ export const registerWalletWithEmail = async (data: {
     };
   }
 
+
   // Lưu vào mock database
   mockUserDatabase[data.email.toLowerCase()] = data.walletAddress;
 
+
   console.log("✅ Đăng ký thành công!");
   console.log("📊 Database hiện tại:", mockUserDatabase);
+
 
   return {
     success: true,
   };
 };
 
+
 // Lấy wallet address từ email (cho user đã đăng ký)
 export const getWalletByEmail = async (email: string): Promise<{ success: boolean; walletAddress?: string; message?: string }> => {
   console.log("🔍 Tìm kiếm ví từ email:", email);
 
+
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
 
+
   const walletAddress = mockUserDatabase[email.toLowerCase()];
+
 
   if (walletAddress) {
     console.log("✅ Tìm thấy ví:", walletAddress);
@@ -610,6 +693,7 @@ export const getWalletByEmail = async (email: string): Promise<{ success: boolea
     };
   }
 };
+
 
 export default {
   login,
@@ -630,3 +714,6 @@ export default {
   isValidWalletAddress,
   formatWalletAddress,
 };
+
+
+

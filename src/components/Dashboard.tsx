@@ -7,6 +7,7 @@ import { ScoreResult } from "./ScoreResult";
 import { useLanguage } from "../services/LanguageContext";
 import { formatCurrency } from "../utils/format";
 
+
 import {
   Wallet,
   TrendingUp,
@@ -26,9 +27,11 @@ import {
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
 import { RefreshCw } from "lucide-react";
 
+
 // ============================================
 // TYPES
 // ============================================
+
 
 interface DashboardProps {
   user: UserProfile;
@@ -39,14 +42,17 @@ interface DashboardProps {
   onRecalculate?: () => Promise<void>;
 }
 
+
 interface ScoreHistoryItem {
   date: string;
   score: number;
 }
 
+
 // ============================================
 // MOCK DATA FOR DEVELOPMENT
 // ============================================
+
 
 const MOCK_STATS = {
   currentScore: 785,
@@ -58,6 +64,7 @@ const MOCK_STATS = {
   totalAssets: 125000,
   totalChecks: 23,
 };
+
 
 const MOCK_WALLET_DATA = {
   tokenBalances: [
@@ -87,9 +94,11 @@ const MOCK_WALLET_DATA = {
   ],
 };
 
+
 // ============================================
 // DASHBOARD COMPONENT
 // ============================================
+
 
 export function Dashboard({
   user,
@@ -99,20 +108,23 @@ export function Dashboard({
   onCalculateScore,
   onRecalculate
 }: DashboardProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "15d" | "30d">("7d");
   const [scoreHistory, setScoreHistory] = useState<ScoreHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
 
+
   // ============================================
   // HELPER FUNCTIONS
   // ============================================
+
 
   const formatWalletAddress = (address: string) => {
     if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
+
 
   // Helper function to format assets consistently (same as ResultsSummary)
   const formatAssets = (value: number): string => {
@@ -125,15 +137,19 @@ export function Dashboard({
     }
   };
 
+
   // REMOVED: formatAssets function - now using formatCurrency from utils/format.ts
+
 
   // ============================================
   // LIFECYCLE & DATA LOADING
   // ============================================
 
+
   useEffect(() => {
     loadScoreHistory();
   }, [selectedPeriod, user.walletAddress]);
+
 
   const loadScoreHistory = async () => {
     setIsLoadingHistory(true);
@@ -142,16 +158,20 @@ export function Dashboard({
       const daysMap = { "7d": 7, "15d": 15, "30d": 30 };
       const numDays = daysMap[selectedPeriod];
 
+
       // ✅ ALWAYS USE REAL CURRENT SCORE FROM WALLET
       const currentScore = walletData?.score ?? 0;
 
+
       console.log(`📊 Generating score history based on REAL score: ${currentScore} (${numDays} days)`);
+
 
       // ✅ Generate history based ONLY on REAL current score
       const realHistory = Array.from({ length: numDays }, (_, i) => {
         const daysAgo = numDays - 1 - i;
         const date = new Date();
         date.setDate(date.getDate() - daysAgo);
+
 
         // If current score is 0, show flat line at 0
         if (currentScore === 0) {
@@ -161,9 +181,11 @@ export function Dashboard({
           };
         }
 
+
         // Otherwise, simulate score fluctuation around REAL current score
         const variation = Math.sin(i / 5) * (currentScore * 0.05) + (Math.random() - 0.5) * (currentScore * 0.03);
         const score = Math.max(0, Math.min(850, currentScore + variation));
+
 
         return {
           date: date.toISOString().split('T')[0],
@@ -171,8 +193,10 @@ export function Dashboard({
         };
       });
 
+
       setScoreHistory(realHistory);
       console.log(`✅ Generated history with ${numDays} points based on real score: ${currentScore}`);
+
 
     } catch (error) {
       console.error("Error loading score history:", error);
@@ -180,6 +204,7 @@ export function Dashboard({
       setIsLoadingHistory(false);
     }
   };
+
 
   const handleRecalculate = async () => {
     if (!onRecalculate) return;
@@ -194,6 +219,7 @@ export function Dashboard({
     }
   };
 
+
   // Tính toán score change
   // ✅ FIX: Only fallback to MOCK if walletData is null, not if score is 0
   const currentScore = walletData !== null ? (walletData.score ?? MOCK_STATS.currentScore) : MOCK_STATS.currentScore;
@@ -201,9 +227,12 @@ export function Dashboard({
   const totalTransactions = walletData !== null ? (walletData.totalTransactions ?? MOCK_STATS.totalTransactions) : MOCK_STATS.totalTransactions;
   const tokenDiversity = walletData !== null ? (walletData.tokenDiversity ?? MOCK_STATS.tokenDiversity) : MOCK_STATS.tokenDiversity;
   const totalAssets = walletData !== null ? (walletData.totalAssets ?? MOCK_STATS.totalAssets) : MOCK_STATS.totalAssets;
-  const rating = walletData !== null ? (walletData.rating ?? MOCK_STATS.rating) : MOCK_STATS.rating;
+  const rawRating = walletData !== null ? (walletData.rating ?? MOCK_STATS.rating) : MOCK_STATS.rating;
+  // ✅ FIX: If score is 0, show "Không Có Hạng" / "No Rating" instead of rating
+  const rating = currentScore === 0 ? "N/A" : rawRating;
   const tokenBalances = walletData !== null ? (walletData.tokenBalances ?? MOCK_WALLET_DATA.tokenBalances) : MOCK_WALLET_DATA.tokenBalances;
   const recentTransactions = walletData !== null ? (walletData.recentTransactions ?? MOCK_WALLET_DATA.recentTransactions) : MOCK_WALLET_DATA.recentTransactions;
+
 
   // ✅ DEBUG: Log để check giá trị truyền vào ScoreResult
   console.log("🎯 Dashboard - Data passed to ScoreResult:");
@@ -215,13 +244,16 @@ export function Dashboard({
   console.log("  - tokenBalances:", tokenBalances);
   console.log("  - tokenBalances.length:", tokenBalances?.length || 0);
 
+
   const scoreChange = MOCK_STATS.currentScore - MOCK_STATS.previousScore;
   const scoreChangePercent = ((scoreChange / MOCK_STATS.previousScore) * 100).toFixed(1);
   const isPositiveChange = scoreChange >= 0;
 
+
   // ============================================
   // RENDER UI
   // ============================================
+
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#0f1419]">
@@ -232,6 +264,7 @@ export function Dashboard({
         <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
       </div>
+
 
       <div className="relative z-10 container mx-auto px-4 py-4 md:py-8">
         {/* Header */}
@@ -248,6 +281,7 @@ export function Dashboard({
               </p>
             </div>
 
+
             {/* Buttons section - Full width on mobile, side by side */}
             <div className="flex items-center gap-2 md:gap-3 w-full relative z-30">
               <Button
@@ -258,6 +292,7 @@ export function Dashboard({
                 <User className="w-4 h-4 md:mr-2" />
                 <span className="hidden md:inline">{t.navigation.profile}</span>
               </Button>
+
 
               {/* Button Tính Điểm Mới - Compact like profile button */}
               <Button
@@ -281,6 +316,7 @@ export function Dashboard({
           </div>
         </div>
 
+
         {/* Quick Stats Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4 mb-6">
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
@@ -290,10 +326,11 @@ export function Dashboard({
               </div>
               <div className="text-gray-400 text-[10px] md:text-xs">{t.statsLabels.creditScore}</div>
               <Badge className="mt-1.5 md:mt-2 bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] md:text-xs px-1.5 md:px-2">
-                {rating}
+                {rating === "N/A" ? (language === "vi" ? "Chưa Có Hạng" : "No Rating") : rating}
               </Badge>
             </CardContent>
           </Card>
+
 
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-3 md:p-4 text-center">
@@ -303,6 +340,7 @@ export function Dashboard({
             </CardContent>
           </Card>
 
+
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-3 md:p-4 text-center">
               <Activity className="w-4 h-4 md:w-5 md:h-5 text-blue-400 mx-auto mb-1" />
@@ -310,6 +348,7 @@ export function Dashboard({
               <div className="text-gray-400 text-[10px] md:text-xs">{t.statsLabels.transactions}</div>
             </CardContent>
           </Card>
+
 
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-3 md:p-4 text-center">
@@ -321,6 +360,7 @@ export function Dashboard({
             </CardContent>
           </Card>
 
+
           <Card className="bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 rounded-xl">
             <CardContent className="p-3 md:p-4 text-center">
               <Wallet className="w-4 h-4 md:w-5 md:h-5 text-emerald-400 mx-auto mb-1" />
@@ -330,6 +370,7 @@ export function Dashboard({
           </Card>
         </div>
 
+
         {/* Detailed Charts & Transactions */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -338,10 +379,11 @@ export function Dashboard({
                 {t.statsLabels.detailedAnalysis}
               </h2>
               {/* <p className="text-gray-400 text-sm">
-                {t.statsLabels.chartDescription} {formatWalletAddress(user.walletAddress)}
-              </p> */}
+               {t.statsLabels.chartDescription} {formatWalletAddress(user.walletAddress)}
+             </p> */}
             </div>
           </div>
+
 
           <ScoreResult
             score={currentScore}
@@ -364,3 +406,4 @@ export function Dashboard({
     </div>
   );
 }
+

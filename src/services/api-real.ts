@@ -1211,8 +1211,8 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     const rawScore = data.final_score || data.on_chain_score || 0;
     const score = Math.round(Math.min(rawScore * 850, 850));
 
-    // Map credit level
-    const rating = data.credit_level || getRating(score);
+    // Map credit level - ✅ FIX: If score is 0, always return "N/A" regardless of API's credit_level
+    const rating = score === 0 ? "N/A" : (data.credit_level || getRating(score));
 
     // ✅ FIX: Use token_summary.total_tokens for tokenDiversity if available
     // ✅ UPDATED: Prioritize validTokens.length (actual parsed tokens) over API's token_diversity
@@ -1883,3 +1883,4 @@ export default {
 
 export const sendMagicLink = sendMagicLinkReal;
 export const verifyToken = verifyMagicLink;
+
