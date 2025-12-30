@@ -311,17 +311,17 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
 
               <CardContent>
                 <Tabs defaultValue="personal" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-slate-900/80 p-1 rounded-xl mb-6 border border-cyan-500/20">
+                  <TabsList className="grid w-full grid-cols-2 bg-slate-900/80 p-1.5 rounded-xl mb-6 border border-cyan-500/20">
                     <TabsTrigger
                       value="personal"
-                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white text-gray-300 data-[state=inactive]:text-gray-400 rounded-lg transition-all duration-300 hover:text-cyan-300"
+                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 data-[state=active]:scale-[1.02] text-gray-300 data-[state=inactive]:text-gray-400 rounded-lg transition-all duration-500 ease-out hover:bg-slate-700/30 hover:text-cyan-200"
                     >
                       <User className="w-4 h-4 mr-2" />
                       {t.tabs.personal}
                     </TabsTrigger>
                     <TabsTrigger
                       value="wallet"
-                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white text-gray-300 data-[state=inactive]:text-gray-400 rounded-lg transition-all duration-300 hover:text-cyan-300"
+                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/50 data-[state=active]:scale-[1.02] text-gray-300 data-[state=inactive]:text-gray-400 rounded-lg transition-all duration-500 ease-out hover:bg-slate-700/30 hover:text-cyan-200"
                     >
                       <Shield className="w-4 h-4 mr-2" />
                       {t.tabs.wallet}
