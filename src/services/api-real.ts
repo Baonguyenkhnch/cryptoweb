@@ -1,13 +1,4 @@
-// =====================================================
-// FILE NÀY CHỨA API THẬT - SỬ DỤNG KHI ĐÃ SẴN SÀNG
-// =====================================================
-// 
-// CÁCH SỬ DỤNG:
-// 1. Đổi tên file này thành api.ts (backup file cũ trước)
-// 2. Hoặc copy nội dung này vào file api.ts
-// 3. Test bằng test-api.html
-//
-// =====================================================
+
 
 // Giữ nguyên các interfaces với các field mở rộng
 export interface TokenBalance {
@@ -161,6 +152,495 @@ const DEBUG_MODE = true; // ✅ BẬT DEBUG để xem backend response
 const debugLog = (...args: any[]) => {
     if (DEBUG_MODE) {
         console.log(...args);
+    }
+};
+
+// =====================================================
+// MORALIS WALLET API ENDPOINTS
+// =====================================================
+
+/**
+ * Crawl wallet data using Moralis API - POST /api/moralis/crawl-cu
+ * @param walletAddress - Wallet address to crawl
+ * @returns Success status and crawl result
+ */
+export const crawlWalletMoralis = async (
+    walletAddress: string
+): Promise<{
+    success: boolean;
+    message: string;
+    data?: any;
+}> => {
+    debugLog(`🕷️ Crawling wallet data from Moralis: ${walletAddress}`);
+
+    try {
+        if (!walletAddress || !isValidWalletAddress(walletAddress)) {
+            return {
+                success: false,
+                message: "Địa chỉ ví không hợp lệ",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/moralis/crawl-cu`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                wallet_address: walletAddress.trim(),
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Moralis crawl error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `Lỗi crawl dữ liệu (${response.status})`,
+            };
+        }
+
+        debugLog(`✅ Moralis crawl successful:`, data);
+
+        return {
+            success: true,
+            message: data.message || "Crawl dữ liệu thành công!",
+            data: data,
+        };
+    } catch (error: any) {
+        debugLog(`❌ Moralis crawl error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+/**
+ * Get wallet token balances with USD value - GET /api/moralis/{wallet_address}/token-balances-usd
+ * @param walletAddress - Wallet address
+ * @returns Token balances with USD value
+ */
+export const getWalletTokenBalances = async (
+    walletAddress: string
+): Promise<{
+    success: boolean;
+    message: string;
+    data?: {
+        wallet_address: string;
+        total_usd_value: number;
+        tokens: Array<{
+            token_address: string;
+            name: string;
+            symbol: string;
+            balance: number;
+            decimals: number;
+            usd_value: number;
+            usd_price: number;
+        }>;
+    };
+}> => {
+    debugLog(`💰 Getting token balances for wallet: ${walletAddress}`);
+
+    try {
+        if (!walletAddress || !isValidWalletAddress(walletAddress)) {
+            return {
+                success: false,
+                message: "Địa chỉ ví không hợp lệ",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/moralis/${walletAddress}/token-balances-usd`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Token balances error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `Lỗi lấy token balances (${response.status})`,
+            };
+        }
+
+        debugLog(`✅ Token balances retrieved:`, data);
+
+        return {
+            success: true,
+            message: "Success",
+            data: data,
+        };
+    } catch (error: any) {
+        debugLog(`❌ Token balances error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+// =====================================================
+// WALLET AUTHENTICATION (SIWE - Sign-In With Ethereum)
+// =====================================================
+
+/**
+ * Request SIWE nonce for wallet authentication - POST /api/auth/wallet/nonce
+ * @param walletAddress - Wallet address requesting nonce
+ * @returns Nonce for signing
+ */
+export const requestWalletNonce = async (
+    walletAddress: string
+): Promise<{
+    success: boolean;
+    message: string;
+    nonce?: string;
+}> => {
+    debugLog(`🔐 Requesting SIWE nonce for wallet: ${walletAddress}`);
+
+    try {
+        if (!walletAddress || !isValidWalletAddress(walletAddress)) {
+            return {
+                success: false,
+                message: "Địa chỉ ví không hợp lệ",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/auth/wallet/nonce`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                wallet_address: walletAddress.trim(),
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Nonce request error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `Lỗi yêu cầu nonce (${response.status})`,
+            };
+        }
+
+        debugLog(`✅ Nonce received:`, data);
+
+        return {
+            success: true,
+            message: "Success",
+            nonce: data.nonce,
+        };
+    } catch (error: any) {
+        debugLog(`❌ Nonce request error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+/**
+ * Verify wallet signature (SIWE) - POST /api/auth/wallet/verify
+ * @param walletAddress - Wallet address
+ * @param signature - Signed message from wallet
+ * @param message - Original message that was signed
+ * @returns Authentication result with session token
+ */
+export const verifyWalletSignature = async (
+    walletAddress: string,
+    signature: string,
+    message: string
+): Promise<{
+    success: boolean;
+    message: string;
+    sessionToken?: string;
+    authToken?: string;
+    user?: UserProfile;
+}> => {
+    debugLog(`✅ Verifying wallet signature for: ${walletAddress}`);
+
+    try {
+        if (!walletAddress || !isValidWalletAddress(walletAddress)) {
+            return {
+                success: false,
+                message: "Địa chỉ ví không hợp lệ",
+            };
+        }
+
+        if (!signature || !message) {
+            return {
+                success: false,
+                message: "Signature và message không được để trống",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/auth/wallet/verify`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                wallet_address: walletAddress.trim(),
+                signature: signature,
+                message: message,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Signature verification error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `Lỗi xác thực signature (${response.status})`,
+            };
+        }
+
+        debugLog(`✅ Signature verified:`, data);
+
+        return {
+            success: true,
+            message: data.message || "Xác thực ví thành công!",
+            sessionToken: data.sessionToken || data.token || data.authToken,
+            authToken: data.sessionToken || data.token || data.authToken,
+            user: data.user,
+        };
+    } catch (error: any) {
+        debugLog(`❌ Signature verification error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+// =====================================================
+// MINT IDENTITY (SBT - Soulbound Token)
+// =====================================================
+
+/**
+ * Get wallet mint info - GET /api/mint/wallet-info/{wallet_address}
+ * @param walletAddress - Wallet address
+ * @returns Wallet mint information
+ */
+export const getWalletMintInfo = async (
+    walletAddress: string
+): Promise<{
+    success: boolean;
+    message: string;
+    data?: {
+        wallet_address: string;
+        has_minted: boolean;
+        token_id?: string;
+        mint_date?: string;
+        credit_score?: number;
+        metadata_uri?: string;
+    };
+}> => {
+    debugLog(`🎫 Getting mint info for wallet: ${walletAddress}`);
+
+    try {
+        if (!walletAddress || !isValidWalletAddress(walletAddress)) {
+            return {
+                success: false,
+                message: "Địa chỉ ví không hợp lệ",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/mint/wallet-info/${walletAddress}`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Mint info error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `Lỗi lấy mint info (${response.status})`,
+            };
+        }
+
+        debugLog(`✅ Mint info retrieved:`, data);
+
+        return {
+            success: true,
+            message: "Success",
+            data: data,
+        };
+    } catch (error: any) {
+        debugLog(`❌ Mint info error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+/**
+ * Mint SBT (admin pays gas) - POST /api/mint/mint-sbt
+ * @param walletAddress - Wallet address to mint SBT for
+ * @returns Mint transaction result
+ */
+export const mintSBT = async (
+    walletAddress: string
+): Promise<{
+    success: boolean;
+    message: string;
+    data?: {
+        transaction_hash?: string;
+        token_id?: string;
+        metadata_uri?: string;
+    };
+}> => {
+    debugLog(`🎨 Minting SBT for wallet: ${walletAddress}`);
+
+    try {
+        if (!walletAddress || !isValidWalletAddress(walletAddress)) {
+            return {
+                success: false,
+                message: "Địa chỉ ví không hợp lệ",
+            };
+        }
+
+        // Get auth token (required for authenticated endpoint)
+        const authToken = localStorage.getItem("authToken");
+        if (!authToken) {
+            return {
+                success: false,
+                message: "Bạn cần đăng nhập để mint SBT",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/mint/mint-sbt`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({
+                wallet_address: walletAddress.trim(),
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Mint SBT error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `Lỗi mint SBT (${response.status})`,
+            };
+        }
+
+        debugLog(`✅ SBT minted:`, data);
+
+        return {
+            success: true,
+            message: data.message || "Mint SBT thành công!",
+            data: data,
+        };
+    } catch (error: any) {
+        debugLog(`❌ Mint SBT error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
+    }
+};
+
+/**
+ * Prepare update score transaction (user pays gas) - POST /api/mint/prepare-update-score
+ * @param walletAddress - Wallet address
+ * @returns Transaction data for user to sign
+ */
+export const prepareUpdateScore = async (
+    walletAddress: string
+): Promise<{
+    success: boolean;
+    message: string;
+    data?: {
+        to: string;
+        data: string;
+        value: string;
+        gas_estimate?: string;
+    };
+}> => {
+    debugLog(`📝 Preparing update score transaction for wallet: ${walletAddress}`);
+
+    try {
+        if (!walletAddress || !isValidWalletAddress(walletAddress)) {
+            return {
+                success: false,
+                message: "Địa chỉ ví không hợp lệ",
+            };
+        }
+
+        // Get auth token (required for authenticated endpoint)
+        const authToken = localStorage.getItem("authToken");
+        if (!authToken) {
+            return {
+                success: false,
+                message: "Bạn cần đăng nhập để update score",
+            };
+        }
+
+        const url = `${API_BASE_URL}/api/mint/prepare-update-score`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({
+                wallet_address: walletAddress.trim(),
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            debugLog(`❌ Prepare update score error: ${response.status}`, data);
+            return {
+                success: false,
+                message: data.message || data.error || `Lỗi prepare transaction (${response.status})`,
+            };
+        }
+
+        debugLog(`✅ Update score transaction prepared:`, data);
+
+        return {
+            success: true,
+            message: data.message || "Transaction prepared successfully!",
+            data: data,
+        };
+    } catch (error: any) {
+        debugLog(`❌ Prepare update score error:`, error.message);
+        return {
+            success: false,
+            message: error.message || "Lỗi kết nối đến server",
+        };
     }
 };
 
@@ -960,7 +1440,7 @@ export const analyzeWallet = async (
         }
 
         // Nếu hết retry vẫn timeout
-        throw new Error('⏱️ Backend phản hồi quá chậm (>60s). Dữ liệu blockchain đang được crawl. Vui lòng thử lại sau hoặc xem Demo để test nhanh.');
+        throw new Error('⏱️ Backend ph���n hồi quá chậm (>60s). Dữ liệu blockchain đang được crawl. Vui lòng thử lại sau hoặc xem Demo để test nhanh.');
 
     } catch (error: any) {
         debugLog(`❌ Error analyzing wallet:`, error);
@@ -996,7 +1476,7 @@ export const analyzeWallet = async (
 // Helper function để map wallet data
 function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     // ✅ DEBUG: Log toàn bộ API response
-    console.log(`🔍 ========== FULL API RESPONSE ==========`);
+    console.log(`��� ========== FULL API RESPONSE ==========`);
     console.log(`🔍 Complete data object:`, JSON.stringify(data, null, 2));
     console.log(`🔍 ========================================`);
 
@@ -1211,8 +1691,8 @@ function mapWalletData(data: any, walletAddress: string): WalletAnalysis {
     const rawScore = data.final_score || data.on_chain_score || 0;
     const score = Math.round(Math.min(rawScore * 850, 850));
 
-    // Map credit level - ✅ FIX: If score is 0, always return "N/A" regardless of API's credit_level
-    const rating = score === 0 ? "N/A" : (data.credit_level || getRating(score));
+    // Map credit level
+    const rating = data.credit_level || getRating(score);
 
     // ✅ FIX: Use token_summary.total_tokens for tokenDiversity if available
     // ✅ UPDATED: Prioritize validTokens.length (actual parsed tokens) over API's token_diversity
@@ -1882,5 +2362,4 @@ export default {
 };
 
 export const sendMagicLink = sendMagicLinkReal;
-export const verifyToken = verifyMagicLink;
-
+export const verifyToken = verifyMagicLink; 
