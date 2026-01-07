@@ -12,13 +12,16 @@ import { X, Copy, Check } from "lucide-react";
 import { Button } from "./ui/button";
 import QRCode from "qrcode";
 import switchWalletLogo from "./images/logonhap.jpg";
+import { signInWithWallet } from "../utils/siwe-auth";
+import { toast } from "sonner";
 
 interface ConnectWalletModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps) {
+export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWalletModalProps) {
   const [step, setStep] = useState<"select" | "qrcode" | "metamask">("select");
   const [walletConnectURI, setWalletConnectURI] = useState("");
   const [isCopied, setIsCopied] = useState(false);
@@ -300,14 +303,41 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
 
               {/* Connect Button */}
               <Button
-                onClick={() => {
-                  // Mock MetaMask connection
-                  console.log('Connecting to MetaMask...');
-                  // In production, this would trigger: window.ethereum.request({ method: 'eth_requestAccounts' })
-                  setTimeout(() => {
-                    alert('MetaMask connection simulated! In production, this would connect to the actual MetaMask wallet.');
-                    handleClose();
-                  }, 500);
+                onClick={async () => {
+                  try {
+                    console.log('🔐 Starting MetaMask SIWE authentication...');
+
+                    // Call SIWE login function
+                    const result = await signInWithWallet();
+
+                    if (result.success) {
+                      toast.success("Đăng nhập thành công!", {
+                        description: `Chào mừng ${result.user?.walletAddress?.substring(0, 8)}...`,
+                      });
+
+                      // Close modal
+                      handleClose();
+
+                      // Callback to parent (refresh UI, etc.)
+                      if (onSuccess) {
+                        onSuccess();
+                      }
+
+                      // Reload page to update auth state
+                      setTimeout(() => {
+                        window.location.reload();
+                      }, 500);
+                    } else {
+                      toast.error("Đăng nhập thất bại", {
+                        description: result.error || "Vui lòng thử lại",
+                      });
+                    }
+                  } catch (error: any) {
+                    console.error('❌ MetaMask login error:', error);
+                    toast.error("Lỗi kết nối MetaMask", {
+                      description: error.message || "Vui lòng kiểm tra MetaMask và thử lại",
+                    });
+                  }
                 }}
                 className="w-full py-4 bg-gradient-to-r from-[#F6851B] to-[#E2761B] hover:from-[#E2761B] hover:to-[#CD6116] text-white font-semibold text-lg rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300"
               >
