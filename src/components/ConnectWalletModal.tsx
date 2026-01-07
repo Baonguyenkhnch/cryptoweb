@@ -11,7 +11,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, Copy, Check } from "lucide-react";
 import { Button } from "./ui/button";
 import QRCode from "qrcode";
-import switchWalletLogo from "./images/logodash.jpg";
+import switchWalletLogo from "./images/logonhap.jpg";
 
 interface ConnectWalletModalProps {
   isOpen: boolean;
