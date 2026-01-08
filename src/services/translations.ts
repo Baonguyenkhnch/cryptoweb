@@ -148,7 +148,7 @@ export const translations = {
       },
       badges: {
         member: "AAA Member",
-        autoUpdate: "Tự động", // ✅ NEW: Auto-update badge for date fields
+        autoUpdate: "Tự động",
       },
     },
 
@@ -173,7 +173,7 @@ export const translations = {
       securityFooter: "Được bảo mật bằng công nghệ blockchain 🔒",
       backToCalculator: "Quay lại Calculator",
       benefits: "🎁 Lợi ích:",
-      benefit1: "Nhập email thay v đa chỉ ví",
+      benefit1: "Nhập email thay vì địa chỉ ví",
       benefit2: "Lưu lịch sử điểm tín dụng",
       benefit3: "Dashboard chi tiết với biểu đồ",
       benefitNoPassword: "Không cần nhớ mật khẩu",
@@ -443,7 +443,7 @@ export const translations = {
         walletHistory: "Tuổi và lịch sử hoạt động của ví",
         transactionFreq: "Tần suất và khối lượng giao dịch",
         assetDiversity: "Đa dạng hóa tài sản token",
-        portfolioValue: "Tổng giá trị tài sản", // ✅ CHANGED: Was "Tổng giá trị danh mục đầu tư"
+        portfolioValue: "Tổng giá trị tài sản",
       },
       weights: {
         walletHistory: "30%",
@@ -466,9 +466,7 @@ export const translations = {
       title: "Đề Xuất Tính Năng Mới",
       subtitle: "Ý tưởng của bạn giúp chúng tôi phát triển tốt hơn",
       featureName: "Tên Tính Năng",
-      // featureNamePlaceholder: "VD: Tích hợp với MetaMask",
       description: "Mô Tả Chi Tiết",
-      // descriptionPlaceholder: "Mô tả chi tiết về tính năng bạn muốn đề xuất...",
       charactersCount: "ký tự",
       emailLabel: "📧 Email Nhận Phản Hồi",
       emailResponseLabel: "📧 Email Nhận Phản Hồi",

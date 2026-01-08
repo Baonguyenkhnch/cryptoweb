@@ -49,7 +49,6 @@ export interface WalletAnalysis {
     updatedAt?: string;
     walletTransactionsLast30d?: number;
     stablecoinInflow30d?: number;
-    // ✅ NEW: Feature importance & recommendations from API response
     featureImportance?: {
         groups?: {
             transaction_activity?: number;

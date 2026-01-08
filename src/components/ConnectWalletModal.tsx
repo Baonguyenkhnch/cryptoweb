@@ -12,20 +12,22 @@ import { X, Copy, Check } from "lucide-react";
 import { Button } from "./ui/button";
 import QRCode from "qrcode";
 import switchWalletLogo from "./images/logonhap.jpg";
-import { signInWithWallet } from "../utils/siwe-auth";
+import { useWalletAuth } from "../hooks/useWalletAuth"; // ✅ NEW: Use new hook
 import { toast } from "sonner";
 
 interface ConnectWalletModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: () => void; // Callback sau khi login thành công
 }
 
 export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWalletModalProps) {
   const [step, setStep] = useState<"select" | "qrcode" | "metamask">("select");
   const [walletConnectURI, setWalletConnectURI] = useState("");
   const [isCopied, setIsCopied] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false); // ✅ NEW: Loading state
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { connectWallet } = useWalletAuth(); // ✅ NEW: Use hook
 
   // Generate WalletConnect QR Code
   useEffect(() => {
@@ -305,43 +307,55 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
               <Button
                 onClick={async () => {
                   try {
+                    setIsConnecting(true);
                     console.log('🔐 Starting MetaMask SIWE authentication...');
 
-                    // Call SIWE login function
-                    const result = await signInWithWallet();
+                    // ✅ Call connectWallet from hook
+                    const result = await connectWallet();
 
-                    if (result.success) {
-                      toast.success("Đăng nhập thành công!", {
-                        description: `Chào mừng ${result.user?.walletAddress?.substring(0, 8)}...`,
-                      });
+                    console.log('✅ Login success:', result);
 
-                      // Close modal
-                      handleClose();
+                    // ✅ Save to localStorage
+                    localStorage.setItem("authToken", result.accessToken);
+                    localStorage.setItem("currentUser", JSON.stringify({
+                      id: result.user.id,
+                      walletAddress: result.address,
+                      email: result.user.email,
+                      name: result.user.wallet_address?.substring(0, 8) + "...",
+                      createdAt: result.user.created_at,
+                      lastLogin: result.user.last_login,
+                    }));
 
-                      // Callback to parent (refresh UI, etc.)
-                      if (onSuccess) {
-                        onSuccess();
-                      }
+                    toast.success("Đăng nhập thành công!", {
+                      description: `Chào mừng ${result.address.substring(0, 8)}...`,
+                    });
 
-                      // Reload page to update auth state
-                      setTimeout(() => {
-                        window.location.reload();
-                      }, 500);
-                    } else {
-                      toast.error("Đăng nhập thất bại", {
-                        description: result.error || "Vui lòng thử lại",
-                      });
+                    // Close modal
+                    handleClose();
+
+                    // Callback to parent
+                    if (onSuccess) {
+                      onSuccess();
                     }
+
+                    // Reload page to update auth state
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 500);
+
                   } catch (error: any) {
                     console.error('❌ MetaMask login error:', error);
                     toast.error("Lỗi kết nối MetaMask", {
                       description: error.message || "Vui lòng kiểm tra MetaMask và thử lại",
                     });
+                  } finally {
+                    setIsConnecting(false);
                   }
                 }}
-                className="w-full py-4 bg-gradient-to-r from-[#F6851B] to-[#E2761B] hover:from-[#E2761B] hover:to-[#CD6116] text-white font-semibold text-lg rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300"
+                disabled={isConnecting}
+                className="w-full py-4 bg-gradient-to-r from-[#F6851B] to-[#E2761B] hover:from-[#E2761B] hover:to-[#CD6116] text-white font-semibold text-lg rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Connect MetaMask
+                {isConnecting ? "Đang kết nối..." : "Connect MetaMask"}
               </Button>
 
               {/* Footer Text */}
