@@ -1,6 +1,35 @@
 
+// Minimal Vite env typing (keeps file isolated from global type packages)
+declare global {
+    interface ImportMetaEnv {
+        readonly VITE_API_BASE_URL?: string;
+    }
 
-const API_BASE_URL = "https://backend.migofin.com";
+    interface ImportMeta {
+        readonly env: ImportMetaEnv;
+    }
+}
+
+export { };
+
+// Allow overriding backend via env; default to production API
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "https://backend.migofin.com";
+
+const NONCE_PATHS = ["/api/auth/wallet/nonce", "/auth/wallet/nonce"];
+const VERIFY_PATHS = ["/api/auth/wallet/verify", "/auth/wallet/verify"];
+
+async function postJson(url: string, body: any) {
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+    const data = await response.json().catch(() => ({}));
+    return { response, data };
+}
 
 /**
  * Response type from /wallet/nonce API
@@ -34,28 +63,25 @@ export async function getNonce(
     chainId: number
 ): Promise<NonceResponse> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/wallet/nonce`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-            body: JSON.stringify({
-                address, // ✅ Changed from 'address' to 'wallet_address'
-                chain_id: chainId,
-            }),
-        });
+        // Try both paths to be resilient to backend routing differences
+        for (const path of NONCE_PATHS) {
+            const url = `${API_BASE_URL}${path}`;
+            console.log("📡 Requesting nonce from backend:", url);
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || "Failed to get nonce from backend");
+            const { response, data } = await postJson(url, {
+                wallet_address: address,
+                chain_id: chainId,
+            });
+
+            if (response.ok) {
+                console.log("✅ Nonce data received:", data);
+                return data;
+            }
+
+            console.warn(`⚠️ Nonce endpoint ${url} returned ${response.status}`, data);
         }
 
-        const data = await response.json();
-
-        console.log("✅ Nonce data received:", data);
-
-        return data;
+        throw new Error("Failed to get nonce from backend (all endpoints tried)");
     } catch (error: any) {
         console.error("❌ getNonce error:", error);
         throw new Error(error.message || "Failed to get nonce");
@@ -71,36 +97,32 @@ export async function getNonce(
 export async function verifySignature(
     address: string,
     chain_id: string,
-
     signature: string
 ): Promise<VerifyResponse> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/wallet/verify`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-            body: JSON.stringify({
-                address,
+        for (const path of VERIFY_PATHS) {
+            const url = `${API_BASE_URL}${path}`;
+            console.log("📡 Verifying signature with backend:", url);
+
+            const { response, data } = await postJson(url, {
+                wallet_address: address,
                 chain_id,
                 signature,
-            }),
-        });
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || "Signature verification failed");
+            if (response.ok) {
+                console.log("✅ Verification successful!");
+                console.log("🎫 JWT token received");
+                return data;
+            }
+
+            console.warn(`⚠️ Verify endpoint ${url} returned ${response.status}`, data);
         }
 
-        const data = await response.json();
-
-        console.log("✅ Verification successful!");
-        console.log("🎫 JWT token received");
-
-        return data;
+        throw new Error("Signature verification failed (all endpoints tried)");
     } catch (error: any) {
         console.error("❌ verifySignature error:", error);
         throw new Error(error.message || "Verify failed");
     }
 }
+

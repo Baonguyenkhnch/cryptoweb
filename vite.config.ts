@@ -1,9 +1,22 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+// Replace the common lodash global detection `Function("return this")()` which
+// is blocked by strict CSP (disallows eval/Function). Switching to globalThis
+// keeps behaviour while remaining CSP-safe.
+const cspSafeGlobalThis = (): Plugin => ({
+  name: 'csp-safe-global-this',
+  enforce: 'pre',
+  transform(code) {
+    return code.includes('Function("return this")()')
+      ? code.replace(/Function\("return this"\)\(\)/g, 'globalThis')
+      : null
+  },
+})
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), cspSafeGlobalThis()],
 
 
   resolve: {
