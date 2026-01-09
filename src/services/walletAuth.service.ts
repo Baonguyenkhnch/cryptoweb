@@ -34,7 +34,7 @@ export async function getNonce(
     chainId: number
 ): Promise<NonceResponse> {
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/wallet/nonce`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/wallet/nonce`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
