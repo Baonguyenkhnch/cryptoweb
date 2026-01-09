@@ -4,7 +4,7 @@ import { getNonce, verifySignature } from "../services/walletAuth.service";
 
 export interface WalletAuthResult {
     address: string;
-    chainId: number;
+    chainId: string | number;
     accessToken: string;
     user: {
         id: string;
@@ -82,7 +82,7 @@ Expiration Time: ${nonceData.expiration_time}`;
 
             // ⑨ VERIFY SIGNATURE WITH BACKEND
             console.log("📡 Verifying signature with backend...");
-            const verifyResult = await verifySignature(message, signature);
+            const verifyResult = await verifySignature(address, chainId, signature);
 
             console.log("✅ Authentication successful!");
 
