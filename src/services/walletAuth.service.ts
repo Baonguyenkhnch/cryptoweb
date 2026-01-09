@@ -96,7 +96,7 @@ export async function getNonce(
  */
 export async function verifySignature(
     address: string,
-    chain_id: string,
+    chain_id: number,
     signature: string
 ): Promise<VerifyResponse> {
     try {
@@ -105,7 +105,7 @@ export async function verifySignature(
             console.log("📡 Verifying signature with backend:", url);
 
             const { response, data } = await postJson(url, {
-                wallet_address: address,
+                address,
                 chain_id,
                 signature,
             });
