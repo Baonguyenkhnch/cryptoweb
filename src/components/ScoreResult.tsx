@@ -9,7 +9,6 @@ import { ActionButtons } from "./ActionButtons";
 import { useLanguage } from "../services/LanguageContext";
 import { formatCurrency as formatCurrencyUtil } from "../utils/format";
 
-
 interface ScoreResultProps {
   score: number;
   walletAge: number;
@@ -40,7 +39,6 @@ interface ScoreResultProps {
   recommendations?: string[];
 }
 
-
 const getRating = (score: number): string => {
   if (score === 0) return "N/A"; // ✅ No score yet
   if (score >= 750) return "AAA";
@@ -48,9 +46,28 @@ const getRating = (score: number): string => {
   if (score >= 650) return "A";
   if (score >= 600) return "BBB";
   if (score >= 550) return "BB";
-  return "B-C"; // ✅ Unified: Show "B-C" for scores < 550 instead of separate "B" or "C"
+  if (score >= 500) return "B";
+  return "C";
 };
 
+// Helper function to calculate progress bar percentage
+const calculateProgressPercentage = (value: number, type: 'age' | 'transactions' | 'assets'): number => {
+  if (value === 0) return 0;
+
+  switch (type) {
+    case 'age':
+      // Max age reference: 1000 days = 100%
+      return Math.min((value / 1000) * 100, 100);
+    case 'transactions':
+      // Max transactions reference: 10000 = 100%
+      return Math.min((value / 10000) * 100, 100);
+    case 'assets':
+      // Max assets reference: 100000 USD = 100%
+      return Math.min((value / 100000) * 100, 100);
+    default:
+      return 0;
+  }
+};
 
 const getRatingColor = (rating: string): string => {
   switch (rating) {
@@ -60,12 +77,10 @@ const getRatingColor = (rating: string): string => {
     case "A": return "text-blue-400";
     case "BBB": return "text-yellow-400";
     case "BB": return "text-orange-400";
-    case "B-C": return "text-red-400"; // ✅ Updated: Support "B-C" rating
-    case "B": return "text-red-400"; // Keep for backward compatibility
+    case "B": return "text-red-400";
     default: return "text-red-500";
   }
 };
-
 
 const getRatingGradient = (rating: string): string => {
   switch (rating) {
@@ -75,12 +90,10 @@ const getRatingGradient = (rating: string): string => {
     case "A": return "from-blue-400 to-purple-400";
     case "BBB": return "from-yellow-400 to-amber-400";
     case "BB": return "from-orange-400 to-red-400";
-    case "B-C": return "from-red-500 to-red-600"; // ✅ Updated: Support "B-C" rating
-    case "B": return "from-red-500 to-red-600"; // Keep for backward compatibility
+    case "B": return "from-red-400 to-pink-400";
     default: return "from-red-500 to-red-600";
   }
 };
-
 
 const getRatingIcon = (rating: string) => {
   switch (rating) {
@@ -91,7 +104,6 @@ const getRatingIcon = (rating: string) => {
     default: return <Star className="w-4 h-4 md:w-8 md:h-8 text-yellow-400" />;
   }
 };
-
 
 function ScoreResultComponent({
   score,
@@ -115,34 +127,27 @@ function ScoreResultComponent({
   const rating = useMemo(() => getRating(score), [score]);
   const percentage = useMemo(() => Math.min((score / 850) * 100, 100), [score]);
 
-
   const [showTokenDetails, setShowTokenDetails] = useState(false);
   // ✅ PAGINATION STATE: 5 tokens per page
   const [currentPage, setCurrentPage] = useState(1);
   const TOKENS_PER_PAGE = 5;
 
-
   // ✅ FIX: Filter spam tokens FIRST, then calculate diversity
   const displayedTokens = tokenBalances.filter(token => !token.possible_spam);
   const totalValue = displayedTokens.reduce((sum, t) => sum + (t.value ?? 0), 0);
 
-
   // ✅ FIX: Calculate diversity from displayedTokens (after spam filter)
   // This ensures the number shown in the card matches the actual token list
   const diversity = displayedTokens.length > 0 ? displayedTokens.length : (tokenDiversity ?? 0);
-
 
   const chartData = useMemo(() => [
     { name: 'Score', value: percentage },
     { name: 'Remaining', value: 100 - percentage }
   ], [percentage]);
 
-
   const COLORS = ['url(#gradient)', '#e5e7eb'];
 
-
   const TOKEN_COLORS = ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#6366f1'];
-
 
   // Helper function to format assets consistently (same as ResultsSummary)
   const formatAssets = (value: number): string => {
@@ -150,7 +155,6 @@ function ScoreResultComponent({
     if (!isFinite(value) || isNaN(value) || value < 0) {
       return '0.00';
     }
-
 
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(2)}M`; // Removed $ sign
@@ -162,11 +166,9 @@ function ScoreResultComponent({
     }
   };
 
-
   const formatCurrency = (value: number) => {
     return formatCurrencyUtil(value);
   };
-
 
   // ✅ PAGINATION LOGIC
   const totalPages = Math.ceil(displayedTokens.length / TOKENS_PER_PAGE);
@@ -175,13 +177,11 @@ function ScoreResultComponent({
     currentPage * TOKENS_PER_PAGE
   );
 
-
   // Reset to page 1 when token details are toggled
   const handleToggleTokenDetails = () => {
     setShowTokenDetails(!showTokenDetails);
     setCurrentPage(1); // Reset to first page
   };
-
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-3 md:space-y-8 lg:space-y-12 animate-in fade-in-50 duration-700 px-2 md:px-4">
@@ -189,7 +189,6 @@ function ScoreResultComponent({
       <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-cyan-500/20 shadow-2xl rounded-lg md:rounded-2xl lg:rounded-3xl">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-cyan-900/20 to-slate-900/40" />
         <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-lg md:rounded-2xl lg:rounded-3xl blur-xl opacity-50" />
-
 
         <div className="relative">
           <CardHeader className="text-center pb-2 md:pb-6 lg:pb-8 pt-3 md:pt-5 lg:pt-6 px-3 md:px-5 lg:px-6">
@@ -202,14 +201,12 @@ function ScoreResultComponent({
             <p className="text-gray-400 text-[10px] md:text-base lg:text-lg">{t.scoreResult.subtitle}</p>
           </CardHeader>
 
-
           <CardContent className="pb-3 md:pb-8 lg:pb-12 px-3 md:px-5 lg:px-6">
             <div className="flex flex-col lg:flex-row items-center justify-center gap-4 md:gap-12 lg:gap-16">
               {/* Enhanced Circular Chart */}
               <div className="relative">
                 <div className="w-40 h-40 md:w-56 md:h-56 lg:w-72 lg:h-72 relative">
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-600/40 to-blue-600/40 blur-xl md:blur-2xl animate-pulse" />
-
 
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -246,7 +243,6 @@ function ScoreResultComponent({
                     </PieChart>
                   </ResponsiveContainer>
 
-
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-3xl md:text-5xl lg:text-6xl mb-1 md:mb-1.5 lg:mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
@@ -257,7 +253,6 @@ function ScoreResultComponent({
                   </div>
                 </div>
               </div>
-
 
               {/* Enhanced Score Details */}
               <div className="text-center space-y-3 md:space-y-6 lg:space-y-8 w-full lg:w-auto">
@@ -273,7 +268,6 @@ function ScoreResultComponent({
                   )}
                 </div>
 
-
                 <div className="relative inline-block">
                   <div className={`absolute -inset-1 md:-inset-1.5 lg:-inset-2 bg-gradient-to-r ${getRatingGradient(rating)} rounded-lg md:rounded-xl lg:rounded-2xl blur md:blur-md lg:blur-lg opacity-60 animate-pulse`} />
                   <div className={`relative inline-flex items-center justify-center px-4 md:px-6 lg:px-8 py-2 md:py-3 lg:py-4 rounded-lg md:rounded-xl lg:rounded-2xl bg-gradient-to-r ${getRatingGradient(rating)} shadow-xl md:shadow-2xl`}>
@@ -282,7 +276,6 @@ function ScoreResultComponent({
                     </span>
                   </div>
                 </div>
-
 
                 <div className="w-full max-w-xs md:max-w-sm lg:w-80 mx-auto space-y-2 md:space-y-3 lg:space-y-4">
                   <div className="relative">
@@ -302,7 +295,6 @@ function ScoreResultComponent({
           </CardContent>
         </div>
       </Card>
-
 
       {/* Enhanced Statistics Cards - NEW LAYOUT: Row 1 = 3 cards, Row 2 = Token card left + list right */}
       <div className="space-y-3 md:space-y-6 lg:space-y-8">
@@ -325,13 +317,15 @@ function ScoreResultComponent({
                   </div>
                   <div className="text-gray-400 text-[10px] md:text-xs lg:text-sm">{t.scoreResult.daysActive}</div>
                   <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full w-3/4" />
+                    <div
+                      className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full transition-all duration-500"
+                      style={{ width: `${calculateProgressPercentage(walletAge, 'age')}%` }}
+                    />
                   </div>
                 </div>
               </CardContent>
             </div>
           </Card>
-
 
           {/* Total Transactions Card */}
           <Card className="relative group overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-blue-500/20 shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 hover:scale-105 hover:-translate-y-2 rounded-xl md:rounded-2xl">
@@ -350,13 +344,15 @@ function ScoreResultComponent({
                   </div>
                   <div className="text-gray-400 text-[10px] md:text-xs lg:text-sm">{t.scoreResult.totalTransactions}</div>
                   <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full w-4/5" />
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500"
+                      style={{ width: `${calculateProgressPercentage(totalTransactions, 'transactions')}%` }}
+                    />
                   </div>
                 </div>
               </CardContent>
             </div>
           </Card>
-
 
           {/* Total Assets Card */}
           <Card className="relative group overflow-hidden bg-slate-800/50 backdrop-blur-xl border border-emerald-500/20 shadow-lg hover:shadow-2xl hover:shadow-emerald-500/20 transition-all duration-500 hover:scale-105 hover:-translate-y-2 rounded-xl md:rounded-2xl">
@@ -375,7 +371,10 @@ function ScoreResultComponent({
                   </div>
                   <div className="text-gray-400 text-[10px] md:text-xs lg:text-sm">USD</div>
                   <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full w-5/6" />
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-500"
+                      style={{ width: `${calculateProgressPercentage(totalAssets, 'assets')}%` }}
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -383,14 +382,12 @@ function ScoreResultComponent({
           </Card>
         </div>
 
-
         {/* Row 2: Token Diversity Card (left) + Token List (right when clicked) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6 lg:gap-8 items-start">
           {/* Token Diversity Card - Left side, centered and balanced */}
           <div className="flex justify-center">
             <Card className="relative group overflow-hidden bg-slate-800/50 backdrop-blur-xl border-2 border-teal-500/50 shadow-xl shadow-teal-500/20 hover:shadow-2xl hover:shadow-teal-500/30 transition-all duration-500 rounded-xl md:rounded-2xl w-full max-w-md">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-600/40 to-teal-500/40 rounded-xl md:rounded-2xl blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
-
 
               <div className="relative">
                 <CardHeader className="pb-3 md:pb-5 lg:pb-6 px-3 md:px-5 lg:px-6 pt-3 md:pt-4 lg:pt-5">
@@ -411,7 +408,6 @@ function ScoreResultComponent({
                   </div>
                 </CardHeader>
 
-
                 <CardContent className="space-y-3 md:space-y-5 lg:space-y-6 px-3 md:px-5 lg:px-6 pb-3 md:pb-4 lg:pb-5">
                   {/* Big number display */}
                   <div className="text-center py-3 md:py-5 lg:py-6">
@@ -420,7 +416,6 @@ function ScoreResultComponent({
                     </div>
                     <div className="text-gray-400 text-xs md:text-sm lg:text-base">{t.scoreResult.typesOfTokens}</div>
                   </div>
-
 
                   {/* Button to view token details */}
                   <button
@@ -436,13 +431,11 @@ function ScoreResultComponent({
             </Card>
           </div>
 
-
           {/* Token List - Right side, appears when showTokenDetails is true */}
           {showTokenDetails && displayedTokens.length > 0 ? (
             <div className="animate-in slide-in-from-right-4 duration-300">
               <Card className="relative overflow-hidden bg-slate-800/50 backdrop-blur-xl border-2 border-teal-500/30 shadow-xl rounded-xl md:rounded-2xl h-full">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-600/20 to-teal-500/20 rounded-xl md:rounded-2xl blur-xl opacity-50" />
-
 
                 <div className="relative h-full flex flex-col">
                   <CardHeader className="pb-2 md:pb-3 lg:pb-4 px-3 md:px-5 lg:px-6 pt-3 md:pt-4 lg:pt-5">
@@ -457,7 +450,6 @@ function ScoreResultComponent({
                     </div>
                   </CardHeader>
 
-
                   <CardContent className="flex-1 overflow-y-auto custom-scrollbar px-3 md:px-5 lg:px-6 pb-3 md:pb-4 lg:pb-5">
                     <div className="space-y-1.5 md:space-y-2">
                       {paginatedTokens.map((token, idx) => {
@@ -468,7 +460,6 @@ function ScoreResultComponent({
                             className="group/token relative overflow-hidden p-2.5 md:p-3.5 lg:p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-lg md:rounded-xl border border-teal-500/20 hover:border-teal-400/40 transition-all duration-300"
                           >
                             <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover/token:opacity-100 transition-opacity" />
-
 
                             <div className="relative flex items-center justify-between">
                               <div className="flex items-center gap-2 md:gap-2.5 lg:gap-3">
@@ -490,7 +481,6 @@ function ScoreResultComponent({
                       })}
                     </div>
 
-
                     {/* ✅ PAGINATION CONTROLS - Only show if more than 1 page */}
                     {totalPages > 1 && (
                       <div className="flex items-center justify-center gap-2 mt-4 pt-3 border-t border-teal-500/20">
@@ -506,7 +496,6 @@ function ScoreResultComponent({
                         >
                           <ChevronLeft className="w-4 h-4" />
                         </button>
-
 
                         {/* Page Numbers */}
                         <div className="flex items-center gap-1">
@@ -524,7 +513,6 @@ function ScoreResultComponent({
                           ))}
                         </div>
 
-
                         {/* Next Button */}
                         <button
                           onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
@@ -537,7 +525,6 @@ function ScoreResultComponent({
                         >
                           <ChevronRight className="w-4 h-4" />
                         </button>
-
 
                         {/* Page Info */}
                         <div className="ml-2 text-xs text-gray-400">
@@ -565,7 +552,6 @@ function ScoreResultComponent({
         </div>
       </div>
 
-
       {/* Action Buttons */}
       {onSubscribe && onFeedback && onRecalculate && (
         <div className="flex justify-center">
@@ -582,6 +568,5 @@ function ScoreResultComponent({
     </div>
   );
 }
-
 
 export const ScoreResult = memo(ScoreResultComponent);
