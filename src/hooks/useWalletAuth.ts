@@ -1,18 +1,3 @@
-/**
- * ============================================
- * USE WALLET AUTH HOOK
- * ============================================
- * Custom hook xử lý logic connect + sign với MetaMask
- * Sử dụng ethers v6 (BrowserProvider)
- * 
- * Flow:
- * 1. Connect MetaMask → Get address + chainId
- * 2. Request nonce from backend
- * 3. Build SIWE message (Frontend tự build)
- * 4. Sign message với MetaMask
- * 5. Verify signature → Nhận JWT
- * ============================================
- */
 
 import { BrowserProvider } from "ethers";
 import { getNonce, verifySignature } from "../services/walletAuth.service";

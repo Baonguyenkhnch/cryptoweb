@@ -37,7 +37,7 @@ export async function signInWithWallet(): Promise<{
 
         // 4️⃣ Request SIWE message (nonce)
         console.log("📡 Requesting nonce...");
-        const nonceRes = await fetch(`${API_BASE_URL}/api/auth/wallet/nonce`, {
+        const nonceRes = await fetch(`${API_BASE_URL}/auth/wallet/nonce`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -82,9 +82,10 @@ export async function signInWithWallet(): Promise<{
                 "Accept": "application/json",
             },
             body: JSON.stringify({
-                address,
-                chain_id,
+                // address,
+                // chain_id,
                 signature,
+                message
                 // ❌ KHÔNG gửi message
                 // ❌ KHÔNG gửi nonce
             }),

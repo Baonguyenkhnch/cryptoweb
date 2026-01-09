@@ -4,6 +4,8 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
@@ -14,29 +16,32 @@ export default defineConfig({
       'stream': path.resolve(__dirname, './polyfills.ts'),
     },
   },
+
   optimizeDeps: {
-    exclude: ['events', 'util', 'buffer', 'stream'], // Exclude node polyfills
+    exclude: ['events', 'util', 'buffer', 'stream'],
     esbuildOptions: {
       define: {
-        global: 'globalThis', // Fix global reference
+        global: 'globalThis',
       },
     },
   },
+
   worker: {
-    format: 'es', // Use ES modules for workers
+    format: 'es',
     rollupOptions: {
-      external: ['events', 'util', 'buffer', 'stream'], // Don't bundle in workers
+      external: ['events', 'util', 'buffer', 'stream'],
     },
   },
+
   build: {
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: false,
     commonjsOptions: {
-      transformMixedEsModules: true, // Handle mixed modules
+      transformMixedEsModules: true,
     },
     rollupOptions: {
-      external: ['events'], // Don't bundle node modules
+      external: ['events'],
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
