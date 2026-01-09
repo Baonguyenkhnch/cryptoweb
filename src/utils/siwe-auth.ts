@@ -51,7 +51,7 @@ export async function signInWithWallet(): Promise<{
 
         if (!nonceRes.ok) {
             const errorData = await nonceRes.json().catch(() => ({}));
-            throw new Error(errorData.message || "Lỗi khi yêu cầu nonce");
+            throw new Error(errorData.message || `Lỗi khi yêu cầu nonce (status :${nonceRes.status})`);
         }
 
         const { message, nonce } = await nonceRes.json();

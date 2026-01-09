@@ -69,7 +69,9 @@ export async function getNonce(
  * @returns JWT token and user data
  */
 export async function verifySignature(
-    message: string,
+    address: string,
+    chain_id: string,
+
     signature: string
 ): Promise<VerifyResponse> {
     try {
@@ -80,7 +82,8 @@ export async function verifySignature(
                 Accept: "application/json",
             },
             body: JSON.stringify({
-                message,
+                address,
+                chain_id,
                 signature,
             }),
         });
