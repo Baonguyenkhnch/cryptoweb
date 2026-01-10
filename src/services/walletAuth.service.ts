@@ -1,17 +1,18 @@
 
 // Base URL lấy từ env để linh hoạt dev/prod
 const buildApiBase = () => {
-    const raw = ((import.meta as any).env?.VITE_BACKEND_URL as string | undefined) || "https://backend.migofin.com/api";
-    let base = raw.replace(/\/+$/, "");
-    // Nếu chưa có /api thì tự thêm để khớp swagger /api/auth/...
-    if (!/\/api$/i.test(base)) {
-        base = `${base}/api`;
+    // Nếu có env, dùng nguyên bản (cắt dấu / cuối), người dùng tự quyết định có /api hay không
+    const envBase = (import.meta as any).env?.VITE_BACKEND_URL as string | undefined;
+    if (envBase && envBase.trim()) {
+        return envBase.trim().replace(/\/+$/, "");
     }
-    return base;
+    // Fallback mặc định (bao gồm /api)
+    return "https://backend.migofin.com/api";
 };
 
 const API_BASE_URL = buildApiBase();
 console.log("[WalletAuth] API_BASE_URL:", API_BASE_URL);
+
 /**
  * Response type from /wallet/nonce API
  */
