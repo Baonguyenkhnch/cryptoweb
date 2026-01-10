@@ -152,9 +152,16 @@ Expiration Time: ${nonceData.expiration_time}`;
                 throw new Error("WalletConnect provider not found");
             }
 
+            const projectId = (import.meta as any).env?.VITE_WALLETCONNECT_PROJECT_ID?.trim();
+
+            if (!projectId) {
+                console.error("❌ Missing WalletConnect projectId. Set VITE_WALLETCONNECT_PROJECT_ID in .env");
+                throw new Error("WalletConnect chưa được cấu hình. Vui lòng thêm VITE_WALLETCONNECT_PROJECT_ID vào .env");
+            }
+
             // ✅ FIX: Use .init() instead of .create()
             const provider = await EthereumProvider.init({
-                projectId: "a01e2536458805a98e97926eb0667061", // Migo's WalletConnect Project ID
+                projectId,
                 chains: [1], // Ethereum Mainnet
                 showQrModal: false, // We'll show our own QR
                 metadata: {
@@ -258,7 +265,16 @@ Expiration Time: ${nonceData.expiration_time}`;
             });
 
             // ✅ Connect (this triggers display_uri event)
-            await provider.connect();
+            try {
+                await provider.connect();
+            } catch (err: any) {
+                // WalletConnect returns websocket code 3000 when the projectId is invalid/not found
+                const message = err?.message || "";
+                if (message.includes("Project not found") || message.includes("code: 3000")) {
+                    throw new Error("WalletConnect projectId không hợp lệ hoặc đã bị xóa. Hãy tạo project mới tại cloud.walletconnect.com và cập nhật VITE_WALLETCONNECT_PROJECT_ID.");
+                }
+                throw new Error(message || "Lỗi khởi tạo WalletConnect");
+            }
 
             return { uri: walletConnectURI, provider };
 
@@ -284,3 +300,4 @@ declare global {
         };
     }
 }
+
