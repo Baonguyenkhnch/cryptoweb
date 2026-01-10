@@ -1,3 +1,14 @@
+/**
+ * ============================================
+ * USE WALLET AUTH HOOK
+ * ============================================
+ * Custom hook xử lý logic connect + sign với:
+ * 1. MetaMask (Browser Extension)
+ * 2. WalletConnect (Mobile Wallets via QR)
+ * 
+ * Sử dụng ethers v6 (BrowserProvider)
+ * ============================================
+ */
 
 import { BrowserProvider } from "ethers";
 import { getNonce, verifySignature } from "../services/walletAuth.service";
@@ -17,7 +28,7 @@ export interface WalletAuthResult {
 
 export function useWalletAuth() {
     /**
-     * Connect wallet và authenticate
+     * Connect MetaMask wallet và authenticate
      * @returns Wallet info + JWT token
      */
     const connectWallet = async (): Promise<WalletAuthResult> => {
@@ -82,7 +93,7 @@ Expiration Time: ${nonceData.expiration_time}`;
 
             // ⑨ VERIFY SIGNATURE WITH BACKEND
             console.log("📡 Verifying signature with backend...");
-            const verifyResult = await verifySignature(address, chainId, message);
+            const verifyResult = await verifySignature(message, signature);
 
             console.log("✅ Authentication successful!");
 
@@ -114,7 +125,149 @@ Expiration Time: ${nonceData.expiration_time}`;
         }
     };
 
-    return { connectWallet };
+    /**
+     * Connect WalletConnect và authenticate
+     * @param onURIGenerated - Callback when QR URI is ready
+     * @returns Provider instance and connection promise
+     */
+    const connectWalletConnect = async (
+        onURIGenerated: (uri: string) => void
+    ): Promise<{ uri: string; provider: any }> => {
+        try {
+            console.log("🔄 Initializing WalletConnect...");
+
+            // ✅ Dynamic import WalletConnect (with error handling for build)
+            let EthereumProvider: any;
+
+            try {
+                const module = await import("@walletconnect/ethereum-provider");
+                EthereumProvider = module.default || module.EthereumProvider;
+            } catch (importError) {
+                console.error("❌ WalletConnect not available:", importError);
+                throw new Error("WalletConnect không khả dụng. Vui lòng sử dụng MetaMask Desktop.");
+            }
+
+            if (!EthereumProvider) {
+                throw new Error("WalletConnect provider not found");
+            }
+
+            // ✅ Create WalletConnect provider
+            const provider = await EthereumProvider.create({
+                projectId: "a01e2536458805a98e97926eb0667061", // Migo's WalletConnect Project ID
+                chains: [1], // Ethereum Mainnet
+                showQrModal: false, // We'll show our own QR
+                metadata: {
+                    name: "Migo Credit Score",
+                    description: "Crypto Credit Score Calculator",
+                    url: "https://migofin.com",
+                    icons: ["https://migofin.com/favicon.svg"]
+                },
+                optionalChains: [56, 137, 43114, 42161, 10, 250], // BSC, Polygon, Avalanche, Arbitrum, Optimism, Fantom
+            });
+
+            console.log("✅ WalletConnect provider created");
+
+            let walletConnectURI = "";
+
+            // ✅ Listen for URI generation
+            provider.on("display_uri", (uri: string) => {
+                console.log("🔗 WalletConnect URI:", uri);
+                walletConnectURI = uri;
+                onURIGenerated(uri);
+            });
+
+            // ✅ Listen for connection
+            provider.on("connect", async (session: any) => {
+                console.log("🎉 WalletConnect connected!", session);
+
+                try {
+                    // Get wallet info from WalletConnect
+                    const accounts = await provider.request({ method: "eth_accounts" });
+                    const address = accounts[0];
+
+                    const chainIdHex = await provider.request({ method: "eth_chainId" });
+                    const chainId = parseInt(chainIdHex, 16);
+
+                    console.log("📍 WalletConnect address:", address);
+                    console.log("⛓️ Chain ID:", chainId);
+
+                    // ⑥ GET NONCE FROM BACKEND
+                    console.log("📡 Requesting nonce from backend...");
+                    const nonceData = await getNonce(address, chainId);
+
+                    console.log("✅ Nonce received:", nonceData.nonce);
+
+                    // ⑦ BUILD SIWE MESSAGE
+                    const message = `${nonceData.domain} wants you to sign in with your Ethereum account:
+${address}
+
+${nonceData.statement}
+
+URI: ${nonceData.uri}
+Version: 1
+Chain ID: ${chainId}
+Nonce: ${nonceData.nonce}
+Issued At: ${nonceData.issued_at}
+Expiration Time: ${nonceData.expiration_time}`;
+
+                    console.log("📝 SIWE Message built:");
+                    console.log(message);
+
+                    // ⑧ SIGN MESSAGE WITH WALLETCONNECT
+                    console.log("🔐 Requesting signature via WalletConnect...");
+
+                    const signature = await provider.request({
+                        method: "personal_sign",
+                        params: [message, address]
+                    });
+
+                    console.log("✅ Signature received:", signature.substring(0, 20) + "...");
+
+                    // ⑨ VERIFY SIGNATURE WITH BACKEND
+                    console.log("📡 Verifying signature with backend...");
+                    const verifyResult = await verifySignature(message, signature);
+
+                    console.log("✅ WalletConnect authentication successful!");
+
+                    // Store auth data
+                    localStorage.setItem("authToken", verifyResult.access_token);
+                    localStorage.setItem("currentUser", JSON.stringify({
+                        id: verifyResult.user.id,
+                        walletAddress: address,
+                        email: verifyResult.user.email,
+                        name: address.substring(0, 8) + "...",
+                        createdAt: verifyResult.user.created_at,
+                        lastLogin: verifyResult.user.last_login,
+                    }));
+
+                    // Reload to update auth state
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+
+                } catch (error: any) {
+                    console.error("❌ WalletConnect SIWE error:", error);
+                    throw error;
+                }
+            });
+
+            // ✅ Listen for disconnection
+            provider.on("disconnect", () => {
+                console.log("🔌 WalletConnect disconnected");
+            });
+
+            // ✅ Connect (this triggers display_uri event)
+            await provider.connect();
+
+            return { uri: walletConnectURI, provider };
+
+        } catch (error: any) {
+            console.error("❌ WalletConnect error:", error);
+            throw new Error(error.message || "Lỗi khởi tạo WalletConnect");
+        }
+    };
+
+    return { connectWallet, connectWalletConnect };
 }
 
 // TypeScript declarations for window.ethereum
