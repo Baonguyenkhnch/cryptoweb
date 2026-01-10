@@ -7,7 +7,7 @@ const buildApiBase = () => {
         return envBase.trim().replace(/\/+$/, "");
     }
     // Fallback mặc định (bao gồm /api)
-    return "https://backend.migofin.com/api";
+    return "https://dev.migofin.com/api";
 };
 
 const API_BASE_URL = buildApiBase();
