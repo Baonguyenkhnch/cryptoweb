@@ -141,7 +141,8 @@ Expiration Time: ${nonceData.expiration_time}`;
 
             try {
                 const module = await import("@walletconnect/ethereum-provider");
-                EthereumProvider = module.default || module.EthereumProvider;
+                // ✅ FIX: Use default export correctly
+                EthereumProvider = module.default;
             } catch (importError) {
                 console.error("❌ WalletConnect not available:", importError);
                 throw new Error("WalletConnect không khả dụng. Vui lòng sử dụng MetaMask Desktop.");
@@ -151,8 +152,8 @@ Expiration Time: ${nonceData.expiration_time}`;
                 throw new Error("WalletConnect provider not found");
             }
 
-            // ✅ Create WalletConnect provider
-            const provider = await EthereumProvider.create({
+            // ✅ FIX: Use .init() instead of .create()
+            const provider = await EthereumProvider.init({
                 projectId: "a01e2536458805a98e97926eb0667061", // Migo's WalletConnect Project ID
                 chains: [1], // Ethereum Mainnet
                 showQrModal: false, // We'll show our own QR
