@@ -1,6 +1,8 @@
 
-
-const API_BASE_URL = "https://backend.migofin.com";
+// Base URL lấy từ env để linh hoạt dev/prod
+const API_BASE_URL =
+    ((import.meta as any).env?.VITE_BACKEND_URL as string | undefined)?.replace(/\/+$/, "") ||
+    "https://backend.migofin.com/api"; // fallback cũ có sẵn /api
 
 /**
  * Response type from /wallet/nonce API
@@ -37,7 +39,8 @@ export async function getNonce(
     chainId: number
 ): Promise<NonceResponse> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/wallet/nonce`, {
+        // API_BASE_URL nên bao gồm prefix /api nếu backend yêu cầu
+        const response = await fetch(`${API_BASE_URL}/auth/wallet/nonce`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -66,7 +69,6 @@ export async function getNonce(
 }
 
 /**
- * Verify signature with backend
  * @param message - SIWE message string
  * @param signature - Signature from MetaMask
  * @returns JWT token and user data
@@ -78,7 +80,7 @@ export async function verifySignature(
 
 ): Promise<VerifyResponse> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/wallet/verify`, {
+        const response = await fetch(`${API_BASE_URL}/auth/wallet/verify`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -108,3 +110,4 @@ export async function verifySignature(
         throw new Error(error.message || "Verify failed");
     }
 }
+
