@@ -11,7 +11,7 @@ const buildApiBase = () => {
 };
 
 const API_BASE_URL = buildApiBase();
-
+console.log("[WalletAuth] API_BASE_URL:", API_BASE_URL);
 /**
  * Response type from /wallet/nonce API
  */
