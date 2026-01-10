@@ -153,7 +153,7 @@ Expiration Time: ${nonceData.expiration_time}`;
             }
 
             const projectId = (import.meta as any).env?.VITE_WALLETCONNECT_PROJECT_ID?.trim();
-
+            console.log("WalletConnect projectId from env:", projectId);
             if (!projectId) {
                 console.error("❌ Missing WalletConnect projectId. Set VITE_WALLETCONNECT_PROJECT_ID in .env");
                 throw new Error("WalletConnect chưa được cấu hình. Vui lòng thêm VITE_WALLETCONNECT_PROJECT_ID vào .env");
