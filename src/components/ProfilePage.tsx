@@ -275,9 +275,10 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                   <span className="text-gray-400">{t.stats.rating}</span>
                   <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
                     {walletData
-                      ? (walletData.rating === "N/A" ? (language === "vi" ? "Chưa Có Hạng" : "No Rating") : walletData.rating)
-                      : "N/A"
-                    }
+                      ? (walletData.score === 0 || walletData.rating === "N/A"
+                        ? (language === "vi" ? "Chưa Có Hạng" : "No Rating")
+                        : walletData.rating)
+                      : "N/A"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">

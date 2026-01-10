@@ -82,7 +82,7 @@ Expiration Time: ${nonceData.expiration_time}`;
 
             // ⑨ VERIFY SIGNATURE WITH BACKEND
             console.log("📡 Verifying signature with backend...");
-            const verifyResult = await verifySignature(message, signature);
+            const verifyResult = await verifySignature(address, chainId, message);
 
             console.log("✅ Authentication successful!");
 

@@ -12,6 +12,9 @@ export interface NonceResponse {
     uri: string;
     issued_at: string;
     expiration_time: string;
+    address?: string;
+    chain_id?: number;
+    message?: string
 }
 
 /**
@@ -34,7 +37,7 @@ export async function getNonce(
     chainId: number
 ): Promise<NonceResponse> {
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/wallet/nonce`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/wallet/nonce`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -69,8 +72,10 @@ export async function getNonce(
  * @returns JWT token and user data
  */
 export async function verifySignature(
-    message: string,
-    signature: string
+    address: string,
+    chain_id: number,
+    signature: string,
+
 ): Promise<VerifyResponse> {
     try {
         const response = await fetch(`${API_BASE_URL}/api/auth/wallet/verify`, {
@@ -80,8 +85,10 @@ export async function verifySignature(
                 Accept: "application/json",
             },
             body: JSON.stringify({
-                message,
+                address,
+                chain_id: chain_id,
                 signature,
+
             }),
         });
 
