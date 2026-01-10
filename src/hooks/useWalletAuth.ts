@@ -1,14 +1,4 @@
-/**
- * ============================================
- * USE WALLET AUTH HOOK
- * ============================================
- * Custom hook xử lý logic connect + sign với:
- * 1. MetaMask (Browser Extension)
- * 2. WalletConnect (Mobile Wallets via QR)
- * 
- * Sử dụng ethers v6 (BrowserProvider)
- * ============================================
- */
+
 
 import { BrowserProvider } from "ethers";
 import { getNonce, verifySignature } from "../services/walletAuth.service";
