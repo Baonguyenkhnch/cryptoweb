@@ -1,8 +1,16 @@
 
 // Base URL lấy từ env để linh hoạt dev/prod
-const API_BASE_URL =
-    ((import.meta as any).env?.VITE_BACKEND_URL as string | undefined)?.replace(/\/+$/, "") ||
-    "https://backend.migofin.com/api"; // fallback cũ có sẵn /api
+const buildApiBase = () => {
+    const raw = ((import.meta as any).env?.VITE_BACKEND_URL as string | undefined) || "https://backend.migofin.com/api";
+    let base = raw.replace(/\/+$/, "");
+    // Nếu chưa có /api thì tự thêm để khớp swagger /api/auth/...
+    if (!/\/api$/i.test(base)) {
+        base = `${base}/api`;
+    }
+    return base;
+};
+
+const API_BASE_URL = buildApiBase();
 
 /**
  * Response type from /wallet/nonce API
@@ -69,6 +77,7 @@ export async function getNonce(
 }
 
 /**
+ * Verify signature with backend
  * @param message - SIWE message string
  * @param signature - Signature from MetaMask
  * @returns JWT token and user data
