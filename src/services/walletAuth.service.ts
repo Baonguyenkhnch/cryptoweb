@@ -56,7 +56,7 @@ export async function getNonce(
                 Accept: "application/json",
             },
             body: JSON.stringify({
-                wallet_address: address, // ✅ Changed from 'address' to 'wallet_address'
+                address, // ✅ Changed from 'address' to 'wallet_address'
                 chain_id: chainId,
             }),
         });
@@ -98,9 +98,10 @@ export async function verifySignature(
                 Accept: "application/json",
             },
             body: JSON.stringify({
-                wallet_address: address,
+                address,
+                chain_id,
                 signature,
-                message,
+
 
             }),
         });
