@@ -88,6 +88,7 @@ Expiration Time: ${nonceData.expiration_time}`;
             // ⑧ SIGN MESSAGE WITH METAMASK
             console.log("🔐 Requesting signature from MetaMask...");
             const signature = await signer.signMessage(message);
+            console.log("Signature:", signature);
 
             console.log("✅ Signature received:", signature.substring(0, 20) + "...");
 
