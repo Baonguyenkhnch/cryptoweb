@@ -233,7 +233,7 @@ Expiration Time: ${nonceData.expiration_time}`;
 
                     // ⑨ VERIFY SIGNATURE WITH BACKEND
                     console.log("📡 Verifying signature with backend...");
-                    const verifyResult = await verifySignature(address, chainId, signature);
+                    const verifyResult = await verifySignature(address, chainId, signature, message);
 
                     console.log("✅ WalletConnect authentication successful!");
 

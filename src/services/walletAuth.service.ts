@@ -87,6 +87,7 @@ export async function verifySignature(
     address: string,
     chain_id: number,
     signature: string,
+    message: string
 
 ): Promise<VerifyResponse> {
     try {
@@ -97,9 +98,10 @@ export async function verifySignature(
                 Accept: "application/json",
             },
             body: JSON.stringify({
-                address,
+                wallet_address: address,
                 chain_id: chain_id,
                 signature,
+                message,
 
             }),
         });
