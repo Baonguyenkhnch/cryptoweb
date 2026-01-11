@@ -56,7 +56,7 @@ export async function getNonce(
                 Accept: "application/json",
             },
             body: JSON.stringify({
-                address, // ✅ Changed from 'address' to 'wallet_address'
+                wallet_address: address, // ✅ Changed from 'address' to 'wallet_address'
                 chain_id: chainId,
             }),
         });
@@ -99,7 +99,6 @@ export async function verifySignature(
             },
             body: JSON.stringify({
                 wallet_address: address,
-                chain_id: chain_id,
                 signature,
                 message,
 
@@ -108,7 +107,11 @@ export async function verifySignature(
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || "Signature verification failed");
+            console.error("❌ verifySignature error detail:", {
+                status: response.status,
+                body: errorData,
+            });
+            throw new Error(errorData.message || `Signature verification failed (${response.status})`);
         }
 
         const data = await response.json();
