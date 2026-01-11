@@ -101,8 +101,7 @@ export async function verifySignature(
                 address,
                 chain_id,
                 signature,
-
-
+                message
             }),
         });
 
