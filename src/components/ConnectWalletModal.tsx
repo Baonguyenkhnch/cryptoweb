@@ -51,7 +51,7 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
             },
             errorCorrectionLevel: "H"
           },
-          (error, url) => {
+          (error: unknown, url: string) => {
             if (error) {
               console.error("QR Code generation error:", error);
             } else {
@@ -73,18 +73,16 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
 
       console.log('✅ Login success:', result);
 
-      localStorage.setItem("authToken", result.accessToken);
-      localStorage.setItem("currentUser", JSON.stringify({
-        id: result.user.id,
-        walletAddress: result.address,
-        email: result.user.email,
-        name: result.user.wallet_address?.substring(0, 8) + "...",
-        createdAt: result.user.created_at,
-        lastLogin: result.user.last_login,
-      }));
+      const accessToken = result?.accessToken;
+      if (!accessToken) {
+        throw new Error("Đăng nhập ví thành công nhưng không nhận được access token");
+      }
+
+      // Token-only auth: do not assume backend returns user/profile data
+      localStorage.setItem("authToken", accessToken);
 
       toast.success("Đăng nhập thành công!", {
-        description: `Chào mừng ${result.address.substring(0, 8)}...`,
+        description: `Chào mừng ${(result?.address ? result.address.substring(0, 8) : "wallet")}...`,
       });
 
       handleClose();
@@ -94,6 +92,8 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
       }
 
       setTimeout(() => {
+        // Redirect to dashboard; App.tsx will fetch profile via protected API
+        window.location.hash = "#/dashboard";
         window.location.reload();
       }, 500);
 

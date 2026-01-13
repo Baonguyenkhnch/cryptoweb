@@ -1,13 +1,15 @@
 
-// Base URL lấy từ env để linh hoạt dev/prod
+// Backend API always runs on dev.migofin.com.
+// Allow env override for local testing, but DO NOT bake in frontend domain here.
 const buildApiBase = () => {
-    // Nếu có env, dùng nguyên bản (cắt dấu / cuối), người dùng tự quyết định có /api hay không
     const envBase = (import.meta as any).env?.VITE_BACKEND_URL as string | undefined;
     if (envBase && envBase.trim()) {
-        return envBase.trim().replace(/\/+$/, "");
+        let base = envBase.trim().replace(/\/+$/, "");
+        // Allow either "https://host" or "https://host/api" in env.
+        base = base.replace(/\/api$/i, "");
+        return base;
     }
-    // Fallback mặc định (bao gồm /api)
-    return "https://dev.migofin.com/api";
+    return "https://dev.migofin.com";
 };
 
 const API_BASE_URL = buildApiBase();
@@ -18,14 +20,14 @@ console.log("[WalletAuth] API_BASE_URL:", API_BASE_URL);
  */
 export interface NonceResponse {
     nonce: string;
-    domain: string;
-    statement: string;
-    uri: string;
-    issued_at: string;
-    expiration_time: string;
+    domain?: string;
+    statement?: string | null;
+    uri?: string;
+    issued_at?: string;
+    expiration_time?: string;
     address?: string;
     chain_id?: number;
-    message?: string
+    message?: string;
 }
 
 /**
@@ -34,10 +36,10 @@ export interface NonceResponse {
 export interface VerifyResponse {
     access_token: string;
     token_type: string;
-    user: {
-        id: string;
+    user?: {
+        id?: string;
         email?: string;
-        wallet_address: string;
+        wallet_address?: string;
         created_at?: string;
         last_login?: string | null;
     };
@@ -48,15 +50,14 @@ export async function getNonce(
     chainId: number
 ): Promise<NonceResponse> {
     try {
-        // API_BASE_URL nên bao gồm prefix /api nếu backend yêu cầu
-        const response = await fetch(`${API_BASE_URL}/auth/wallet/nonce`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/wallet/nonce`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",
             },
             body: JSON.stringify({
-                address, // ✅ Changed from 'address' to 'wallet_address'
+                address,
                 chain_id: chainId,
             }),
         });
@@ -91,17 +92,17 @@ export async function verifySignature(
 
 ): Promise<VerifyResponse> {
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/wallet/verify`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/wallet/verify`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",
             },
             body: JSON.stringify({
+                message,
+                signature,
                 address,
                 chain_id,
-                signature,
-                message
             }),
         });
 

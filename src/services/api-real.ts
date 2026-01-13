@@ -912,12 +912,12 @@ export const verifyRegistration = async (
             sessionToken: data.sessionToken,
             authToken: data.sessionToken,
             user: data.user ? {
-                id: data.user.id,
-                email: data.user.email,
-                name: data.user.email?.split("@")[0] || "User",
-                walletAddress: data.user.walletAddress || data.wallet_address,
-                createdAt: data.user.createdAt,
-                lastLogin: data.user.lastLogin,
+                id: data.user?.id || data.user?.user_id || `user_${Date.now()}`,
+                email: data.user?.email || data.email,
+                name: data.user?.email?.split("@")[0] || data.email?.split("@")[0] || "User",
+                walletAddress: data.user?.walletAddress || data.user?.wallet_address || data.wallet_address,
+                createdAt: data.user?.createdAt || data.user?.created_at,
+                lastLogin: data.user?.lastLogin || data.user?.last_login,
             } : {
                 // Fallback if user object not provided
                 id: `user_${Date.now()}`,
