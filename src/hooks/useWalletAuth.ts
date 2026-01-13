@@ -11,19 +11,42 @@
  */
 
 import { BrowserProvider } from "ethers";
+import { SiweMessage } from "siwe";
 import { getNonce, verifySignature } from "../services/walletAuth.service";
+
+const buildSiweMessageString = (params: {
+    address: string;
+    chainId: number;
+    nonce: string;
+    issuedAt?: string;
+    expirationTime?: string;
+    statement?: string | null;
+}) => {
+    const domain = window.location.host;
+    const uri = window.location.origin;
+
+    const statement = params.statement?.trim();
+
+    const siwe = new SiweMessage({
+        domain,
+        address: params.address,
+        // Do NOT include statement if null/undefined/empty.
+        ...(statement ? { statement } : {}),
+        uri,
+        version: "1",
+        chainId: params.chainId,
+        nonce: params.nonce,
+        ...(params.issuedAt ? { issuedAt: params.issuedAt } : {}),
+        ...(params.expirationTime ? { expirationTime: params.expirationTime } : {}),
+    });
+
+    return siwe.prepareMessage();
+};
 
 export interface WalletAuthResult {
     address: string;
     chainId: number;
     accessToken: string;
-    user: {
-        id: string;
-        email?: string;
-        wallet_address: string;
-        created_at?: string;
-        last_login?: string | null;
-    };
 }
 
 export function useWalletAuth() {
@@ -68,24 +91,23 @@ export function useWalletAuth() {
 
             console.log("✅ Nonce received:", nonceData.nonce);
 
-            // ⑦ BUILD SIWE MESSAGE (FRONTEND TỰ BUILD)
-            // ⚠️ QUAN TRỌNG: PHẢI ĐÚNG FORMAT EIP-4361
-            const message = `${nonceData.domain} wants you to sign in with your Ethereum account:
-${address}
+            // ⑦ BUILD SIWE MESSAGE (DETERMINISTIC)
+            // Domain/URI MUST reflect current frontend runtime (localhost/app.migofin.com/etc.)
+            const message = buildSiweMessageString({
+                address,
+                chainId,
+                nonce: nonceData.nonce,
+                issuedAt: nonceData.issued_at,
+                expirationTime: nonceData.expiration_time,
+                statement: nonceData.statement,
+            });
 
-${nonceData.statement}
-
-URI: ${nonceData.uri}
-Version: 1
-Chain ID: ${chainId}
-Nonce: ${nonceData.nonce}
-Issued At: ${nonceData.issued_at}
-Expiration Time: ${nonceData.expiration_time}`;
-
-            console.log("📝 SIWE Message built:");
+            console.log("📝 SIWE message to sign (verbatim):");
             console.log(message);
 
             // ⑧ SIGN MESSAGE WITH METAMASK
+            // ethers v6 signMessage uses personal_sign with injected providers.
+            // IMPORTANT: do not modify message after this point.
             console.log("🔐 Requesting signature from MetaMask...");
             const signature = await signer.signMessage(message);
             console.log("Signature:", signature);
@@ -103,7 +125,6 @@ Expiration Time: ${nonceData.expiration_time}`;
                 address,
                 chainId,
                 accessToken: verifyResult.access_token,
-                user: verifyResult.user,
             };
         } catch (error: any) {
             console.error("❌ Wallet auth error:", error);
@@ -206,20 +227,17 @@ Expiration Time: ${nonceData.expiration_time}`;
 
                     console.log("✅ Nonce received:", nonceData.nonce);
 
-                    // ⑦ BUILD SIWE MESSAGE
-                    const message = `${nonceData.domain} wants you to sign in with your Ethereum account:
-${address}
+                    // ⑦ BUILD SIWE MESSAGE (DETERMINISTIC)
+                    const message = buildSiweMessageString({
+                        address,
+                        chainId,
+                        nonce: nonceData.nonce,
+                        issuedAt: nonceData.issued_at,
+                        expirationTime: nonceData.expiration_time,
+                        statement: nonceData.statement,
+                    });
 
-${nonceData.statement}
-
-URI: ${nonceData.uri}
-Version: 1
-Chain ID: ${chainId}
-Nonce: ${nonceData.nonce}
-Issued At: ${nonceData.issued_at}
-Expiration Time: ${nonceData.expiration_time}`;
-
-                    console.log("📝 SIWE Message built:");
+                    console.log("📝 SIWE message to sign (verbatim):");
                     console.log(message);
 
                     // ⑧ SIGN MESSAGE WITH WALLETCONNECT
@@ -238,16 +256,8 @@ Expiration Time: ${nonceData.expiration_time}`;
 
                     console.log("✅ WalletConnect authentication successful!");
 
-                    // Store auth data
-                    localStorage.setItem("authToken", verifyResult.access_token);
-                    localStorage.setItem("currentUser", JSON.stringify({
-                        id: verifyResult.user.id,
-                        walletAddress: address,
-                        email: verifyResult.user.email,
-                        name: address.substring(0, 8) + "...",
-                        createdAt: verifyResult.user.created_at,
-                        lastLogin: verifyResult.user.last_login,
-                    }));
+                    // Store auth token only (profile fetched later via protected API)
+                    localStorage.setItem("authToken", verifyResult?.access_token || "");
 
                     // Reload to update auth state
                     setTimeout(() => {

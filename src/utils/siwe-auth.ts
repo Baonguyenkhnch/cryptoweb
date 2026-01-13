@@ -96,31 +96,25 @@ export async function signInWithWallet(): Promise<{
             throw new Error(errorData.message || "Xác thực signature thất bại");
         }
 
-        const { access_token, token_type, user } = await verifyRes.json();
+        const data = await verifyRes.json().catch(() => ({} as any));
+        const accessToken: string | undefined = data?.access_token;
 
         console.log("✅ Verification successful!");
         console.log("🎫 JWT Token received");
 
-        // 7️⃣ Save JWT to localStorage
-        localStorage.setItem("authToken", access_token);
-        localStorage.setItem("currentUser", JSON.stringify({
-            id: user?.id || `wallet_${Date.now()}`,
-            walletAddress: address,
-            email: user?.email,
-            name: user?.name || address.substring(0, 8) + "...",
-            createdAt: user?.createdAt || new Date().toISOString(),
-            lastLogin: user?.lastLogin || null,
-        }));
+        // Token-only auth: do not assume backend returns user/profile data
+        if (!accessToken) {
+            throw new Error("Đăng nhập ví thành công nhưng không nhận được access token");
+        }
+
+        localStorage.setItem("authToken", accessToken);
 
         console.log("💾 Auth data saved to localStorage");
 
         return {
             success: true,
-            user: {
-                walletAddress: address,
-                chainId: chain_id,
-                ...user,
-            },
+            // App should fetch profile via protected /me if needed.
+            user: undefined,
         };
 
     } catch (error: any) {

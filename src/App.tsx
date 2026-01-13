@@ -110,9 +110,7 @@ export default function App() {
 
       // ✅ IMPORTANT: Don't show verify page if user is already logged in
       const token = localStorage.getItem("authToken");
-      const savedUser = localStorage.getItem("currentUser");
-
-      if (token && savedUser) {
+      if (token) {
         // User is already authenticated, don't show verify page even if hash contains /verify
         console.log("🔒 User already authenticated, skipping verify page");
         setShowVerifyPage(false);
@@ -137,27 +135,68 @@ export default function App() {
 
   // check xem có login chưa khi vào trang
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    const savedUser = localStorage.getItem("currentUser");
+    const restoreAuth = async () => {
+      const token = localStorage.getItem("authToken");
+      const savedUser = localStorage.getItem("currentUser");
 
-    console.log("🔍 Checking auth on mount:");
-    console.log("  - authToken:", token ? token.substring(0, 20) + "..." : "null");
-    console.log("  - currentUser:", savedUser ? "exists" : "null");
+      console.log("🔍 Checking auth on mount:");
+      console.log("  - authToken:", token ? token.substring(0, 20) + "..." : "null");
+      console.log("  - currentUser:", savedUser ? "exists" : "null");
 
-    if (token && savedUser) {
+      if (!token) {
+        console.log("⚠️ No auth found in localStorage");
+        return;
+      }
+
+      // Prefer saved user if present
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser);
+          setCurrentUser(user);
+          setCurrentPage("dashboard");
+          console.log("✅ Auth restored from localStorage, redirecting to dashboard");
+          return;
+        } catch (error) {
+          console.error("❌ Lỗi khi parse user:", error);
+          localStorage.removeItem("currentUser");
+        }
+      }
+
+      // Token-only auth (e.g., MetaMask SIWE) - fetch profile safely
       try {
-        const user = JSON.parse(savedUser);
-        setCurrentUser(user);
-        setCurrentPage("dashboard");
-        console.log("✅ Auth restored from localStorage, redirecting to dashboard");
+        const { getUserInfo } = await import("./services/api-real");
+        const userInfoResult = await getUserInfo();
+
+        if (userInfoResult?.success && userInfoResult?.user) {
+          const u = userInfoResult.user;
+          const minimalUser = {
+            id: u.id || `wallet_${Date.now()}`,
+            email: u.email,
+            name: u.name,
+            walletAddress: u.wallet_address,
+            createdAt: u.created_at,
+            lastLogin: u.last_login,
+          };
+
+          localStorage.setItem("currentUser", JSON.stringify(minimalUser));
+          setCurrentUser(minimalUser as any);
+          setCurrentPage("dashboard");
+          console.log("✅ Auth restored from token via getUserInfo(), redirecting to dashboard");
+        } else {
+          console.warn("⚠️ Token exists but failed to fetch user profile; clearing auth");
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("currentUser");
+          setCurrentUser(null);
+        }
       } catch (error) {
-        console.error("❌ Lỗi khi parse user:", error);
+        console.error("❌ Failed to restore auth from token:", error);
         localStorage.removeItem("authToken");
         localStorage.removeItem("currentUser");
+        setCurrentUser(null);
       }
-    } else {
-      console.log("⚠️ No auth found in localStorage");
-    }
+    };
+
+    restoreAuth();
   }, []);
 
   // Auto-load wallet data khi vào Dashboard lần đầu
@@ -269,12 +308,12 @@ export default function App() {
 
       // Save minimal user data
       const minimalUser = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        walletAddress: user.walletAddress,
-        createdAt: user.createdAt,
-        lastLogin: user.lastLogin
+        id: user?.id || `user_${Date.now()}`,
+        email: user?.email,
+        name: user?.name,
+        walletAddress: user?.walletAddress,
+        createdAt: user?.createdAt,
+        lastLogin: user?.lastLogin,
       };
       localStorage.setItem("currentUser", JSON.stringify(minimalUser));
 
