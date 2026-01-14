@@ -9,7 +9,7 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, CheckCircle2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useWalletAuth } from "../hooks/useWalletAuth";
 import { getAuthToken, setAuthToken } from "../services/authToken";
@@ -115,7 +115,13 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
     if (step !== "walletconnect") return;
 
     const onAuthTokenChanged = () => {
-      const token = getAuthToken();
+      let token: string | null = null;
+      try {
+        token = getAuthToken();
+      } catch (error) {
+        console.error("Error getting auth token:", error);
+        return;
+      }
       if (!token) return;
 
       toast.success("Kết nối WalletConnect thành công!", {
@@ -170,10 +176,34 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
       }
 
       // Token-only auth: do not assume backend returns user/profile data
-      setAuthToken(accessToken);
+      try {
+        setAuthToken(accessToken);
+      } catch (error) {
+        console.error("Error setting auth token:", error);
+      }
+
+      // ✅ UPDATE: Save wallet address to currentUser in localStorage
+      try {
+        const savedUser = localStorage.getItem("currentUser");
+        if (savedUser && result?.address) {
+          const userProfile = JSON.parse(savedUser);
+          userProfile.walletAddress = result.address;
+          localStorage.setItem("currentUser", JSON.stringify(userProfile));
+          console.log("✅ Updated currentUser with wallet address:", result.address);
+        }
+      } catch (error) {
+        console.error("Error updating currentUser:", error);
+      }
+
+      // ✅ ENHANCED: Beautiful toast notification with checkmark
+      const walletShort = result?.address
+        ? `${result.address.substring(0, 6)}...${result.address.substring(38)}`
+        : "wallet";
 
       toast.success("Đăng nhập thành công!", {
-        description: `Chào mừng ${(result?.address ? result.address.substring(0, 8) : "wallet")}...`,
+        description: `Chào mừng ${walletShort}`,
+        duration: 3000,
+        icon: <CheckCircle2 className="w-5 h-5 text-green-500" />,
       });
 
       handleClose();
@@ -182,9 +212,9 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
         onSuccess();
       }
 
+      // ✅ Reload page to update Navigation with new wallet address
       setTimeout(() => {
-        // Redirect to dashboard; App.tsx will fetch profile via protected API
-        window.location.hash = "#/dashboard";
+        window.location.reload();
       }, 500);
 
     } catch (error: any) {
