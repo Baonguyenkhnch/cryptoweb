@@ -4,6 +4,7 @@ import { Button } from "../components/ui/button";
 import { CheckCircle2, Loader2, XCircle, ArrowRight } from "lucide-react";
 import { verifyMagicLink, verifyRegistration } from "../services/api-real";
 import type { UserProfile } from "../services/api-real";
+import { getAuthToken, setAuthToken } from "../services/authToken";
 
 interface VerifyPageProps {
     onVerifySuccess: (user: UserProfile) => void;
@@ -90,11 +91,11 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
                     // ✅ SAVE SESSION TOKEN
                     const sessionToken = result.sessionToken || result.authToken;
                     if (sessionToken) {
-                        localStorage.setItem("authToken", sessionToken);
+                        setAuthToken(sessionToken);
                         console.log("💾 Saved sessionToken:", sessionToken.substring(0, 20) + "...");
 
                         // ✅ VERIFY IT WAS SAVED
-                        const verifyToken = localStorage.getItem("authToken");
+                        const verifyToken = getAuthToken();
                         console.log("✅ Verified authToken in localStorage:", verifyToken ? verifyToken.substring(0, 20) + "..." : "❌ NOT FOUND!");
                     } else {
                         console.error("❌ No sessionToken or authToken in API response!");
@@ -125,7 +126,7 @@ export function VerifyPage({ onVerifySuccess, onBackToLogin }: VerifyPageProps) 
 
                     // ✅ IMMEDIATE REDIRECT - No countdown needed
                     console.log("🚀 Redirecting to Dashboard immediately...");
-                    const finalToken = localStorage.getItem("authToken");
+                    const finalToken = getAuthToken();
                     const finalUser = localStorage.getItem("currentUser");
                     console.log("🚀 Final check before redirect:");
                     console.log("  - authToken:", finalToken ? finalToken.substring(0, 20) + "..." : "❌ NULL");

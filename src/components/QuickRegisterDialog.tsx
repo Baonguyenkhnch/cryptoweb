@@ -12,6 +12,7 @@ import { Label } from "./ui/label";
 import { Mail, CheckCircle2, Wallet, Sparkles, Clock, ArrowRight } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
 import { maskEmail } from "../utils/maskEmail"; // ✅ NEW: Import maskEmail
+import { setAuthToken } from "../services/authToken";
 
 interface QuickRegisterDialogProps {
     open: boolean;
@@ -108,7 +109,7 @@ export function QuickRegisterDialog({
             if (result.success && result.user) {
                 // Lưu auth token
                 if (result.authToken) {
-                    localStorage.setItem("authToken", result.authToken);
+                    setAuthToken(result.authToken);
                     localStorage.setItem("currentUser", JSON.stringify(result.user));
                 }
 

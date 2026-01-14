@@ -52,6 +52,7 @@ import {
   getWalletByEmail,
 } from "./services/api-real";
 import { generateMockWalletData } from "./services/mock-data";
+import { clearAuthToken, getAuthToken, setAuthToken } from "./services/authToken";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -109,7 +110,7 @@ export default function App() {
       const hash = window.location.hash;
 
       // ✅ IMPORTANT: Don't show verify page if user is already logged in
-      const token = localStorage.getItem("authToken");
+      const token = getAuthToken();
       if (token) {
         // User is already authenticated, don't show verify page even if hash contains /verify
         console.log("🔒 User already authenticated, skipping verify page");
@@ -136,7 +137,18 @@ export default function App() {
   // check xem có login chưa khi vào trang
   useEffect(() => {
     const restoreAuth = async () => {
-      const token = localStorage.getItem("authToken");
+      // Wallet auth breadcrumb (helps debugging when login triggers a reload)
+      try {
+        const lastAttempt = sessionStorage.getItem("walletAuth:lastAttempt");
+        if (lastAttempt) {
+          console.log("🧩 walletAuth:lastAttempt:", lastAttempt);
+          sessionStorage.removeItem("walletAuth:lastAttempt");
+        }
+      } catch {
+        // ignore
+      }
+
+      const token = getAuthToken();
       const savedUser = localStorage.getItem("currentUser");
 
       console.log("🔍 Checking auth on mount:");
@@ -184,19 +196,24 @@ export default function App() {
           console.log("✅ Auth restored from token via getUserInfo(), redirecting to dashboard");
         } else {
           console.warn("⚠️ Token exists but failed to fetch user profile; clearing auth");
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("currentUser");
+          clearAuthToken();
           setCurrentUser(null);
         }
       } catch (error) {
         console.error("❌ Failed to restore auth from token:", error);
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("currentUser");
+        clearAuthToken();
         setCurrentUser(null);
       }
     };
 
     restoreAuth();
+
+    const onAuthTokenChanged = () => {
+      void restoreAuth();
+    };
+
+    window.addEventListener("authTokenChanged", onAuthTokenChanged);
+    return () => window.removeEventListener("authTokenChanged", onAuthTokenChanged);
   }, []);
 
   // Auto-load wallet data khi vào Dashboard lần đầu
@@ -286,7 +303,7 @@ export default function App() {
     // ✅ FIX: Check if user is already authenticated from Verify.tsx
     // If authToken already exists in localStorage, it means Verify.tsx already saved everything
     // We should NOT overwrite it!
-    const existingToken = localStorage.getItem("authToken");
+    const existingToken = getAuthToken();
     const existingUser = localStorage.getItem("currentUser");
 
     if (existingToken && existingUser) {
@@ -320,7 +337,7 @@ export default function App() {
       // ✅ ALSO SAVE authToken if not from Verify.tsx (for backward compatibility with old flows)
       if (!existingToken) {
         const mockToken = `mock_jwt_${Date.now()}_${Math.random().toString(36)}`;
-        localStorage.setItem("authToken", mockToken);
+        setAuthToken(mockToken);
         console.log("💾 Saved mockToken for backward compatibility");
       }
     }
@@ -440,8 +457,7 @@ export default function App() {
             setCurrentPage("calculator");
 
             // Clear auth to allow retry
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("currentUser");
+            clearAuthToken();
             setCurrentUser(null);
 
             return; // ← EXIT early without setting empty data
@@ -514,8 +530,7 @@ export default function App() {
           // ✅ FIX: Redirect to Calculator and clear auth
           setIsLoading(false);
           setCurrentPage("calculator");
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("currentUser");
+          clearAuthToken();
           setCurrentUser(null);
 
           return; // ← EXIT early
@@ -543,8 +558,7 @@ export default function App() {
 
   const handleLogout = () => {
     // Xóa localStorage
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("currentUser");
+    clearAuthToken();
 
     // Reset state
     setCurrentUser(null);
@@ -832,7 +846,7 @@ export default function App() {
     const mockToken = `mock_jwt_${Date.now()}_${Math.random().toString(36)}`;
 
     // Lưu vào localStorage
-    localStorage.setItem("authToken", mockToken);
+    setAuthToken(mockToken);
     localStorage.setItem(
       "currentUser",
       JSON.stringify(mockUser),
