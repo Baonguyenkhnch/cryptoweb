@@ -22,7 +22,7 @@ import { VerifyPage } from "./pages/Verify"; // ✅ Import VerifyPage
 import { CaptchaDialog } from "./components/CaptchaDialog"; // ✅ Import CaptchaDialog
 import { ConnectWalletModal } from "./components/ConnectWalletModal"; // ✅ Import ConnectWalletModal
 import { useLanguage } from "./services/LanguageContext";
-import { ImageWithFallback } from "./components/ImageProcessing/ImageWithFallback";
+import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
 import logoImage from "../src/components/images/logonhap.jpg";
 import {
@@ -110,12 +110,17 @@ export default function App() {
       const hash = window.location.hash;
 
       // ✅ IMPORTANT: Don't show verify page if user is already logged in
-      const token = getAuthToken();
-      if (token) {
-        // User is already authenticated, don't show verify page even if hash contains /verify
-        console.log("🔒 User already authenticated, skipping verify page");
-        setShowVerifyPage(false);
-        return;
+      try {
+        const token = getAuthToken();
+        if (token) {
+          // User is already authenticated, don't show verify page even if hash contains /verify
+          console.log("🔒 User already authenticated, skipping verify page");
+          setShowVerifyPage(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking auth token:", error);
+        // If getAuthToken fails, assume not authenticated
       }
 
       // ✅ SUPPORT BOTH /verify AND /verify-registration
@@ -148,7 +153,14 @@ export default function App() {
         // ignore
       }
 
-      const token = getAuthToken();
+      let token: string | null = null;
+      try {
+        token = getAuthToken();
+      } catch (error) {
+        console.error("Error getting auth token:", error);
+        return;
+      }
+
       const savedUser = localStorage.getItem("currentUser");
 
       console.log("🔍 Checking auth on mount:");
@@ -196,12 +208,20 @@ export default function App() {
           console.log("✅ Auth restored from token via getUserInfo(), redirecting to dashboard");
         } else {
           console.warn("⚠️ Token exists but failed to fetch user profile; clearing auth");
-          clearAuthToken();
+          try {
+            clearAuthToken();
+          } catch (err) {
+            console.error("Error clearing auth token:", err);
+          }
           setCurrentUser(null);
         }
       } catch (error) {
         console.error("❌ Failed to restore auth from token:", error);
-        clearAuthToken();
+        try {
+          clearAuthToken();
+        } catch (err) {
+          console.error("Error clearing auth token:", err);
+        }
         setCurrentUser(null);
       }
     };
@@ -303,7 +323,12 @@ export default function App() {
     // ✅ FIX: Check if user is already authenticated from Verify.tsx
     // If authToken already exists in localStorage, it means Verify.tsx already saved everything
     // We should NOT overwrite it!
-    const existingToken = getAuthToken();
+    let existingToken: string | null = null;
+    try {
+      existingToken = getAuthToken();
+    } catch (error) {
+      console.error("Error getting existing token:", error);
+    }
     const existingUser = localStorage.getItem("currentUser");
 
     if (existingToken && existingUser) {
@@ -336,9 +361,13 @@ export default function App() {
 
       // ✅ ALSO SAVE authToken if not from Verify.tsx (for backward compatibility with old flows)
       if (!existingToken) {
-        const mockToken = `mock_jwt_${Date.now()}_${Math.random().toString(36)}`;
-        setAuthToken(mockToken);
-        console.log("💾 Saved mockToken for backward compatibility");
+        try {
+          const mockToken = `mock_jwt_${Date.now()}_${Math.random().toString(36)}`;
+          setAuthToken(mockToken);
+          console.log("💾 Saved mockToken for backward compatibility");
+        } catch (error) {
+          console.error("Error setting auth token:", error);
+        }
       }
     }
 
@@ -457,7 +486,11 @@ export default function App() {
             setCurrentPage("calculator");
 
             // Clear auth to allow retry
-            clearAuthToken();
+            try {
+              clearAuthToken();
+            } catch (err) {
+              console.error("Error clearing auth token:", err);
+            }
             setCurrentUser(null);
 
             return; // ← EXIT early without setting empty data
@@ -530,7 +563,11 @@ export default function App() {
           // ✅ FIX: Redirect to Calculator and clear auth
           setIsLoading(false);
           setCurrentPage("calculator");
-          clearAuthToken();
+          try {
+            clearAuthToken();
+          } catch (err) {
+            console.error("Error clearing auth token:", err);
+          }
           setCurrentUser(null);
 
           return; // ← EXIT early
@@ -558,7 +595,11 @@ export default function App() {
 
   const handleLogout = () => {
     // Xóa localStorage
-    clearAuthToken();
+    try {
+      clearAuthToken();
+    } catch (error) {
+      console.error("Error clearing auth token:", error);
+    }
 
     // Reset state
     setCurrentUser(null);
@@ -846,7 +887,11 @@ export default function App() {
     const mockToken = `mock_jwt_${Date.now()}_${Math.random().toString(36)}`;
 
     // Lưu vào localStorage
-    setAuthToken(mockToken);
+    try {
+      setAuthToken(mockToken);
+    } catch (error) {
+      console.error("Error setting auth token:", error);
+    }
     localStorage.setItem(
       "currentUser",
       JSON.stringify(mockUser),
@@ -1323,6 +1368,11 @@ export default function App() {
         <ConnectWalletModal
           isOpen={isWalletModalOpen}
           onClose={() => setIsWalletModalOpen(false)}
+          onSuccess={(walletAddress: string) => {
+            // Update currentUser with wallet address immediately
+            setCurrentUser(prev => prev ? { ...prev, walletAddress } : prev);
+            setIsWalletModalOpen(false);
+          }}
         />
       )}
     </div>
