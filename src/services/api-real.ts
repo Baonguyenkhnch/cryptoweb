@@ -1,4 +1,4 @@
-
+import { getAuthToken } from "./authToken";
 
 // Giữ nguyên các interfaces với các field mở rộng
 export interface TokenBalance {
@@ -521,7 +521,7 @@ export const mintSBT = async (
         }
 
         // Get auth token (required for authenticated endpoint)
-        const authToken = localStorage.getItem("authToken");
+        const authToken = getAuthToken();
         if (!authToken) {
             return {
                 success: false,
@@ -596,7 +596,7 @@ export const prepareUpdateScore = async (
         }
 
         // Get auth token (required for authenticated endpoint)
-        const authToken = localStorage.getItem("authToken");
+        const authToken = getAuthToken();
         if (!authToken) {
             return {
                 success: false,
@@ -1194,15 +1194,15 @@ export const getUserInfo = async (): Promise<{
 
     try {
         // Get auth token from localStorage
-        const authToken = localStorage.getItem("authToken");
+        const authToken = getAuthToken();
         const currentUser = localStorage.getItem("currentUser");
 
         console.log("🔍 getUserInfo() - Checking localStorage:");
         console.log("  - authToken:", authToken ? `${authToken.substring(0, 30)}... (length: ${authToken.length})` : "❌ NULL");
         console.log("  - currentUser:", currentUser ? "✅ EXISTS" : "❌ NULL");
 
-        if (!authToken || !currentUser) {
-            console.error("❌ getUserInfo() - Missing auth data in localStorage!");
+        if (!authToken) {
+            console.error("❌ getUserInfo() - Missing authToken in localStorage!");
             return {
                 success: false,
                 message: "Chưa đăng nhập",
@@ -1302,7 +1302,7 @@ export const analyzeWallet = async (
         debugLog(`📡 Calling API: ${url}`);
 
         // ✅ AUTO-DETECT AUTH TOKEN
-        const authToken = localStorage.getItem("authToken");
+        const authToken = getAuthToken();
 
         // ✅ CHECK WALLET CACHE (for public requests)
         // If no authToken (public Calculator), check if we have cached data for this wallet
@@ -1445,7 +1445,7 @@ export const analyzeWallet = async (
         debugLog(`❌ Error analyzing wallet:`, error);
 
         // ✅ CHECK IF USER IS LOGGED IN
-        const authToken = localStorage.getItem("authToken");
+        const authToken = getAuthToken();
 
         if (authToken) {
             // ❌ LOGGED IN USER: DO NOT use mock data - Throw error instead

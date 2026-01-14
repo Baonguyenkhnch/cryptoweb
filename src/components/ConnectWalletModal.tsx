@@ -12,6 +12,7 @@ import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "./ui/button";
 import { useWalletAuth } from "../hooks/useWalletAuth";
+import { getAuthToken, setAuthToken } from "../services/authToken";
 import { toast } from "sonner";
 
 interface ConnectWalletModalProps {
@@ -26,6 +27,51 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
   const [walletConnectURI, setWalletConnectURI] = useState("");
   const [qrCodeDataURL, setQrCodeDataURL] = useState("");
   const { connectWallet, connectWalletConnect } = useWalletAuth();
+
+  const formatMetaMaskError = (error: any): { title: string; description: string } => {
+    const code = error?.code;
+    const message = String(error?.message || "");
+
+    if (code === 4001) {
+      return {
+        title: "Bạn đã từ chối yêu cầu",
+        description: "Vui lòng mở MetaMask và xác nhận để tiếp tục.",
+      };
+    }
+
+    if (code === -32002) {
+      return {
+        title: "MetaMask đang chờ xác nhận",
+        description: "Bạn đang có một yêu cầu đang pending. Vui lòng mở MetaMask để xử lý.",
+      };
+    }
+
+    if (code === 4100) {
+      return {
+        title: "MetaMask chưa được cấp quyền",
+        description: "Vui lòng mở MetaMask và cấp quyền truy cập tài khoản cho website.",
+      };
+    }
+
+    if (code === 4902) {
+      return {
+        title: "Chưa có mạng này trong MetaMask",
+        description: "Vui lòng thêm network phù hợp trong MetaMask rồi thử lại.",
+      };
+    }
+
+    if (message.toLowerCase().includes("user rejected")) {
+      return {
+        title: "Bạn đã từ chối yêu cầu",
+        description: "Vui lòng thử lại và xác nhận trong MetaMask.",
+      };
+    }
+
+    return {
+      title: "Lỗi kết nối MetaMask",
+      description: message || "Vui lòng kiểm tra MetaMask và thử lại.",
+    };
+  };
 
   const handleClose = () => {
     setStep("select");
@@ -63,11 +109,39 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
     }
   }, [walletConnectURI, step]);
 
+  // If WalletConnect flow completes, token will be set and we can close without reload
+  useEffect(() => {
+    if (!isOpen) return;
+    if (step !== "walletconnect") return;
+
+    const onAuthTokenChanged = () => {
+      const token = getAuthToken();
+      if (!token) return;
+
+      toast.success("Kết nối WalletConnect thành công!", {
+        description: "Đang chuyển đến Dashboard...",
+      });
+      handleClose();
+      onSuccess?.();
+      window.location.hash = "#/dashboard";
+    };
+
+    window.addEventListener("authTokenChanged", onAuthTokenChanged);
+    return () => window.removeEventListener("authTokenChanged", onAuthTokenChanged);
+  }, [isOpen, step, handleClose, onSuccess]);
+
   // Handle MetaMask Connect
   const handleMetaMaskConnect = async () => {
     try {
       setIsConnecting(true);
       console.log('🔐 Starting MetaMask SIWE authentication...');
+
+      if (!(window as any)?.ethereum) {
+        toast.error("Chưa cài MetaMask", {
+          description: "Vui lòng cài MetaMask extension cho trình duyệt, sau đó thử lại.",
+        });
+        return;
+      }
 
       const result = await connectWallet();
 
@@ -78,8 +152,25 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
         throw new Error("Đăng nhập ví thành công nhưng không nhận được access token");
       }
 
+      // Persist a small debug breadcrumb so reload won't lose context
+      try {
+        sessionStorage.setItem(
+          "walletAuth:lastAttempt",
+          JSON.stringify({
+            ok: true,
+            provider: "metamask",
+            ts: new Date().toISOString(),
+            address: result?.address,
+            chainId: result?.chainId,
+            tokenPreview: `${accessToken.substring(0, 12)}...`,
+          })
+        );
+      } catch {
+        // ignore storage errors
+      }
+
       // Token-only auth: do not assume backend returns user/profile data
-      localStorage.setItem("authToken", accessToken);
+      setAuthToken(accessToken);
 
       toast.success("Đăng nhập thành công!", {
         description: `Chào mừng ${(result?.address ? result.address.substring(0, 8) : "wallet")}...`,
@@ -94,14 +185,29 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
       setTimeout(() => {
         // Redirect to dashboard; App.tsx will fetch profile via protected API
         window.location.hash = "#/dashboard";
-        window.location.reload();
       }, 500);
 
     } catch (error: any) {
       console.error('❌ MetaMask login error:', error);
-      toast.error("Lỗi kết nối MetaMask", {
-        description: error.message || "Vui lòng kiểm tra MetaMask và thử lại",
-      });
+
+      // Persist error so we can inspect after reload (or just for debugging)
+      try {
+        sessionStorage.setItem(
+          "walletAuth:lastAttempt",
+          JSON.stringify({
+            ok: false,
+            provider: "metamask",
+            ts: new Date().toISOString(),
+            message: error?.message,
+            code: error?.code,
+          })
+        );
+      } catch {
+        // ignore storage errors
+      }
+
+      const { title, description } = formatMetaMaskError(error);
+      toast.error(title, { description });
     } finally {
       setIsConnecting(false);
     }

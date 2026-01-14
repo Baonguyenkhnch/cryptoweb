@@ -13,6 +13,7 @@
 import { BrowserProvider } from "ethers";
 import { SiweMessage } from "siwe";
 import { getNonce, verifySignature } from "../services/walletAuth.service";
+import { setAuthToken } from "../services/authToken";
 
 const buildSiweMessageString = (params: {
     address: string;
@@ -110,8 +111,6 @@ export function useWalletAuth() {
             // IMPORTANT: do not modify message after this point.
             console.log("🔐 Requesting signature from MetaMask...");
             const signature = await signer.signMessage(message);
-            console.log("Signature:", signature);
-
             console.log("✅ Signature received:", signature.substring(0, 20) + "...");
 
             // ⑨ VERIFY SIGNATURE WITH BACKEND
@@ -257,12 +256,7 @@ export function useWalletAuth() {
                     console.log("✅ WalletConnect authentication successful!");
 
                     // Store auth token only (profile fetched later via protected API)
-                    localStorage.setItem("authToken", verifyResult?.access_token || "");
-
-                    // Reload to update auth state
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
+                    setAuthToken(verifyResult?.access_token || "");
 
                 } catch (error: any) {
                     console.error("❌ WalletConnect SIWE error:", error);

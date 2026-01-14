@@ -1,3 +1,4 @@
+import { clearAuthToken, setAuthToken } from "../services/authToken";
 
 const API_BASE_URL = "https://backend.migofin.com";
 
@@ -107,7 +108,7 @@ export async function signInWithWallet(): Promise<{
             throw new Error("Đăng nhập ví thành công nhưng không nhận được access token");
         }
 
-        localStorage.setItem("authToken", accessToken);
+        setAuthToken(accessToken);
 
         console.log("💾 Auth data saved to localStorage");
 
@@ -178,8 +179,7 @@ export async function getCurrentWalletAddress(): Promise<string | null> {
  * Logout - clear auth data
  */
 export function logout() {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("currentUser");
+    clearAuthToken();
     console.log("👋 Logged out");
 }
 
