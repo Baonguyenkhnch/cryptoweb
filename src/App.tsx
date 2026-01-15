@@ -22,7 +22,7 @@ import { VerifyPage } from "./pages/Verify"; // ✅ Import VerifyPage
 import { CaptchaDialog } from "./components/CaptchaDialog"; // ✅ Import CaptchaDialog
 import { ConnectWalletModal } from "./components/ConnectWalletModal"; // ✅ Import ConnectWalletModal
 import { useLanguage } from "./services/LanguageContext";
-import { ImageWithFallback } from "./components/ImageProcessing/ImageWithFallback";
+import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import { Toaster } from "./components/ui/sonner";
 import logoImage from "../src/components/images/logonhap.jpg";
 import {
