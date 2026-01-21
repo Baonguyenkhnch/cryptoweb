@@ -114,7 +114,30 @@ export interface FeatureFeedback {
 }
 
 
-const API_BASE_URL = "https://api.example.com/v1";
+const API_BASE_URL = (() => {
+  const sanitizeEnvUrl = (input: unknown): string => {
+    const value = String(input ?? "").trim();
+    const unquoted = value.replace(/^['"]|['"]$/g, "");
+    const withoutComment = unquoted
+      .replace(/\s+#.*$/, "")
+      .replace(/\s+\/\/.*$/, "");
+    return withoutComment.trim();
+  };
+
+  const env = import.meta.env as any;
+  const raw = env.VITE_BACKEND_URL;
+
+  const value = sanitizeEnvUrl(raw);
+  if (!value) {
+    console.warn("[api] Missing API base URL. Set VITE_BACKEND_URL in .env/.env.local.");
+  }
+
+  const finalValue = value || "";
+  const withoutTrailingSlashes = finalValue.replace(/\/+$/, "");
+  return withoutTrailingSlashes.endsWith("/api")
+    ? withoutTrailingSlashes.slice(0, -4)
+    : withoutTrailingSlashes;
+})();
 const MOCK_DELAY = 1500;
 
 

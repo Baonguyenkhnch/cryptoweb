@@ -15,6 +15,7 @@ import { Lightbulb, Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "../services/LanguageContext";
 import { CaptchaDialog } from "./CaptchaDialog";
+import { submitFeedback } from "../services/api-real";
 
 interface FeatureFeedbackDialogProps {
   open: boolean;
@@ -64,20 +65,20 @@ export function FeatureFeedbackDialog({
     setError("");
     setIsLoading(true);
     try {
-      // TODO: Gọi API POST /feedback/submit
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const result = await submitFeedback({
+        feature_name: featureName.trim(),
+        description: description.trim(),
+        email: email.trim(),
+      });
 
-      const feedback = {
-        featureName,
-        description,
-        email: email || null,
-        timestamp: new Date().toISOString(),
-      };
-      console.log("Gửi feedback:", feedback);
+      if (!result.success) {
+        setError(result.message || t.featureFeedback.errors.submitError);
+        return;
+      }
 
       // Show toast notification
       toast.success(t.featureFeedback.success.toastTitle, {
-        description: t.featureFeedback.success.toastDescription,
+        description: result.message || t.featureFeedback.success.toastDescription,
       });
 
       setShowSuccess(true);

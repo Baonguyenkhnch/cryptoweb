@@ -1,5 +1,3 @@
-import { before } from "node:test";
-
 export const translations = {
   vi: {
     navigation: {
@@ -179,7 +177,7 @@ export const translations = {
       benefitNoPassword: "Không cần nhớ mật khẩu",
       noWalletHint: "Không có ví? Bấm 🔀 để tạo test",
       noWalletHintShort: "💡 Không có ví? Bấm",
-      generateTest: "để tạo ví test",
+      generateTest: "Nhấn để tạo ví test",
       showPassword: "Hiện mật khẩu",
       hidePassword: "Ẩn mật khẩu",
       howItWorks: "📬 Cách hoạt động:",
@@ -466,12 +464,14 @@ export const translations = {
       title: "Đề Xuất Tính Năng Mới",
       subtitle: "Ý tưởng của bạn giúp chúng tôi phát triển tốt hơn",
       featureName: "Tên Tính Năng",
+      featureNamePlaceholder: "VD: Gợi ý tính năng mới",
       description: "Mô Tả Chi Tiết",
+      descriptionPlaceholder: "Mô tả chi tiết ý tưởng/tính năng bạn muốn đề xuất...",
       charactersCount: "ký tự",
       emailLabel: "📧 Email Nhận Phản Hồi",
       emailResponseLabel: "📧 Email Nhận Phản Hồi",
       emailOptional: "(Không bắt buộc)",
-      // emailPlaceholder: "your.email@example.com",
+      emailPlaceholder: "your.email@example.com",
       emailHint: "Chúng tôi sẽ liên hệ nếu cần thêm thông tin",
       emailResponseHint: "Chúng tôi sẽ liên hệ với bạn khi tính năng đề xuất đã được triển khai",
       benefits: {
@@ -1011,14 +1011,14 @@ export const translations = {
       title: "Suggest New Feature",
       subtitle: "Your idea helps us develop better",
       featureName: "Feature Name",
-      // featureNamePlaceholder: "E.g., MetaMask Integration",
+      featureNamePlaceholder: "E.g., MetaMask Integration",
       description: "Detailed Description",
-      // descriptionPlaceholder: "Describe the feature you want to suggest in detail...",
+      descriptionPlaceholder: "Describe the feature you want to suggest in detail...",
       charactersCount: "characters",
       emailLabel: "📧 Email for Feedback",
       emailResponseLabel: "📧 Email for Feedback",
       emailOptional: "(Optional)",
-      // emailPlaceholder: "your.email@example.com",
+      emailPlaceholder: "your.email@example.com",
       emailHint: "We will contact you if we need more information",
       emailResponseHint: "We will contact you when the feature suggestion has been implemented",
       benefits: {
