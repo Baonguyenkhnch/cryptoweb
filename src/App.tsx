@@ -163,12 +163,12 @@ export default function App() {
 
       const savedUser = localStorage.getItem("currentUser");
 
-      console.log("🔍 Checking auth on mount:");
-      console.log("  - authToken:", token ? token.substring(0, 20) + "..." : "null");
-      console.log("  - currentUser:", savedUser ? "exists" : "null");
+      // console.log("🔍 Checking auth on mount:");
+      // console.log("  - authToken:", token ? token.substring(0, 20) + "..." : "null");
+      // console.log("  - currentUser:", savedUser ? "exists" : "null");
 
       if (!token) {
-        console.log("⚠️ No auth found in localStorage");
+        // console.log("⚠️ No auth found in localStorage");
         return;
       }
 

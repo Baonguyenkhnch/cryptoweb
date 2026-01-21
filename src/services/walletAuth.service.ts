@@ -1,19 +1,38 @@
 
-// Backend API always runs on dev.migofin.com.
-// Allow env override for local testing, but DO NOT bake in frontend domain here.
+// Configure backend base URL via env only; do not bake domains into code.
+// Per project convention:
+// - SIWE (wallet auth) uses VITE_DEV_URL
+// - Other endpoints use VITE_BACKEND_URL
+// Fallbacks are kept for compatibility.
 const buildApiBase = () => {
-    const envBase = (import.meta as any).env?.VITE_BACKEND_URL as string | undefined;
-    if (envBase && envBase.trim()) {
-        let base = envBase.trim().replace(/\/+$/, "");
-        // Allow either "https://host" or "https://host/api" in env.
-        base = base.replace(/\/api$/i, "");
-        return base;
+    const sanitizeEnvUrl = (input: unknown): string => {
+        const value = String(input ?? "").trim();
+        const unquoted = value.replace(/^['"]|['"]$/g, "");
+        const withoutComment = unquoted
+            .replace(/\s+#.*$/, "")
+            .replace(/\s+\/\/.*$/, "");
+        return withoutComment.trim();
+    };
+
+    const env = (import.meta as any).env as any;
+    const raw = env?.VITE_DEV_URL || env?.VITE_BACKEND_URL;
+    const value = sanitizeEnvUrl(raw);
+
+    if (!value) {
+        console.warn(
+            "[walletAuth] Missing API base URL. Set VITE_DEV_URL (recommended for SIWE) or VITE_BACKEND_URL in .env/.env.local."
+        );
+        return "";
     }
-    return "https://dev.migofin.com";
+
+    const withoutTrailingSlashes = value.replace(/\/+$/, "");
+    // Normalize so env can be either `https://host` or `https://host/api`.
+    return withoutTrailingSlashes.endsWith("/api")
+        ? withoutTrailingSlashes.slice(0, -4)
+        : withoutTrailingSlashes;
 };
 
 const API_BASE_URL = buildApiBase();
-console.log("[WalletAuth] API_BASE_URL:", API_BASE_URL);
 
 /**
  * Response type from /wallet/nonce API

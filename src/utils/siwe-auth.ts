@@ -1,6 +1,33 @@
 import { clearAuthToken, setAuthToken } from "../services/authToken";
 
-const API_BASE_URL = "https://backend.migofin.com";
+const API_BASE_URL = (() => {
+    const sanitizeEnvUrl = (input: unknown): string => {
+        const value = String(input ?? "").trim();
+        const unquoted = value.replace(/^['"]|['"]$/g, "");
+        const withoutComment = unquoted
+            .replace(/\s+#.*$/, "")
+            .replace(/\s+\/\/.*$/, "");
+        return withoutComment.trim();
+    };
+
+    const env = import.meta.env as any;
+    const raw = env.VITE_DEV_URL || env.VITE_BACKEND_URL;
+    const value = sanitizeEnvUrl(raw);
+
+    // No hardcoded host here. If env is missing, default to same-origin (""),
+    // and let requests go to `/api/...` (requires a proxy or same-origin backend).
+    if (!value) {
+        console.warn(
+            "[siwe-auth] Missing API base URL. Set VITE_DEV_URL (recommended for SIWE) or VITE_BACKEND_URL in .env/.env.local."
+        );
+    }
+
+    const finalValue = value || "";
+    const withoutTrailingSlashes = finalValue.replace(/\/+$/, "");
+    return withoutTrailingSlashes.endsWith("/api")
+        ? withoutTrailingSlashes.slice(0, -4)
+        : withoutTrailingSlashes;
+})();
 
 /**
  * Sign in với MetaMask wallet
@@ -38,7 +65,7 @@ export async function signInWithWallet(): Promise<{
 
         // 4️⃣ Request SIWE message (nonce)
         console.log("📡 Requesting nonce...");
-        const nonceRes = await fetch(`${API_BASE_URL}/auth/wallet/nonce`, {
+        const nonceRes = await fetch(`${API_BASE_URL}/api/auth/wallet/nonce`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

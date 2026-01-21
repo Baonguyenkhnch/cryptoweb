@@ -142,7 +142,41 @@ export interface FeatureFeedback {
 // =====================================================
 // THAY ĐỔI 1: API BASE URL - QUAN TRỌNG!
 // =====================================================
-const API_BASE_URL = "https://backend.migofin.com";
+const API_BASE_URL = (() => {
+    const sanitizeEnvUrl = (input: unknown): string => {
+        const value = String(input ?? "").trim();
+        const unquoted = value.replace(/^['"]|['"]$/g, "");
+
+        // Strip inline comments (common in .env files), but only when preceded by whitespace.
+        // This avoids breaking `https://...`.
+        const withoutComment = unquoted
+            .replace(/\s+#.*$/, "")
+            .replace(/\s+\/\/.*$/, "");
+
+        return withoutComment.trim();
+    };
+
+    const env = import.meta.env as any;
+    // Main endpoints use VITE_BACKEND_URL.
+    const raw = env.VITE_BACKEND_URL;
+
+    const value = sanitizeEnvUrl(raw);
+
+    // No hardcoded host here. If env is missing, default to same-origin (""),
+    // and let requests go to `/api/...` (requires a proxy or same-origin backend).
+    if (!value) {
+        console.warn("[api-real] Missing API base URL. Set VITE_BACKEND_URL in .env/.env.local.");
+    }
+
+    const finalValue = value || "";
+    const withoutTrailingSlashes = finalValue.replace(/\/+$/, "");
+
+    // Many calls below already append `/api/...`.
+    // Normalize so env can be either `https://host` or `https://host/api`.
+    return withoutTrailingSlashes.endsWith("/api")
+        ? withoutTrailingSlashes.slice(0, -4)
+        : withoutTrailingSlashes;
+})();
 
 // Enable debug mode để xem logs
 const DEBUG_MODE = true; // ✅ BẬT DEBUG để xem backend response
@@ -718,11 +752,14 @@ export const registerUser = async (
         }
 
         if (!response.ok) {
-            debugLog(`❌ Register error: ${response.status}`, data);
-
-            // ✅ Handle specific error cases
-            const errorMessage = data.message || data.error || "";
-
+            // debugLog(`❌ Register error: ${response.status}`, data);
+            // ✅ Handle specific error cases (support multiple backend shapes)
+            const errorMessage =
+                data?.detail?.message ||
+                data?.detail?.error ||
+                data?.message ||
+                data?.error ||
+                "";
             // Check if email already exists (most common duplicate error is 500)
             if (response.status === 400 || response.status === 409 || response.status === 500) {
                 const lowerMsg = errorMessage.toLowerCase();
@@ -1130,7 +1167,7 @@ export const submitFeedback = async (feedback: {
             };
         }
 
-        const url = `${API_BASE_URL}/api/feedback`;
+        const url = `${API_BASE_URL}/api/feedback/`;
         const response = await fetch(url, {
             method: "POST",
             headers: {
