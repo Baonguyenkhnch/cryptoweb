@@ -11,6 +11,13 @@ const API_BASE_URL = (() => {
     };
 
     const env = import.meta.env as any;
+    // Optional: in local dev, use same-origin (/api/...) and let Vite proxy forward to backend.
+    // This avoids CORS issues when backend doesn't allow localhost:5173.
+    const useProxy = String(env?.VITE_USE_VITE_PROXY || "").toLowerCase() === "true";
+    if (env?.DEV && useProxy) {
+        return "";
+    }
+
     const raw = env.VITE_DEV_URL || env.VITE_BACKEND_URL;
     const value = sanitizeEnvUrl(raw);
 
@@ -110,12 +117,12 @@ export async function signInWithWallet(): Promise<{
                 "Accept": "application/json",
             },
             body: JSON.stringify({
-                // address,
-                // chain_id,
+                // Keep payload compatible with common SIWE backends.
+                // Many servers verify against (message, signature) and also cross-check address/chain_id.
+                address,
+                chain_id,
                 signature,
-                message
-                // ❌ KHÔNG gửi message
-                // ❌ KHÔNG gửi nonce
+                message,
             }),
         });
 

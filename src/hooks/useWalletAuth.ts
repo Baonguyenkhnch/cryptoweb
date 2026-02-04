@@ -22,9 +22,12 @@ const buildSiweMessageString = (params: {
     issuedAt?: string;
     expirationTime?: string;
     statement?: string | null;
+    domain?: string;
+    uri?: string;
 }) => {
-    const domain = window.location.host;
-    const uri = window.location.origin;
+    // Prefer backend-provided values to avoid domain/uri mismatches during verification.
+    const domain = (params.domain || window.location.host).trim();
+    const uri = (params.uri || window.location.origin).trim();
 
     const statement = params.statement?.trim();
 
@@ -92,16 +95,22 @@ export function useWalletAuth() {
 
             console.log("✅ Nonce received:", nonceData.nonce);
 
-            // ⑦ BUILD SIWE MESSAGE (DETERMINISTIC)
-            // Domain/URI MUST reflect current frontend runtime (localhost/app.migofin.com/etc.)
-            const message = buildSiweMessageString({
-                address,
-                chainId,
-                nonce: nonceData.nonce,
-                issuedAt: nonceData.issued_at,
-                expirationTime: nonceData.expiration_time,
-                statement: nonceData.statement,
-            });
+            // ⑦ BUILD SIWE MESSAGE
+            // Prefer backend-provided message when available to match backend verification expectations.
+            // If backend doesn't return a message, fall back to a deterministic local build.
+            const message =
+                typeof nonceData.message === "string" && nonceData.message.length > 0
+                    ? nonceData.message
+                    : buildSiweMessageString({
+                          address,
+                          chainId,
+                          nonce: nonceData.nonce,
+                          domain: nonceData.domain,
+                          uri: nonceData.uri,
+                          issuedAt: nonceData.issued_at,
+                          expirationTime: nonceData.expiration_time,
+                          statement: nonceData.statement,
+                      });
 
             console.log("📝 SIWE message to sign (verbatim):");
             console.log(message);
@@ -226,15 +235,21 @@ export function useWalletAuth() {
 
                     console.log("✅ Nonce received:", nonceData.nonce);
 
-                    // ⑦ BUILD SIWE MESSAGE (DETERMINISTIC)
-                    const message = buildSiweMessageString({
-                        address,
-                        chainId,
-                        nonce: nonceData.nonce,
-                        issuedAt: nonceData.issued_at,
-                        expirationTime: nonceData.expiration_time,
-                        statement: nonceData.statement,
-                    });
+                    // ⑦ BUILD SIWE MESSAGE
+                    // Prefer backend-provided message when available to match backend verification expectations.
+                    const message =
+                        typeof nonceData.message === "string" && nonceData.message.length > 0
+                            ? nonceData.message
+                            : buildSiweMessageString({
+                                  address,
+                                  chainId,
+                                  nonce: nonceData.nonce,
+                                  domain: nonceData.domain,
+                                  uri: nonceData.uri,
+                                  issuedAt: nonceData.issued_at,
+                                  expirationTime: nonceData.expiration_time,
+                                  statement: nonceData.statement,
+                              });
 
                     console.log("📝 SIWE message to sign (verbatim):");
                     console.log(message);
@@ -255,8 +270,13 @@ export function useWalletAuth() {
 
                     console.log("✅ WalletConnect authentication successful!");
 
+                    const accessToken = verifyResult?.access_token;
+                    if (!accessToken) {
+                        throw new Error("Đăng nhập ví thành công nhưng không nhận được access token");
+                    }
+
                     // Store auth token only (profile fetched later via protected API)
-                    setAuthToken(verifyResult?.access_token || "");
+                    setAuthToken(accessToken);
 
                 } catch (error: any) {
                     console.error("❌ WalletConnect SIWE error:", error);

@@ -36,6 +36,7 @@ import { RefreshCw } from "lucide-react";
 interface DashboardProps {
   user: UserProfile;
   walletData: WalletAnalysis | null;
+  isLoadingWalletData?: boolean;
   onLogout: () => void;
   onViewProfile: () => void;
   onCalculateScore: () => void;
@@ -50,49 +51,10 @@ interface ScoreHistoryItem {
 
 
 // ============================================
-// MOCK DATA FOR DEVELOPMENT
+// NOTE
 // ============================================
 
-
-const MOCK_STATS = {
-  currentScore: 785,
-  previousScore: 742,
-  rating: "Excellent",
-  walletAge: 456,
-  totalTransactions: 1234,
-  tokenDiversity: 15,
-  totalAssets: 125000,
-  totalChecks: 23,
-};
-
-
-const MOCK_WALLET_DATA = {
-  tokenBalances: [
-    { symbol: "ETH", balance: 2.5, value: 4500, percentage: 45 },
-    { symbol: "USDT", balance: 5000, value: 5000, percentage: 50 },
-    { symbol: "LINK", balance: 200, value: 500, percentage: 5 },
-  ],
-  recentTransactions: [
-    {
-      id: "tx-1",
-      hash: "0x123...abc",
-      type: "send" as const,
-      amount: 0.5,
-      token: "ETH",
-      value: 900,
-      date: "2024-01-15",
-    },
-    {
-      id: "tx-2",
-      hash: "0x456...def",
-      type: "receive" as const,
-      amount: 1000,
-      token: "USDT",
-      value: 1000,
-      date: "2024-01-14",
-    },
-  ],
-};
+// Dashboard is authenticated UI; it should not render mock stats for a real wallet.
 
 
 // ============================================
@@ -103,6 +65,7 @@ const MOCK_WALLET_DATA = {
 export function Dashboard({
   user,
   walletData,
+  isLoadingWalletData,
   onLogout,
   onViewProfile,
   onCalculateScore,
@@ -220,18 +183,28 @@ export function Dashboard({
   };
 
 
-  // Tính toán score change
-  // ✅ FIX: Only fallback to MOCK if walletData is null, not if score is 0
-  const currentScore = walletData !== null ? (walletData.score ?? MOCK_STATS.currentScore) : MOCK_STATS.currentScore;
-  const walletAge = walletData !== null ? (walletData.walletAge ?? MOCK_STATS.walletAge) : MOCK_STATS.walletAge;
-  const totalTransactions = walletData !== null ? (walletData.totalTransactions ?? MOCK_STATS.totalTransactions) : MOCK_STATS.totalTransactions;
-  const tokenDiversity = walletData !== null ? (walletData.tokenDiversity ?? MOCK_STATS.tokenDiversity) : MOCK_STATS.tokenDiversity;
-  const totalAssets = walletData !== null ? (walletData.totalAssets ?? MOCK_STATS.totalAssets) : MOCK_STATS.totalAssets;
-  const rawRating = walletData !== null ? (walletData.rating ?? MOCK_STATS.rating) : MOCK_STATS.rating;
-  // ✅ FIX: If score is 0, show "Không Có Hạng" / "No Rating" instead of rating
+  // IMPORTANT: Dashboard should never show mock stats for a real logged-in wallet.
+  // If walletData is missing (loading/error/no data), show 0/empty until real data arrives.
+  const normalizedUserWallet = (user.walletAddress || "").toLowerCase();
+  const normalizedWalletDataWallet = (walletData?.walletAddress || "").toLowerCase();
+
+  const walletDataMatchesUser =
+    !!walletData &&
+    // If backend does not include walletAddress inside walletData, assume it's for the current user.
+    (!normalizedWalletDataWallet || normalizedWalletDataWallet === normalizedUserWallet);
+
+  const effectiveWalletData = walletDataMatchesUser ? walletData : null;
+
+  const currentScore = effectiveWalletData?.score ?? 0;
+  const walletAge = effectiveWalletData?.walletAge ?? 0;
+  const totalTransactions = effectiveWalletData?.totalTransactions ?? 0;
+  const tokenDiversity = effectiveWalletData?.tokenDiversity ?? 0;
+  const totalAssets = effectiveWalletData?.totalAssets ?? 0;
+  const rawRating = effectiveWalletData?.rating ?? "";
+  // If score is 0, show "N/A" (no rating)
   const rating = currentScore === 0 ? "N/A" : rawRating;
-  const tokenBalances = walletData !== null ? (walletData.tokenBalances ?? MOCK_WALLET_DATA.tokenBalances) : MOCK_WALLET_DATA.tokenBalances;
-  const recentTransactions = walletData !== null ? (walletData.recentTransactions ?? MOCK_WALLET_DATA.recentTransactions) : MOCK_WALLET_DATA.recentTransactions;
+  const tokenBalances = effectiveWalletData?.tokenBalances ?? [];
+  const recentTransactions = effectiveWalletData?.recentTransactions ?? [];
 
 
   // ✅ DEBUG: Log để check giá trị truyền vào ScoreResult
@@ -245,9 +218,7 @@ export function Dashboard({
   console.log("  - tokenBalances.length:", tokenBalances?.length || 0);
 
 
-  const scoreChange = MOCK_STATS.currentScore - MOCK_STATS.previousScore;
-  const scoreChangePercent = ((scoreChange / MOCK_STATS.previousScore) * 100).toFixed(1);
-  const isPositiveChange = scoreChange >= 0;
+  // NOTE: scoreChange was previously computed from MOCK_STATS, but isn't used in the UI.
 
 
   // ============================================

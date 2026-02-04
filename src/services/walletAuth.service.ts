@@ -15,6 +15,13 @@ const buildApiBase = () => {
     };
 
     const env = (import.meta as any).env as any;
+    // Optional: in local dev, use same-origin (/api/...) and let Vite proxy forward to backend.
+    // This avoids CORS issues when backend doesn't allow localhost:5173.
+    const useProxy = String(env?.VITE_USE_VITE_PROXY || "").toLowerCase() === "true";
+    if (env?.DEV && useProxy) {
+        return "";
+    }
+
     const raw = env?.VITE_DEV_URL || env?.VITE_BACKEND_URL;
     const value = sanitizeEnvUrl(raw);
 
@@ -69,6 +76,9 @@ export async function getNonce(
     chainId: number
 ): Promise<NonceResponse> {
     try {
+        if ((import.meta as any).env?.DEV) {
+            console.log("[walletAuth] nonce endpoint:", `${API_BASE_URL}/api/auth/wallet/nonce` || "/api/auth/wallet/nonce");
+        }
         const response = await fetch(`${API_BASE_URL}/api/auth/wallet/nonce`, {
             method: "POST",
             headers: {
@@ -111,6 +121,9 @@ export async function verifySignature(
 
 ): Promise<VerifyResponse> {
     try {
+        if ((import.meta as any).env?.DEV) {
+            console.log("[walletAuth] verify endpoint:", `${API_BASE_URL}/api/auth/wallet/verify` || "/api/auth/wallet/verify");
+        }
         const response = await fetch(`${API_BASE_URL}/api/auth/wallet/verify`, {
             method: "POST",
             headers: {

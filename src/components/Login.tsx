@@ -43,6 +43,7 @@ interface LoginProps {
 
 export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = "" }: LoginProps) {
   const { t } = useLanguage();
+  const isDev = import.meta.env.DEV;
 
 
   // State quản lý form đăng ký
@@ -233,6 +234,21 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
     setError("");
     setSuccessMessage(""); // ✅ Clear success message
     setHasAttemptedSubmit(false);
+  };
+  const handleOpenVerifyRegistrationLocally = () => {
+    if (!verificationToken) return;
+    const tokenParam = encodeURIComponent(verificationToken);
+    window.location.hash = `#/verify-registration?token=${tokenParam}`;
+  };
+
+  const handleCopyVerificationToken = async () => {
+    if (!verificationToken) return;
+    try {
+      await navigator.clipboard.writeText(verificationToken);
+      toast.success("Đã copy token", { description: "Dán vào URL / gửi cho backend để debug." });
+    } catch {
+      toast.error("Không copy được", { description: "Trình duyệt không cho phép clipboard trong context này." });
+    }
   };
 
 
@@ -494,6 +510,35 @@ export function Login({ onRegisterSuccess, onBackToCalculator, initialEmail = ""
 
                 <p className="text-[10px] text-gray-500">
                   {t.auth.emailSent.noEmail}
+                {isDev && (
+                  <div className="pt-2 space-y-2">
+                    <div className="text-[10px] text-gray-500">
+                      DEV: Nếu backend local không gửi email/khó nhận mail, bạn có thể verify trực tiếp.
+                    </div>
+
+                    {verificationToken ? (
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleOpenVerifyRegistrationLocally}
+                          className="flex-1 h-10 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs"
+                        >
+                          Mở verify ngay (DEV)
+                        </Button>
+                        <Button
+                          onClick={handleCopyVerificationToken}
+                          variant="outline"
+                          className="h-10 bg-slate-700/30 border-slate-600 text-gray-300 hover:bg-slate-700/50 text-xs"
+                        >
+                          Copy token
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-gray-500">
+                        Backend không trả token trong response register; hãy kiểm tra email (hoặc cấu hình SMTP/local mail) hoặc xem log backend để lấy token.
+                      </div>
+                    )}
+                  </div>
+                )}
                 </p>
               </CardContent>
             </div>
