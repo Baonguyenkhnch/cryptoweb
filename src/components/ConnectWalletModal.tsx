@@ -18,7 +18,7 @@ import { toast } from "sonner";
 interface ConnectWalletModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (walletAddress?: string) => void;
 }
 
 export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWalletModalProps) {
@@ -127,8 +127,21 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
       toast.success("Kết nối WalletConnect thành công!", {
         description: "Đang chuyển đến Dashboard...",
       });
+
+      // Best-effort: try to read wallet address saved elsewhere (if any)
+      let savedWalletAddress: string | undefined;
+      try {
+        const savedUser = localStorage.getItem("currentUser");
+        if (savedUser) {
+          const parsed = JSON.parse(savedUser);
+          savedWalletAddress = parsed?.walletAddress || parsed?.wallet_address;
+        }
+      } catch {
+        // ignore
+      }
+
       handleClose();
-      onSuccess?.();
+      onSuccess?.(savedWalletAddress);
       window.location.hash = "#/dashboard";
     };
 
@@ -208,9 +221,7 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
 
       handleClose();
 
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess?.(result?.address);
 
       // ✅ Reload page to update Navigation with new wallet address
       setTimeout(() => {

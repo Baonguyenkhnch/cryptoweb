@@ -157,6 +157,13 @@ const API_BASE_URL = (() => {
     };
 
     const env = import.meta.env as any;
+    // Optional: in local dev, use same-origin (/api/...) and let Vite proxy forward to backend.
+    // This avoids CORS issues when backend doesn't allow localhost:5173.
+    const useProxy = String(env.VITE_USE_VITE_PROXY || "").toLowerCase() === "true";
+    if (env.DEV && useProxy) {
+        return "";
+    }
+
     // Main endpoints use VITE_BACKEND_URL.
     const raw = env.VITE_BACKEND_URL;
 
@@ -727,7 +734,20 @@ export const registerUser = async (
             }),
         });
 
-        const data = await response.json();
+        // Some dev/proxy setups may return HTML (e.g., Vite index.html) on 404.
+        // Always parse safely to avoid throwing `Unexpected token '<'`.
+        const contentType = response.headers.get("content-type") || "";
+        const rawText = await response.text();
+        const data: any = (() => {
+            if (contentType.includes("application/json")) {
+                try {
+                    return rawText ? JSON.parse(rawText) : {};
+                } catch {
+                    return {};
+                }
+            }
+            return {};
+        })();
 
         // ✅ FALLBACK: If 404, use demo mode
         if (response.status === 404) {
@@ -826,7 +846,7 @@ export const registerUser = async (
         return {
             success: true,
             message: data.message || "Đăng ký thành công! Vui lòng kiểm tra email để xác thực.",
-            verificationToken: data.token || data.verificationToken,
+            verificationToken: data.token || data.verificationToken || data.verification_token,
         };
     } catch (error: any) {
         debugLog(`❌ Register error:`, error.message);
@@ -1003,9 +1023,12 @@ export const sendMagicLinkReal = async (
             email: email.toLowerCase().trim(),
         };
 
-        // Add wallet address if provided
-        if (walletAddress) {
-            requestBody.walletAddress = walletAddress;
+        // Add wallet address only if it looks valid.
+        // Also include both camelCase and snake_case to be compatible with different backends.
+        if (walletAddress && isValidWalletAddress(walletAddress.trim())) {
+            const w = walletAddress.trim();
+            requestBody.walletAddress = w;
+            requestBody.wallet_address = w;
         }
 
         const response = await fetch(url, {
@@ -1017,13 +1040,44 @@ export const sendMagicLinkReal = async (
             body: JSON.stringify(requestBody),
         });
 
-        const data = await response.json();
+        // Some dev/proxy setups may return HTML (e.g., Vite index.html) on 404.
+        // Always parse safely to avoid throwing `Unexpected token '<'`.
+        const contentType = response.headers.get("content-type") || "";
+        const rawText = await response.text();
+        const data: any = (() => {
+            if (contentType.includes("application/json")) {
+                try {
+                    return rawText ? JSON.parse(rawText) : {};
+                } catch {
+                    return {};
+                }
+            }
+            return { raw: rawText };
+        })();
 
         if (!response.ok) {
             debugLog(`❌ Magic link error: ${response.status}`, data);
+
+            // Provide a clearer error when local backend/proxy is misconfigured.
+            if (response.status === 404) {
+                return {
+                    success: false,
+                    message:
+                        "Endpoint /api/send-magic-link không tồn tại (404). Kiểm tra backend đang chạy và Vite proxy (.env.local: VITE_USE_VITE_PROXY, VITE_BACKEND_URL).",
+                };
+            }
+
+            const msg =
+                data?.detail?.message ||
+                data?.detail?.error ||
+                data?.message ||
+                data?.error ||
+                data?.raw ||
+                `HTTP ${response.status}`;
+
             return {
                 success: false,
-                message: data.message || data.error || `HTTP ${response.status}`,
+                message: String(msg),
             };
         }
 
@@ -1246,6 +1300,37 @@ export const getUserInfo = async (): Promise<{
             };
         }
 
+        // DEMO / mock tokens are frontend-only. Do not call backend for these.
+        if (
+            authToken.startsWith("demo_session_") ||
+            authToken.startsWith("mock_jwt_")
+        ) {
+            if (currentUser) {
+                try {
+                    const parsed = JSON.parse(currentUser);
+                    return {
+                        success: true,
+                        message: "Success",
+                        user: {
+                            id: parsed?.id || `demo_${Date.now()}`,
+                            email: parsed?.email,
+                            wallet_address: parsed?.walletAddress || parsed?.wallet_address,
+                            name: parsed?.name,
+                            last_login: parsed?.lastLogin ?? null,
+                            created_at: parsed?.createdAt,
+                        },
+                    };
+                } catch {
+                    // fall through
+                }
+            }
+
+            return {
+                success: false,
+                message: "DEMO token - không có user-info từ backend",
+            };
+        }
+
         const url = `${API_BASE_URL}/api/user-info`;
 
         debugLog(`📡 Calling getUserInfo API: ${url}`);
@@ -1261,7 +1346,18 @@ export const getUserInfo = async (): Promise<{
 
         console.log(`📊 getUserInfo() Response status: ${response.status} ${response.statusText}`);
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type") || "";
+        const rawText = await response.text();
+        const data: any = (() => {
+            if (contentType.includes("application/json")) {
+                try {
+                    return rawText ? JSON.parse(rawText) : {};
+                } catch {
+                    return {};
+                }
+            }
+            return { raw: rawText };
+        })();
 
         console.log(`📦 getUserInfo() Response data:`, data);
 

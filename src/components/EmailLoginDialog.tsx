@@ -11,7 +11,7 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Mail, Send, CheckCircle2, AlertCircle, Lock, Shield, UserPlus } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
-import { sendMagicLink } from "../services/api-real";
+import { isValidWalletAddress, sendMagicLink } from "../services/api-real";
 import { maskEmail } from "../utils/maskEmail";
 
 interface EmailLoginDialogProps {
@@ -39,6 +39,9 @@ export function EmailLoginDialog({
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState("");
   const [emailNotFound, setEmailNotFound] = useState(false);
+  const [verificationToken, setVerificationToken] = useState<string | null>(null);
+
+  const isDev = import.meta.env.DEV;
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -58,13 +61,16 @@ export function EmailLoginDialog({
 
     setError("");
     setIsLoading(true);
+    setVerificationToken(null);
 
     try {
 
-      const result = await sendMagicLink(email, walletAddress);
+      const walletToSend = walletAddress && isValidWalletAddress(walletAddress) ? walletAddress : undefined;
+      const result = await sendMagicLink(email, walletToSend);
 
       if (result.success) {
         console.log("✅ Magic link đã gửi:", result.message);
+        setVerificationToken(result.verificationToken || null);
         setShowSuccess(true);
         setTimeout(() => {
           handleClose();
@@ -113,7 +119,24 @@ export function EmailLoginDialog({
     setError("");
     setShowSuccess(false);
     setEmailNotFound(false);
+    setVerificationToken(null);
     onOpenChange(false);
+  };
+
+  const handleOpenVerifyLocally = async () => {
+    if (!verificationToken) return;
+    const tokenParam = encodeURIComponent(verificationToken);
+    window.location.hash = `#/verify?token=${tokenParam}`;
+    handleClose();
+  };
+
+  const handleCopyToken = async () => {
+    if (!verificationToken) return;
+    try {
+      await navigator.clipboard.writeText(verificationToken);
+    } catch {
+      // ignore clipboard errors (e.g. insecure context)
+    }
   };
 
   const handleMagicLinkClick = () => {
@@ -318,6 +341,36 @@ export function EmailLoginDialog({
                 {t.emailLogin.success.close}
               </Button>
             </div>
+
+            {isDev && (
+              <div className="pt-3 space-y-2">
+                <div className="text-xs text-gray-500">
+                  DEV: Nếu bạn đang test local và không muốn chờ email, có thể mở verify trực tiếp.
+                </div>
+
+                {verificationToken ? (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleOpenVerifyLocally}
+                      className="flex-1 h-10 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white"
+                    >
+                      Mở magic-link ngay (DEV)
+                    </Button>
+                    <Button
+                      onClick={handleCopyToken}
+                      variant="outline"
+                      className="h-10 bg-slate-700/30 border-slate-600 text-gray-300 hover:bg-slate-700/50"
+                    >
+                      Copy token
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-500">
+                    Backend không trả về token trong response; hãy click link trong email rồi thay domain bằng `localhost` (giữ nguyên `token`).
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </DialogContent>

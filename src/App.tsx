@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
@@ -53,6 +53,7 @@ import {
 } from "./services/api-real";
 import { generateMockWalletData } from "./services/mock-data";
 import { clearAuthToken, getAuthToken, setAuthToken } from "./services/authToken";
+import { getJwtExpiryMs, isJwtExpired } from "./services/jwt";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -104,31 +105,53 @@ export default function App() {
   const [prefilledEmail, setPrefilledEmail] = useState(""); // ✅ NEW: Email pre-filled from EmailLoginDialog
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false); // ✅ NEW: Connect Wallet Modal state
 
+  const handleLogout = useCallback(() => {
+    // Xóa localStorage
+    try {
+      clearAuthToken();
+    } catch (error) {
+      console.error("Error clearing auth token:", error);
+    }
+
+    // Reset state
+    setCurrentUser(null);
+    setWalletData(null);
+    setWalletAddress("");
+    setShowResults(false);
+
+    // Về trang Calculator (KHÔNG về trang login)
+    setCurrentPage("calculator");
+
+    console.log("✅ Đăng xuất thành công - về Calculator");
+  }, []);
+
   // ✅ Check URL hash for verify page
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
 
-      // ✅ IMPORTANT: Don't show verify page if user is already logged in
-      try {
-        const token = getAuthToken();
-        if (token) {
-          // User is already authenticated, don't show verify page even if hash contains /verify
-          console.log("🔒 User already authenticated, skipping verify page");
-          setShowVerifyPage(false);
-          return;
+      // ✅ SUPPORT BOTH /verify AND /verify-registration
+      // IMPORTANT: If user opens a verify link while already authenticated, we must still allow
+      // verification to proceed; otherwise they can get stuck with the previous user's session.
+      if (hash.startsWith("#/verify-registration") || hash.startsWith("#/verify")) {
+        try {
+          const token = getAuthToken();
+          if (token) {
+            console.log("🔁 Verify link opened while authenticated; clearing existing session before verifying");
+            clearAuthToken();
+            setCurrentUser(null);
+            setWalletData(null);
+            setWalletAddress("");
+          }
+        } catch (error) {
+          console.error("Error handling verify hash:", error);
         }
-      } catch (error) {
-        console.error("Error checking auth token:", error);
-        // If getAuthToken fails, assume not authenticated
+
+        setShowVerifyPage(true);
+        return;
       }
 
-      // ✅ SUPPORT BOTH /verify AND /verify-registration
-      if (hash.startsWith("#/verify-registration") || hash.startsWith("#/verify")) {
-        setShowVerifyPage(true);
-      } else {
-        setShowVerifyPage(false);
-      }
+      setShowVerifyPage(false);
     };
 
     // Check on mount
@@ -168,8 +191,25 @@ export default function App() {
       // console.log("  - currentUser:", savedUser ? "exists" : "null");
 
       if (!token) {
-        // console.log("⚠️ No auth found in localStorage");
+        // If auth was cleared in another tab, also clear UI state.
+        setCurrentUser(null);
+        setCurrentPage(prev => (prev === "dashboard" || prev === "profile" ? "calculator" : prev));
         return;
+      }
+
+      // If JWT is already expired, clear auth immediately.
+      // (Non-JWT tokens like demo/mock will return null and skip this.)
+      try {
+        const expired = isJwtExpired(token, 3_000); // small skew for clock drift
+        if (expired === true) {
+          console.warn("⏰ Auth token expired; clearing session");
+          clearAuthToken();
+          setCurrentUser(null);
+          setCurrentPage("calculator");
+          return;
+        }
+      } catch {
+        // ignore
       }
 
       // Prefer saved user if present
@@ -233,8 +273,75 @@ export default function App() {
     };
 
     window.addEventListener("authTokenChanged", onAuthTokenChanged);
-    return () => window.removeEventListener("authTokenChanged", onAuthTokenChanged);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "authToken" || e.key === "currentUser") {
+        void restoreAuth();
+      }
+    };
+
+    // Cross-tab: `storage` fires in other tabs.
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("authTokenChanged", onAuthTokenChanged);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
+
+  // Auto-logout when JWT expires (if token contains `exp`).
+  useEffect(() => {
+    let timeoutId: number | undefined;
+
+    const clearTimer = () => {
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+        timeoutId = undefined;
+      }
+    };
+
+    const schedule = () => {
+      clearTimer();
+
+      let token: string | null = null;
+      try {
+        token = getAuthToken();
+      } catch {
+        return;
+      }
+
+      if (!token) return;
+
+      const expMs = getJwtExpiryMs(token);
+      if (expMs === null) return; // no expiry info -> no timer
+
+      const delayMs = expMs - Date.now();
+      if (delayMs <= 0) {
+        handleLogout();
+        return;
+      }
+
+      // setTimeout max is ~2^31-1 ms (~24.8 days)
+      const safeDelay = Math.min(delayMs, 2_147_483_647);
+      timeoutId = window.setTimeout(() => {
+        handleLogout();
+      }, safeDelay);
+    };
+
+    schedule();
+
+    const onTokenChanged = () => schedule();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "authToken" || e.key === "currentUser") schedule();
+    };
+
+    window.addEventListener("authTokenChanged", onTokenChanged);
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      window.removeEventListener("authTokenChanged", onTokenChanged);
+      window.removeEventListener("storage", onStorage);
+      clearTimer();
+    };
+  }, [handleLogout]);
 
   // Auto-load wallet data khi vào Dashboard lần đầu
   useEffect(() => {
@@ -260,17 +367,28 @@ export default function App() {
               const cacheAge = Date.now() - cachedData.timestamp;
               const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
+              // ✅ Dashboard needs full analysis (tokens/transactions). We sometimes store a partial
+              // object in this cache key (e.g. from getUserInfo()), so validate before using.
+              const cachedWallet = cachedData?.data;
+              const hasTokenBalances = Array.isArray(cachedWallet?.tokenBalances);
+              const hasRecentTx = Array.isArray(cachedWallet?.recentTransactions);
+              const looksPartial = !hasTokenBalances || !hasRecentTx;
+
               if (cacheAge < CACHE_EXPIRY) {
-                console.log(`💾 Dashboard: Using cached data (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
-                setWalletData(cachedData.data);
-                setWalletAddress(currentUser.walletAddress);
+                if (!looksPartial) {
+                  console.log(`💾 Dashboard: Using cached data (age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
+                  setWalletData(cachedData.data);
+                  setWalletAddress(currentUser.walletAddress);
 
-                // Still check subscription status
-                const status = await checkSubscriptionStatus(currentUser.walletAddress);
-                setSubscriptionStatus(status);
+                  // Still check subscription status
+                  const status = await checkSubscriptionStatus(currentUser.walletAddress);
+                  setSubscriptionStatus(status);
 
-                setIsLoading(false);
-                return; // ← EXIT early, don't call API
+                  setIsLoading(false);
+                  return; // ← EXIT early, don't call API
+                }
+
+                console.log("💾 Dashboard: Cache found but looks partial; fetching fresh data from API...");
               } else {
                 console.log(`⏰ Dashboard: Cache expired, fetching fresh data...`);
               }
@@ -339,8 +457,27 @@ export default function App() {
       // Parse existing user to use it (don't overwrite with potentially incomplete data)
       try {
         const savedUser = JSON.parse(existingUser);
-        setCurrentUser(savedUser); // Use the saved user data instead
-        console.log("✅ Using saved user data from Verify.tsx");
+
+        const savedEmail = (savedUser?.email || "").toLowerCase();
+        const incomingEmail = (user?.email || "").toLowerCase();
+
+        // If there's a mismatch, treat incoming user as source of truth.
+        if (incomingEmail && savedEmail && incomingEmail !== savedEmail) {
+          console.warn("⚠️ Saved currentUser mismatches incoming user; overwriting localStorage currentUser");
+          const minimalUser = {
+            id: user?.id || `user_${Date.now()}`,
+            email: user?.email,
+            name: user?.name,
+            walletAddress: user?.walletAddress,
+            createdAt: user?.createdAt,
+            lastLogin: user?.lastLogin,
+          };
+          localStorage.setItem("currentUser", JSON.stringify(minimalUser));
+          setCurrentUser(minimalUser as any);
+        } else {
+          setCurrentUser(savedUser); // Use the saved user data instead
+          console.log("✅ Using saved user data from Verify.tsx");
+        }
       } catch (e) {
         console.warn("⚠️ Failed to parse existing user, using new user data");
       }
@@ -480,20 +617,31 @@ export default function App() {
                 : `Vui lòng kiểm tra kết nối mạng và thử lại sau.`)
             );
 
-            // ✅ FIX: DON'T set empty data - User can retry later
-            // Instead, redirect back to Calculator page
-            setIsLoading(false);
-            setCurrentPage("calculator");
+            // ✅ Keep session and still allow user to enter Dashboard.
+            // This avoids the “verify succeeded but dashboard shows nothing” experience.
+            setErrorType(isQuotaError ? "quota" : "network");
+            setErrorMessage(
+              `Không thể tải dữ liệu blockchain cho ví này. ${errorMsg}`
+            );
+            setShowErrorDialog(true);
 
-            // Clear auth to allow retry
-            try {
-              clearAuthToken();
-            } catch (err) {
-              console.error("Error clearing auth token:", err);
+            // Allow dashboard to render with empty / zero data; user can retry later.
+            if (!walletData) {
+              setWalletData({
+                score: 0,
+                walletAge: 0,
+                totalTransactions: 0,
+                tokenDiversity: 0,
+                totalAssets: 0,
+                rating: "N/A",
+                tokenBalances: [],
+                recentTransactions: [],
+                walletAddress: user.walletAddress,
+              } as any);
             }
-            setCurrentUser(null);
 
-            return; // ← EXIT early without setting empty data
+            setCurrentPage("dashboard");
+            return;
           }
         }
       } else {
@@ -546,31 +694,30 @@ export default function App() {
             console.error("❌ No wallet_address in user data - cannot save cache!");
           }
         } else {
-          // ✅ FIX: Show alert when getUserInfo failed for returning user
+          // ✅ Do not clear auth automatically; allow dashboard access with empty data.
           console.error("❌ getUserInfo failed for returning user:", userInfoResult);
 
           const errorMsg = userInfoResult.message || "Không thể tải dữ liệu từ database";
+          setErrorType("network");
+          setErrorMessage(`Không thể tải dữ liệu tài khoản. ${errorMsg}`);
+          setShowErrorDialog(true);
 
-          alert(
-            `⚠️ Không thể tải dữ liệu tài khoản của bạn!\n\n` +
-            `Lý do: ${errorMsg}\n\n` +
-            `Vui lòng:\n` +
-            `1. Kiểm tra kết nối mạng\n` +
-            `2. Thử đăng nhập lại sau 1-2 phút\n` +
-            `3. Liên hệ admin@migofin.com nếu vẫn lỗi`
-          );
-
-          // ✅ FIX: Redirect to Calculator and clear auth
-          setIsLoading(false);
-          setCurrentPage("calculator");
-          try {
-            clearAuthToken();
-          } catch (err) {
-            console.error("Error clearing auth token:", err);
+          if (!walletData) {
+            setWalletData({
+              score: 0,
+              walletAge: 0,
+              totalTransactions: 0,
+              tokenDiversity: 0,
+              totalAssets: 0,
+              rating: "N/A",
+              tokenBalances: [],
+              recentTransactions: [],
+              walletAddress: user.walletAddress,
+            } as any);
           }
-          setCurrentUser(null);
 
-          return; // ← EXIT early
+          setCurrentPage("dashboard");
+          return;
         }
       }
     } catch (error) {
@@ -593,25 +740,7 @@ export default function App() {
     setCurrentPage("dashboard");
   };
 
-  const handleLogout = () => {
-    // Xóa localStorage
-    try {
-      clearAuthToken();
-    } catch (error) {
-      console.error("Error clearing auth token:", error);
-    }
-
-    // Reset state
-    setCurrentUser(null);
-    setWalletData(null);
-    setWalletAddress("");
-    setShowResults(false);
-
-    // Về trang Calculator (KHÔNG về trang login)
-    setCurrentPage("calculator");
-
-    console.log("✅ Đăng xuất thành công - về Calculator");
-  };
+  // handleLogout moved above and memoized (useCallback)
 
   // ✅ Handle Calculate Click - Show CAPTCHA first
   const handleCalculateClick = () => {
@@ -1245,8 +1374,8 @@ export default function App() {
         open={showQuickRegisterDialog}
         onOpenChange={setShowQuickRegisterDialog}
         walletAddress={walletAddress}
-        onSuccess={(user) => {
-          handleLogin(user);
+        onRegisterSuccess={(email: string) => {
+          setPrefilledEmail(email);
           setShowQuickRegisterDialog(false);
         }}
       />
@@ -1334,6 +1463,7 @@ export default function App() {
             <Dashboard
               user={currentUser}
               walletData={walletData}
+              isLoadingWalletData={isLoading}
               onLogout={handleLogout}
               onViewProfile={() => setCurrentPage("profile")}
               onCalculateScore={() => setCurrentPage("calculator")}
@@ -1344,8 +1474,18 @@ export default function App() {
             <ProfilePage
               user={currentUser}
               walletData={walletData}
-              onUpdateProfile={setCurrentUser}
-              onBack={() => setCurrentPage("dashboard")}
+              onUpdateProfile={async (updates) => {
+                setCurrentUser((prev) => {
+                  if (!prev) return prev;
+                  const next = { ...prev, ...updates };
+                  try {
+                    localStorage.setItem("currentUser", JSON.stringify(next));
+                  } catch {
+                    // ignore storage errors
+                  }
+                  return next;
+                });
+              }}
             />
           )}
 
@@ -1368,9 +1508,11 @@ export default function App() {
         <ConnectWalletModal
           isOpen={isWalletModalOpen}
           onClose={() => setIsWalletModalOpen(false)}
-          onSuccess={(walletAddress: string) => {
-            // Update currentUser with wallet address immediately
-            setCurrentUser(prev => prev ? { ...prev, walletAddress } : prev);
+          onSuccess={(newWalletAddress?: string) => {
+            if (newWalletAddress) {
+              // Update currentUser with wallet address immediately
+              setCurrentUser((prev) => (prev ? { ...prev, walletAddress: newWalletAddress } : prev));
+            }
             setIsWalletModalOpen(false);
           }}
         />
