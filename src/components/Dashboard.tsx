@@ -111,8 +111,16 @@ export function Dashboard({
 
   useEffect(() => {
     loadScoreHistory();
-  }, [selectedPeriod, user.walletAddress]);
 
+    // Sử dụng trực tiếp walletData để kiểm tra thay vì dùng biến currentScore
+    const hasWallet = !!user.walletAddress;
+    const hasNoDataYet = !walletData || (walletData && walletData.score === 0);
+
+    if (hasWallet && hasNoDataYet && !isLoadingWalletData && onRecalculate) {
+      console.log("🔄 Auto-fetching wallet data for:", user.walletAddress);
+      onRecalculate();
+    }
+  }, [selectedPeriod, user.walletAddress, walletData, isLoadingWalletData, onRecalculate]);
 
   const loadScoreHistory = async () => {
     setIsLoadingHistory(true);
