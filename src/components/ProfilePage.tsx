@@ -142,10 +142,14 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
   const [isSaving, setIsSaving] = useState(false);
   const [showWalletAddress, setShowWalletAddress] = useState(false);
   const [isEmailChangeModalOpen, setIsEmailChangeModalOpen] = useState(false);
+  const [fetchedEmail, setFetchedEmail] = useState<string | null>(null); // ✅ Local state for fetched email
 
   // Get language from context
   const { language } = useLanguage();
   const t = translations[language].profile;
+
+  // ✅ Get display email (prioritize fetched email, then user.email, then formData.email)
+  const displayEmail = fetchedEmail || user.email || formData.email || "";
 
   // ✅ Debug: Log user data
   useEffect(() => {
@@ -155,14 +159,15 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
       name: user.name,
       walletAddress: user.walletAddress,
       createdAt: user.createdAt,
-      lastLogin: user.lastLogin
+      lastLogin: user.lastLogin,
+      displayEmail: displayEmail
     });
-  }, [user]);
+  }, [user, displayEmail]);
 
   // ✅ Auto-fetch email if missing
   useEffect(() => {
     const fetchEmailIfMissing = async () => {
-      if (!user.email) {
+      if (!user.email && !fetchedEmail) {
         try {
           const { getAuthToken } = await import("../services/authToken");
           const token = getAuthToken();
@@ -172,9 +177,15 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
             const { getUserInfo } = await import("../services/api-real");
             const userInfoResult = await getUserInfo();
             
+            console.log("📡 ProfilePage - getUserInfo result:", userInfoResult);
+            
             if (userInfoResult?.success && userInfoResult?.user?.email) {
               const email = userInfoResult.user.email;
               console.log("✅ ProfilePage - Found email:", email);
+              
+              // Update local state immediately for display
+              setFetchedEmail(email);
+              
               // Update formData with email
               setFormData(prev => ({
                 ...prev,
@@ -185,20 +196,28 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
               if (onUpdateProfile && email) {
                 try {
                   await onUpdateProfile({ email: email });
+                  console.log("✅ ProfilePage - Updated user state with email");
                 } catch (error) {
                   console.error("Error updating profile with email:", error);
                 }
               }
+            } else {
+              console.warn("⚠️ ProfilePage - getUserInfo did not return email:", userInfoResult);
             }
+          } else {
+            console.log("ℹ️ ProfilePage - Token is demo/mock, skipping getUserInfo");
           }
         } catch (error) {
-          console.error("Error fetching email in ProfilePage:", error);
+          console.error("❌ Error fetching email in ProfilePage:", error);
         }
+      } else if (user.email) {
+        console.log("✅ ProfilePage - User already has email:", user.email);
+        setFetchedEmail(null); // Clear fetched email if user.email exists
       }
     };
 
     fetchEmailIfMissing();
-  }, [user.email, onUpdateProfile]);
+  }, [user.email, fetchedEmail, onUpdateProfile]);
 
   useEffect(() => {
     setFormData({
@@ -310,7 +329,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                   {user.name || (user.walletAddress ? formatWalletAddress(user.walletAddress) : "Anonymous")}
                 </h2>
                 <p className="text-gray-400 text-sm mb-4">
-                  {user.email || "No email provided"}
+                  {displayEmail || "No email provided"}
                 </p>
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                   <CheckCircle2 className="w-3 h-3 mr-1" />
@@ -463,7 +482,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                           </Button>
                         </div>
                         <div className="text-white bg-slate-900/50 border border-cyan-500/20 rounded-lg px-4 py-2.5 opacity-70">
-                          {user.email || "No email provided"}
+                          {displayEmail || "No email provided"}
                         </div>
                       </div>
 
