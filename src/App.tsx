@@ -233,11 +233,24 @@ export default function App() {
             }
           }
           
+          // ✅ Debug: Log user data from localStorage
+          console.log("📋 RestoreAuth - User from localStorage:", {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            walletAddress: user.walletAddress,
+            createdAt: user.createdAt,
+            lastLogin: user.lastLogin
+          });
+          
           // ✅ Nếu user không có email nhưng có token, gọi getUserInfo để lấy email
           if (!user.email && token) {
+            console.log("⚠️ User from localStorage missing email, fetching from getUserInfo...");
             try {
               const { getUserInfo } = await import("./services/api-real");
               const userInfoResult = await getUserInfo();
+              
+              console.log("📡 getUserInfo result:", userInfoResult);
               
               if (userInfoResult?.success && userInfoResult?.user?.email) {
                 console.log("✅ Found email from getUserInfo:", userInfoResult.user.email);
@@ -254,10 +267,15 @@ export default function App() {
                 }
                 // Cập nhật localStorage với email
                 localStorage.setItem("currentUser", JSON.stringify(user));
+                console.log("✅ Updated localStorage with email:", user.email);
+              } else {
+                console.warn("⚠️ getUserInfo did not return email:", userInfoResult);
               }
             } catch (error) {
-              console.error("Error fetching email from getUserInfo:", error);
+              console.error("❌ Error fetching email from getUserInfo:", error);
             }
+          } else if (user.email) {
+            console.log("✅ User already has email:", user.email);
           }
           
           setCurrentUser(user);
@@ -400,6 +418,42 @@ export default function App() {
     };
   }, [handleLogout]);
 
+  // ✅ Auto-fetch email nếu user không có email
+  useEffect(() => {
+    const autoFetchEmail = async () => {
+      if (currentUser && !currentUser.email) {
+        try {
+          const token = getAuthToken();
+          if (token && !token.startsWith("demo_session_") && !token.startsWith("mock_jwt_")) {
+            console.log("🔍 User missing email, fetching from getUserInfo...");
+            const { getUserInfo } = await import("./services/api-real");
+            const userInfoResult = await getUserInfo();
+            
+            if (userInfoResult?.success && userInfoResult?.user?.email) {
+              console.log("✅ Found email from getUserInfo:", userInfoResult.user.email);
+              const updatedUser = {
+                ...currentUser,
+                email: userInfoResult.user.email,
+                name: userInfoResult.user.name || currentUser.name,
+                createdAt: userInfoResult.user.created_at || currentUser.createdAt,
+                lastLogin: userInfoResult.user.last_login || currentUser.lastLogin,
+              };
+              
+              setCurrentUser(updatedUser);
+              localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+              console.log("✅ Updated currentUser with email in localStorage");
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching email:", error);
+        }
+      }
+    };
+
+    autoFetchEmail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]);
+
   // ✅ Auto-connect wallet ngay khi user được set nếu chưa có walletAddress
   useEffect(() => {
     const autoConnectWallet = async () => {
@@ -417,7 +471,7 @@ export default function App() {
           if (walletAddress) {
             console.log("✅ Found wallet address from MetaMask:", walletAddress);
             
-            // Cập nhật currentUser với wallet address
+            // Cập nhật currentUser với wallet address (giữ lại email nếu có)
             const updatedUser = {
               ...currentUser,
               walletAddress: walletAddress,
