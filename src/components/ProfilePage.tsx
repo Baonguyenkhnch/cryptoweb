@@ -31,6 +31,7 @@ import {
   KeyRound
 } from "lucide-react";
 import type { UserProfile, WalletAnalysis } from "../services/api-real";
+import { formatWalletAddress } from "../services/api-real";
 import { useLanguage } from "../services/LanguageContext";
 import { EmailChangeModal } from "./EmailChangeModal";
 
@@ -179,13 +180,22 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
     setIsEditing(false);
   };
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    });
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("vi-VN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "N/A";
+    }
   };
 
   const maskWalletAddress = (address: string) => {
@@ -244,7 +254,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
                   {user.name ? user.name.charAt(0).toUpperCase() : <User className="w-12 h-12" />}
                 </div>
                 <h2 className="text-2xl text-white mb-1">
-                  {user.name || "Anonymous"}
+                  {user.name || (user.walletAddress ? formatWalletAddress(user.walletAddress) : "Anonymous")}
                 </h2>
                 <p className="text-gray-400 text-sm mb-4">
                   {user.email || "No email provided"}
