@@ -54,6 +54,7 @@ import {
 import { generateMockWalletData } from "./services/mock-data";
 import { clearAuthToken, getAuthToken, setAuthToken } from "./services/authToken";
 import { getJwtExpiryMs, isJwtExpired } from "./services/jwt";
+import { getCurrentWalletAddress } from "./utils/siwe-auth";
 
 type Page = "login" | "calculator" | "dashboard" | "profile";
 
@@ -216,6 +217,22 @@ export default function App() {
       if (savedUser) {
         try {
           const user = JSON.parse(savedUser);
+          
+          // ✅ Auto-connect wallet nếu chưa có walletAddress
+          if (!user.walletAddress) {
+            try {
+              const walletAddress = await getCurrentWalletAddress();
+              if (walletAddress) {
+                console.log("✅ Auto-found wallet address from MetaMask:", walletAddress);
+                user.walletAddress = walletAddress;
+                // Cập nhật localStorage với wallet address
+                localStorage.setItem("currentUser", JSON.stringify(user));
+              }
+            } catch (error) {
+              console.error("Error auto-connecting wallet:", error);
+            }
+          }
+          
           setCurrentUser(user);
           setCurrentPage("dashboard");
           console.log("✅ Auth restored from localStorage, redirecting to dashboard");
@@ -241,6 +258,19 @@ export default function App() {
             createdAt: u.created_at,
             lastLogin: u.last_login,
           };
+
+          // ✅ Auto-connect wallet nếu chưa có walletAddress
+          if (!minimalUser.walletAddress) {
+            try {
+              const walletAddress = await getCurrentWalletAddress();
+              if (walletAddress) {
+                console.log("✅ Auto-found wallet address from MetaMask:", walletAddress);
+                minimalUser.walletAddress = walletAddress;
+              }
+            } catch (error) {
+              console.error("Error auto-connecting wallet:", error);
+            }
+          }
 
           localStorage.setItem("currentUser", JSON.stringify(minimalUser));
           setCurrentUser(minimalUser as any);
@@ -343,6 +373,57 @@ export default function App() {
     };
   }, [handleLogout]);
 
+  // ✅ Auto-connect wallet ngay khi user được set nếu chưa có walletAddress
+  useEffect(() => {
+    const autoConnectWallet = async () => {
+      // Tự động connect khi:
+      // 1. User đã login
+      // 2. User chưa có walletAddress
+      if (currentUser && !currentUser.walletAddress) {
+        console.log("🔍 Auto-connecting wallet for user...");
+        console.log("📍 Current user:", currentUser.email, currentUser.id);
+        
+        try {
+          // Lấy wallet address từ MetaMask (nếu đã được connect trước đó)
+          const walletAddress = await getCurrentWalletAddress();
+          
+          if (walletAddress) {
+            console.log("✅ Found wallet address from MetaMask:", walletAddress);
+            
+            // Cập nhật currentUser với wallet address
+            const updatedUser = {
+              ...currentUser,
+              walletAddress: walletAddress,
+            };
+            
+            console.log("🔄 Updating currentUser state with wallet address...");
+            setCurrentUser(updatedUser);
+            
+            // Lưu vào localStorage
+            try {
+              localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+              console.log("✅ Updated currentUser with wallet address in localStorage");
+            } catch (error) {
+              console.error("Error saving user to localStorage:", error);
+            }
+          } else {
+            console.log("ℹ️ No wallet connected in MetaMask. User needs to connect manually.");
+            console.log("💡 Tip: Make sure MetaMask is installed and connected.");
+          }
+        } catch (error) {
+          console.error("❌ Error auto-connecting wallet:", error);
+        }
+      } else if (currentUser && currentUser.walletAddress) {
+        console.log("✅ User already has wallet address:", currentUser.walletAddress);
+      }
+    };
+
+    // Chạy ngay khi currentUser thay đổi
+    autoConnectWallet();
+    // ✅ Chỉ chạy khi currentUser thay đổi (id hoặc email), nhưng không phụ thuộc vào walletAddress để tránh loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id, currentUser?.email]);
+
   // Auto-load wallet data khi vào Dashboard lần đầu
   useEffect(() => {
     const loadWalletDataForDashboard = async () => {
@@ -436,7 +517,24 @@ export default function App() {
   }, [currentPage, currentUser]); // ✅ REMOVED: walletData dependency to allow reload
 
   const handleLogin = async (user: UserProfile) => {
-    setCurrentUser(user);
+    // ✅ Auto-connect wallet nếu chưa có walletAddress
+    let userWithWallet = user;
+    if (!user.walletAddress) {
+      try {
+        const walletAddress = await getCurrentWalletAddress();
+        if (walletAddress) {
+          console.log("✅ Auto-found wallet address from MetaMask during login:", walletAddress);
+          userWithWallet = {
+            ...user,
+            walletAddress: walletAddress,
+          };
+        }
+      } catch (error) {
+        console.error("Error auto-connecting wallet during login:", error);
+      }
+    }
+
+    setCurrentUser(userWithWallet);
 
     // ✅ FIX: Check if user is already authenticated from Verify.tsx
     // If authToken already exists in localStorage, it means Verify.tsx already saved everything
@@ -465,17 +563,34 @@ export default function App() {
         if (incomingEmail && savedEmail && incomingEmail !== savedEmail) {
           console.warn("⚠️ Saved currentUser mismatches incoming user; overwriting localStorage currentUser");
           const minimalUser = {
-            id: user?.id || `user_${Date.now()}`,
-            email: user?.email,
-            name: user?.name,
-            walletAddress: user?.walletAddress,
-            createdAt: user?.createdAt,
-            lastLogin: user?.lastLogin,
+            id: userWithWallet?.id || `user_${Date.now()}`,
+            email: userWithWallet?.email,
+            name: userWithWallet?.name,
+            walletAddress: userWithWallet?.walletAddress,
+            createdAt: userWithWallet?.createdAt,
+            lastLogin: userWithWallet?.lastLogin,
           };
           localStorage.setItem("currentUser", JSON.stringify(minimalUser));
           setCurrentUser(minimalUser as any);
         } else {
-          setCurrentUser(savedUser); // Use the saved user data instead
+          // ✅ Auto-connect wallet nếu savedUser chưa có walletAddress
+          let finalSavedUser = savedUser;
+          if (!savedUser.walletAddress) {
+            try {
+              const walletAddress = await getCurrentWalletAddress();
+              if (walletAddress) {
+                console.log("✅ Auto-found wallet address from MetaMask for saved user:", walletAddress);
+                finalSavedUser = {
+                  ...savedUser,
+                  walletAddress: walletAddress,
+                };
+                localStorage.setItem("currentUser", JSON.stringify(finalSavedUser));
+              }
+            } catch (error) {
+              console.error("Error auto-connecting wallet for saved user:", error);
+            }
+          }
+          setCurrentUser(finalSavedUser); // Use the saved user data instead
           console.log("✅ Using saved user data from Verify.tsx");
         }
       } catch (e) {
@@ -485,14 +600,14 @@ export default function App() {
       // ✅ NEW LOGIN (not from Verify.tsx) - Save to localStorage
       console.log("🆕 New login - saving to localStorage");
 
-      // Save minimal user data
+      // Save minimal user data (sử dụng userWithWallet đã có wallet address nếu tìm thấy)
       const minimalUser = {
-        id: user?.id || `user_${Date.now()}`,
-        email: user?.email,
-        name: user?.name,
-        walletAddress: user?.walletAddress,
-        createdAt: user?.createdAt,
-        lastLogin: user?.lastLogin,
+        id: userWithWallet?.id || `user_${Date.now()}`,
+        email: userWithWallet?.email,
+        name: userWithWallet?.name,
+        walletAddress: userWithWallet?.walletAddress,
+        createdAt: userWithWallet?.createdAt,
+        lastLogin: userWithWallet?.lastLogin,
       };
       localStorage.setItem("currentUser", JSON.stringify(minimalUser));
 
@@ -1509,9 +1624,21 @@ export default function App() {
           isOpen={isWalletModalOpen}
           onClose={() => setIsWalletModalOpen(false)}
           onSuccess={(newWalletAddress?: string) => {
-            if (newWalletAddress) {
-              // Update currentUser with wallet address immediately
-              setCurrentUser((prev) => (prev ? { ...prev, walletAddress: newWalletAddress } : prev));
+            if (newWalletAddress && currentUser) {
+              // ✅ Update currentUser with wallet address immediately
+              const updatedUser = {
+                ...currentUser,
+                walletAddress: newWalletAddress,
+              };
+              setCurrentUser(updatedUser);
+              
+              // ✅ Also update localStorage to persist the change
+              try {
+                localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+                console.log("✅ Updated currentUser with wallet address:", newWalletAddress);
+              } catch (error) {
+                console.error("Error saving wallet address to localStorage:", error);
+              }
             }
             setIsWalletModalOpen(false);
           }}

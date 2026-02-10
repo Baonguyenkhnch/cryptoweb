@@ -219,14 +219,10 @@ export function ConnectWalletModal({ isOpen, onClose, onSuccess }: ConnectWallet
         icon: <CheckCircle2 className="w-5 h-5 text-green-500" />,
       });
 
-      handleClose();
-
+      // ✅ Call onSuccess BEFORE closing to update state immediately
       onSuccess?.(result?.address);
 
-      // ✅ Reload page to update Navigation with new wallet address
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      handleClose();
 
     } catch (error: any) {
       console.error('❌ MetaMask login error:', error);
