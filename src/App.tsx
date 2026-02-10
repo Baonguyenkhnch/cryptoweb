@@ -233,6 +233,33 @@ export default function App() {
             }
           }
           
+          // ✅ Nếu user không có email nhưng có token, gọi getUserInfo để lấy email
+          if (!user.email && token) {
+            try {
+              const { getUserInfo } = await import("./services/api-real");
+              const userInfoResult = await getUserInfo();
+              
+              if (userInfoResult?.success && userInfoResult?.user?.email) {
+                console.log("✅ Found email from getUserInfo:", userInfoResult.user.email);
+                user.email = userInfoResult.user.email;
+                // Cập nhật các thông tin khác nếu có
+                if (userInfoResult.user.name && !user.name) {
+                  user.name = userInfoResult.user.name;
+                }
+                if (userInfoResult.user.created_at && !user.createdAt) {
+                  user.createdAt = userInfoResult.user.created_at;
+                }
+                if (userInfoResult.user.last_login !== undefined) {
+                  user.lastLogin = userInfoResult.user.last_login;
+                }
+                // Cập nhật localStorage với email
+                localStorage.setItem("currentUser", JSON.stringify(user));
+              }
+            } catch (error) {
+              console.error("Error fetching email from getUserInfo:", error);
+            }
+          }
+          
           setCurrentUser(user);
           setCurrentPage("dashboard");
           console.log("✅ Auth restored from localStorage, redirecting to dashboard");
