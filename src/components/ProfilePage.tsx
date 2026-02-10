@@ -147,6 +147,59 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
   const { language } = useLanguage();
   const t = translations[language].profile;
 
+  // ✅ Debug: Log user data
+  useEffect(() => {
+    console.log("📋 ProfilePage - User data:", {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      walletAddress: user.walletAddress,
+      createdAt: user.createdAt,
+      lastLogin: user.lastLogin
+    });
+  }, [user]);
+
+  // ✅ Auto-fetch email if missing
+  useEffect(() => {
+    const fetchEmailIfMissing = async () => {
+      if (!user.email) {
+        try {
+          const { getAuthToken } = await import("../services/authToken");
+          const token = getAuthToken();
+          
+          if (token && !token.startsWith("demo_session_") && !token.startsWith("mock_jwt_")) {
+            console.log("🔍 ProfilePage - No email found, fetching from getUserInfo...");
+            const { getUserInfo } = await import("../services/api-real");
+            const userInfoResult = await getUserInfo();
+            
+            if (userInfoResult?.success && userInfoResult?.user?.email) {
+              const email = userInfoResult.user.email;
+              console.log("✅ ProfilePage - Found email:", email);
+              // Update formData with email
+              setFormData(prev => ({
+                ...prev,
+                email: email
+              }));
+              
+              // Update user via onUpdateProfile if available
+              if (onUpdateProfile && email) {
+                try {
+                  await onUpdateProfile({ email: email });
+                } catch (error) {
+                  console.error("Error updating profile with email:", error);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching email in ProfilePage:", error);
+        }
+      }
+    };
+
+    fetchEmailIfMissing();
+  }, [user.email, onUpdateProfile]);
+
   useEffect(() => {
     setFormData({
       name: user.name || "",
@@ -513,7 +566,7 @@ export function ProfilePage({ user, walletData, onUpdateProfile }: ProfilePagePr
       <EmailChangeModal
         isOpen={isEmailChangeModalOpen}
         onClose={() => setIsEmailChangeModalOpen(false)}
-        currentEmail={user.email}
+        currentEmail={user.email || ""}
         onEmailChange={handleEmailChange}
       />
     </div>
